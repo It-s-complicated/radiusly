@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#173f35" />
+    <meta
+      name="description"
+      content="Plan a neighborhood walk that fits the distance or time you have."
+    />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <title>Roam — Walk your neighborhood</title>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Roam home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40">
+            <path d="M10 30c1-9 3-14 10-12 7 3 7-8 10-9" />
+            <circle cx="10" cy="30" r="3" />
+            <circle cx="30" cy="9" r="3" />
+          </svg>
+        </span>
+        <span>roam</span>
+      </a>
+
+      <p class="topbar-note"><span></span> Your next walk, made to fit.</p>
+
+      <button class="install-button" id="install-button" type="button" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14" />
+        </svg>
+        Install app
+      </button>
+    </header>
+
+    <main class="app-shell">
+      <section class="planner" aria-labelledby="planner-title">
+        <div class="planner-inner">
+          <p class="eyebrow">Plan a loop</p>
+          <h1 id="planner-title">A good walk starts right here.</h1>
+          <p class="intro">Tell us how far—or how long—and we’ll find a way back.</p>
+
+          <div class="mode-switch" role="group" aria-label="Plan by">
+            <button class="active" type="button" data-mode="distance">Distance</button>
+            <button type="button" data-mode="time">Time</button>
+          </div>
+
+          <div class="target-control">
+            <label for="target" id="target-label">How far?</label>
+            <div class="target-value">
+              <input id="target" type="number" min="1" max="20" step="0.5" value="4" />
+              <span id="target-unit">km</span>
+            </div>
+            <input
+              id="target-range"
+              class="range"
+              type="range"
+              min="1"
+              max="20"
+              step="0.5"
+              value="4"
+              aria-label="Walking distance"
+            />
+            <div class="range-labels" aria-hidden="true">
+              <span id="range-min">1 km</span>
+              <span id="range-max">20 km</span>
+            </div>
+          </div>
+
+          <fieldset class="pace-field">
+            <legend>Walking pace</legend>
+            <label>
+              <input type="radio" name="pace" value="4" />
+              <span><b>Easy</b><small>4 km/h</small></span>
+            </label>
+            <label>
+              <input type="radio" name="pace" value="5" checked />
+              <span><b>Steady</b><small>5 km/h</small></span>
+            </label>
+            <label>
+              <input type="radio" name="pace" value="6" />
+              <span><b>Brisk</b><small>6 km/h</small></span>
+            </label>
+          </fieldset>
+
+          <section class="favorites-section" aria-labelledby="favorites-title">
+            <div class="section-heading">
+              <div>
+                <h2 id="favorites-title">Walk-by spots</h2>
+                <p>Include a favorite place in your loop.</p>
+              </div>
+              <button id="add-spot" class="text-button" type="button">
+                <span aria-hidden="true">＋</span> Add
+              </button>
+            </div>
+            <div class="favorites-list" id="favorites-list">
+              <p class="empty-favorites">No saved spots yet. Add one from the map.</p>
+            </div>
+          </section>
+
+          <button class="primary-button" id="make-route" type="button">
+            <span>Make my route</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 12h14m-5-5 5 5-5 5" />
+            </svg>
+          </button>
+
+          <article id="route-summary" class="route-summary" hidden aria-live="polite">
+            <div class="route-summary-top">
+              <span class="route-badge">Your loop</span>
+              <button id="clear-route" type="button" aria-label="Clear route">×</button>
+            </div>
+            <div class="route-metrics">
+              <p><strong id="route-distance">4.1</strong><span>km</span></p>
+              <p><strong id="route-time">49</strong><span>min</span></p>
+            </div>
+            <p id="route-note">Starts and ends at your location.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="map-panel" aria-label="Route map">
+        <div id="map"></div>
+        <div class="map-actions">
+          <button id="locate" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="3" />
+              <circle cx="12" cy="12" r="8" />
+              <path d="M12 2V5M12 19v3M2 12h3M19 12h3" />
+            </svg>
+            Use my location
+          </button>
+        </div>
+        <div class="map-tip" id="map-tip" hidden>
+          <span>Click the map, or use its center</span>
+          <button id="center-spot" type="button">Use center</button>
+          <button id="cancel-spot" type="button">Cancel</button>
+        </div>
+        <form id="spot-form" class="spot-form" hidden>
+          <button class="spot-form-close" type="button" aria-label="Close">×</button>
+          <label for="spot-name">Name this walk-by spot</label>
+          <div>
+            <input id="spot-name" maxlength="40" placeholder="e.g. The old oak" required />
+            <button type="submit">Save</button>
+          </div>
+        </form>
+        <div class="map-caption">
+          <span class="map-caption-icon" aria-hidden="true">↻</span>
+          <span><b>Round trip</b><small>Starts & ends here</small></span>
+        </div>
+        <div id="toast" class="toast" role="status" hidden></div>
+      </section>
+    </main>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

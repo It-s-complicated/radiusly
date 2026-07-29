@@ -1,0 +1,17 @@
+{
+  "name": "Roam — Neighborhood Walks",
+  "short_name": "Roam",
+  "description": "Plan a neighborhood walk that fits the distance or time you have.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f8f6f0",
+  "theme_color": "#173f35",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
