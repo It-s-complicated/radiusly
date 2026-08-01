@@ -45,6 +45,17 @@ input:focus-visible {
   outline-offset: 2px;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .topbar {
   position: relative;
   z-index: 1001;
@@ -175,6 +186,122 @@ h1 {
   color: var(--muted);
   font-size: 14px;
   line-height: 1.5;
+}
+
+.points-section {
+  padding: 21px 0 20px;
+}
+
+.start-points {
+  padding-top: 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.point-actions {
+  margin-top: 11px;
+  display: flex;
+  gap: 7px;
+}
+
+.secondary-button {
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid #bdc9c3;
+  border-radius: 9px;
+  color: var(--forest);
+  background: #f7faf5;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.secondary-button:hover {
+  border-color: var(--forest);
+  background: #eef5e9;
+}
+
+.secondary-button.compact {
+  min-height: 31px;
+  white-space: nowrap;
+}
+
+.route-shape-field {
+  margin: 0;
+  padding: 21px 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.route-shape-field legend {
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.route-shape-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 7px;
+}
+
+.route-shape-grid label {
+  position: relative;
+  cursor: pointer;
+}
+
+.route-shape-grid label:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.route-shape-grid input {
+  position: absolute;
+  opacity: 0;
+}
+
+.route-shape-grid span {
+  min-height: 91px;
+  padding: 7px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: white;
+}
+
+.route-shape-grid svg {
+  width: 72px;
+  height: 42px;
+  margin-bottom: 3px;
+  overflow: visible;
+  fill: none;
+  stroke: var(--forest-2);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.3;
+}
+
+.route-shape-grid circle {
+  fill: var(--orange);
+  stroke: white;
+  stroke-width: 2;
+}
+
+.route-shape-grid b {
+  font-size: 11px;
+}
+
+.route-shape-grid small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.route-shape-grid input:checked + span {
+  border-color: var(--forest);
+  background: #f1f6ef;
+  box-shadow: inset 0 0 0 1px var(--forest);
 }
 
 .mode-switch {
@@ -339,10 +466,6 @@ h1 {
   box-shadow: inset 0 0 0 1px var(--forest);
 }
 
-.favorites-section {
-  padding: 21px 0 20px;
-}
-
 .section-heading {
   display: flex;
   justify-content: space-between;
@@ -360,41 +483,26 @@ h1 {
   font-size: 10px;
 }
 
-.text-button {
-  padding: 0;
-  border: 0;
-  color: var(--forest-2);
-  background: none;
-  font-size: 11px;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.text-button span {
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.favorites-list {
+.points-list {
   margin-top: 12px;
   display: grid;
   gap: 7px;
 }
 
-.empty-favorites {
+.empty-points {
   margin: 2px 0;
   color: #98a19d;
   font-size: 11px;
   font-style: italic;
 }
 
-.favorite-row {
+.point-row {
   display: flex;
   align-items: center;
   gap: 9px;
 }
 
-.favorite-row label {
+.point-row label {
   min-width: 0;
   padding: 8px 10px;
   border: 1px solid var(--line);
@@ -406,16 +514,16 @@ h1 {
   cursor: pointer;
 }
 
-.favorite-row label:has(input:checked) {
+.point-row label:has(input:checked) {
   border-color: #afc99d;
   background: #f2f7ed;
 }
 
-.favorite-row input {
+.point-row input {
   accent-color: var(--forest);
 }
 
-.favorite-row span {
+.point-row span {
   overflow: hidden;
   font-size: 11px;
   font-weight: 650;
@@ -423,7 +531,11 @@ h1 {
   white-space: nowrap;
 }
 
-.favorite-row button {
+.row-actions {
+  display: flex;
+}
+
+.point-row button {
   width: 28px;
   height: 28px;
   border: 0;
@@ -433,9 +545,68 @@ h1 {
   cursor: pointer;
 }
 
-.favorite-row button:hover {
+.point-row button:hover {
   color: #9a3822;
   background: #faeee8;
+}
+
+.point-row button.rename:hover {
+  color: var(--forest);
+  background: #eef5e9;
+}
+
+.place-search {
+  margin-top: 12px;
+  display: flex;
+  gap: 6px;
+}
+
+.place-search input {
+  min-width: 0;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  flex: 1;
+  font-size: 11px;
+}
+
+.place-search button {
+  padding: 0 12px;
+  border: 1px solid #bdc9c3;
+  border-radius: 9px;
+  color: var(--forest);
+  background: #f7faf5;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.place-search button:hover {
+  border-color: var(--forest);
+  background: #eef5e9;
+}
+
+.place-results {
+  margin-top: 6px;
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.place-results button {
+  padding: 7px 8px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--ink);
+  background: white;
+  font-size: 10px;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
 }
 
 .primary-button {
@@ -456,6 +627,15 @@ h1 {
   transition:
     transform 160ms ease,
     background 160ms ease;
+}
+
+.route-output {
+  position: sticky;
+  z-index: 5;
+  bottom: 0;
+  padding-top: 12px;
+  background: var(--paper);
+  box-shadow: 0 -12px 18px var(--paper);
 }
 
 .primary-button:hover {
@@ -535,6 +715,19 @@ h1 {
   margin: 6px 0 0;
   color: var(--muted);
   font-size: 10px;
+}
+
+.debug-button {
+  margin-top: 11px;
+  padding: 0;
+  border: 0;
+  color: var(--forest-2);
+  background: transparent;
+  font-size: 10px;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
 }
 
 .map-panel {
@@ -674,7 +867,7 @@ h1 {
   cursor: pointer;
 }
 
-.spot-form {
+.point-form {
   position: absolute;
   z-index: 650;
   top: 50%;
@@ -688,7 +881,7 @@ h1 {
   transform: translate(-50%, -50%);
 }
 
-.spot-form-close {
+.point-form-close {
   position: absolute;
   top: 7px;
   right: 9px;
@@ -699,19 +892,19 @@ h1 {
   cursor: pointer;
 }
 
-.spot-form label {
+.point-form label {
   display: block;
   margin-bottom: 9px;
   font-family: Georgia, "Times New Roman", serif;
   font-size: 20px;
 }
 
-.spot-form > div {
+.point-form > div {
   display: flex;
   gap: 7px;
 }
 
-.spot-form input {
+.point-form input {
   min-width: 0;
   height: 42px;
   padding: 0 12px;
@@ -720,7 +913,7 @@ h1 {
   flex: 1;
 }
 
-.spot-form div button {
+.point-form div button {
   padding: 0 15px;
   border: 0;
   border-radius: 9px;
@@ -832,6 +1025,11 @@ h1 {
 
   .planner-inner {
     padding: 29px 22px 36px;
+  }
+
+  .route-output {
+    position: static;
+    box-shadow: none;
   }
 
   h1 {

@@ -1,6 +1,6 @@
 {
-  "name": "Roam — Neighborhood Walks",
-  "short_name": "Roam",
+  "name": "Radiusly — Neighborhood Walks",
+  "short_name": "Radiusly",
   "description": "Plan a neighborhood walk that fits the distance or time you have.",
   "start_url": "./",
   "display": "standalone",

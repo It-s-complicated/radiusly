@@ -1,54 +1,49 @@
-# Radiusly next-iteration plan
+# Radiusly prototype status and roadmap
 
 ## Goal
 
-Validate that Radiusly can consistently create convenient, varied, enjoyable walking loops. Keep the current PWA stack until route quality or real usage proves it insufficient.
+Validate that Radiusly can consistently create convenient, varied, enjoyable walking loops. Keep the vanilla JavaScript PWA until route quality or real usage proves it insufficient.
 
-## Priority 1: Saved starting points
+## Implemented
 
-Let users manage reusable starting points instead of depending on geolocation every time.
+- [x] Save, select, rename, and delete reusable starting points.
+- [x] Add starting points from geolocation or a map pin and restore the last selection.
+- [x] Report actionable geolocation failures.
+- [x] Plan by distance or time and remember the selected target and walking pace.
+- [x] Save, search, select, rename, and delete walk-by spots.
+- [x] Generate multiple candidates with different bearings and distance scales.
+- [x] Score candidates by distance error and repeated route sections.
+- [x] Penalize long continuous out-and-back sections and repetition near railway stations.
+- [x] Reject candidates that exceed the configured backtracking limits.
+- [x] Offer Organic, Tangent, two Orbit variants, and Spaghetti route shapes.
+- [x] Provide “Make another route” and copyable route-debugging information.
 
-- Add a starting-point list stored locally in the browser.
-- Add points from the current location or a pin on the map.
-- Let users name, select, rename, and delete points such as “Home” or “Office”.
-- Restore the last selected point when the app reopens.
-- Keep starting points separate from walk-by spots.
-- Report whether geolocation failed because the page is insecure, permission was denied, or the position was unavailable.
+## Priority 1: Field validation
 
-Done when a user can create two starting points, switch between them, reload the app, and generate a route without using geolocation again.
+- [ ] Test several distances in a dense center, a residential grid, and a disconnected or park-heavy area.
+- [ ] Record requested distance, routed distance, repeated sections, route shape, and debugging information.
+- [ ] Walk representative routes and rate safety, interest, variety, and willingness to use Radiusly again.
+- [ ] Preserve confirmed failures as manual regression cases or automated geometry tests where practical.
 
-## Priority 2: Reduce repeated and uninteresting routing
+Done when the current scoring limits produce consistently acceptable routes across the test areas, or the collected failures identify a specific next routing change.
 
-The current router connects synthetic waypoints by shortest walking paths. It does not understand route variety or pleasantness.
+## Priority 2: Pleasantness scoring, if needed
 
-- Generate a small set of loop candidates with different waypoint bearings.
-- Measure distance error and repeated route segments.
-- Prefer the candidate closest to the requested distance with the least backtracking.
-- Keep “Make another route” for choosing a different acceptable candidate.
-- Save the reported station and repeated-path examples as manual regression cases.
+Do not add more scoring inputs until field results show that low-backtracking routes are still unpleasant.
 
-Done when routes stay reasonably close to the requested distance and avoid obvious out-and-back sections when another connected path exists.
+Possible next signals are parks and green space, road class, crossings, surface, lighting, and land use. Add only the smallest set that explains observed failures.
 
-Pleasantness scoring using OSM road, park, and land-use data comes later; add it only if overlap reduction does not produce good-enough walks.
+## Priority 3: Production hardening, if validated
 
-## Priority 3: Walk-by spots and POIs
+Consider dedicated routing infrastructure, caching, monitoring, accounts, sync, or a native client only after repeated use justifies their cost. Public map, search, routing, and Overpass services are acceptable for prototype validation but are not a production service guarantee.
 
-The prototype already supports manually pinned walk-by spots, but the feature needs to be easier to find and use.
+## Regression cases
 
-- Make the existing add action more prominent.
-- Let users search for a place or pin it directly on the map.
-- Keep a local list with select, rename, and delete controls.
-- Include selected spots while still applying distance and overlap scoring.
-
-Done when a user can add a café or favorite place, include it in a loop, and reuse it after reloading the app.
-
-## Priority 4: Field validation
-
-- Test several distances in at least three structurally different neighborhoods.
-- Record requested versus routed distance and visible repeated sections.
-- Walk representative routes and rate them for safety, interest, and variety.
-- Ask test users whether they would use Radiusly again without prompting.
+- Pankow–Blankenburg ponds: avoid the southeastern dead-end spur and prefer the left-hand arc after reaching the path end.
+- Pankow station area: reject a long southbound station spur that returns over the same path.
+- Orbit with the same return: prefer the shortest practical shared stem before beginning the orbit.
+- Near-zero-backtracking settings: do not accept a route with a long dead end merely because its total distance is close to the target.
 
 ## Decision gate
 
-Keep vanilla JavaScript, Leaflet, and local browser storage during this iteration. Reconsider the routing service when candidate scoring cannot produce good walks; add a backend, accounts, or a native client only when validated usage requires them.
+Keep vanilla JavaScript, Leaflet, local browser storage, and the current public data services during validation. Reconsider the stack only when measured route-quality failures or validated usage require it.

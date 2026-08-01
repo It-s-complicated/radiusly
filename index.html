@@ -17,11 +17,11 @@
       crossorigin=""
     />
     <link rel="stylesheet" href="styles.css" />
-    <title>Roam — Walk your neighborhood</title>
+    <title>Radiusly — Walk your neighborhood</title>
   </head>
   <body>
     <header class="topbar">
-      <a class="brand" href="#" aria-label="Roam home">
+      <a class="brand" href="#" aria-label="Radiusly home">
         <span class="brand-mark" aria-hidden="true">
           <svg viewBox="0 0 40 40">
             <path d="M10 30c1-9 3-14 10-12 7 3 7-8 10-9" />
@@ -29,7 +29,7 @@
             <circle cx="30" cy="9" r="3" />
           </svg>
         </span>
-        <span>roam</span>
+        <span>radiusly</span>
       </a>
 
       <p class="topbar-note"><span></span> Your next walk, made to fit.</p>
@@ -48,6 +48,82 @@
           <p class="eyebrow">Plan a loop</p>
           <h1 id="planner-title">A good walk starts right here.</h1>
           <p class="intro">Tell us how far—or how long—and we’ll find a way back.</p>
+
+          <section class="points-section start-points" aria-labelledby="starts-title">
+            <div class="section-heading">
+              <div>
+                <h2 id="starts-title">Starting point</h2>
+                <p>Save places you regularly walk from.</p>
+              </div>
+            </div>
+            <div class="point-actions">
+              <button id="add-current-start" class="secondary-button" type="button">
+                ◎ Add current
+              </button>
+              <button id="add-map-start" class="secondary-button" type="button">
+                ＋ Pin on map
+              </button>
+            </div>
+            <div class="points-list" id="starts-list">
+              <p class="empty-points">No saved starting points yet.</p>
+            </div>
+          </section>
+
+          <fieldset class="route-shape-field">
+            <legend>Route shape</legend>
+            <div class="route-shape-grid">
+              <label>
+                <input type="radio" name="route-algorithm" value="organic" checked />
+                <span>
+                  <svg viewBox="0 0 80 48" aria-hidden="true">
+                    <path d="M14 34C7 25 14 13 27 12C38 11 42 6 54 11C68 16 72 29 62 37C52 45 43 35 34 38C25 42 10 43 14 34" />
+                    <circle cx="14" cy="34" r="3" />
+                  </svg>
+                  <b>Organic</b><small>Varied loop</small>
+                </span>
+              </label>
+              <label>
+                <input type="radio" name="route-algorithm" value="tangent" />
+                <span>
+                  <svg viewBox="0 0 80 48" aria-hidden="true">
+                    <path d="M40 42a18 18 0 1 1 0-36 18 18 0 1 1 0 36Z" />
+                    <circle cx="40" cy="42" r="3" />
+                  </svg>
+                  <b>Tangent</b><small>Start on rim</small>
+                </span>
+              </label>
+              <label>
+                <input type="radio" name="route-algorithm" value="orbit-same" />
+                <span>
+                  <svg viewBox="0 0 80 48" aria-hidden="true">
+                    <path d="M40 24V40a16 16 0 1 1 0-32 16 16 0 1 1 0 32V24" />
+                    <circle cx="40" cy="24" r="3" />
+                  </svg>
+                  <b>Orbit</b><small>Same return</small>
+                </span>
+              </label>
+              <label>
+                <input type="radio" name="route-algorithm" value="orbit-near" />
+                <span>
+                  <svg viewBox="0 0 80 48" aria-hidden="true">
+                    <path d="M40 24 36 39a16 16 0 1 1 8 0L40 24" />
+                    <circle cx="40" cy="24" r="3" />
+                  </svg>
+                  <b>Orbit</b><small>Nearby return</small>
+                </span>
+              </label>
+              <label>
+                <input type="radio" name="route-algorithm" value="spaghetti" />
+                <span>
+                  <svg viewBox="0 0 80 48" aria-hidden="true">
+                    <path d="M40 24C55 8 74 14 66 30C58 45 38 34 50 23C62 12 45 4 32 9C18 15 19 31 31 34C43 37 39 20 25 17C11 14 5 29 16 37C28 46 51 40 57 27C63 14 48 13 40 24" />
+                    <circle cx="40" cy="24" r="3" />
+                  </svg>
+                  <b>Spaghetti</b><small>Tangled crossings</small>
+                </span>
+              </label>
+            </div>
+          </fieldset>
 
           <div class="mode-switch" role="group" aria-label="Plan by">
             <button class="active" type="button" data-mode="distance">Distance</button>
@@ -92,39 +168,51 @@
             </label>
           </fieldset>
 
-          <section class="favorites-section" aria-labelledby="favorites-title">
+          <section class="points-section favorites-section" aria-labelledby="favorites-title">
             <div class="section-heading">
               <div>
                 <h2 id="favorites-title">Walk-by spots</h2>
                 <p>Include a favorite place in your loop.</p>
               </div>
-              <button id="add-spot" class="text-button" type="button">
-                <span aria-hidden="true">＋</span> Add
+              <button id="add-spot" class="secondary-button compact" type="button">
+                <span aria-hidden="true">＋</span> Pin on map
               </button>
             </div>
-            <div class="favorites-list" id="favorites-list">
-              <p class="empty-favorites">No saved spots yet. Add one from the map.</p>
+            <form class="place-search" id="place-search">
+              <label class="sr-only" for="place-query">Search for a walk-by spot</label>
+              <input id="place-query" placeholder="Search café, park, address…" required />
+              <button type="submit">Search</button>
+            </form>
+            <div id="place-results" class="place-results" aria-live="polite"></div>
+            <div class="points-list" id="favorites-list">
+              <p class="empty-points">No saved spots yet.</p>
             </div>
           </section>
 
-          <button class="primary-button" id="make-route" type="button">
-            <span>Make my route</span>
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M5 12h14m-5-5 5 5-5 5" />
-            </svg>
-          </button>
+          <div class="route-output">
+            <button class="primary-button" id="make-route" type="button">
+              <span>Make my route</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 12h14m-5-5 5 5-5 5" />
+              </svg>
+            </button>
 
-          <article id="route-summary" class="route-summary" hidden aria-live="polite">
-            <div class="route-summary-top">
-              <span class="route-badge">Your loop</span>
-              <button id="clear-route" type="button" aria-label="Clear route">×</button>
-            </div>
-            <div class="route-metrics">
-              <p><strong id="route-distance">4.1</strong><span>km</span></p>
-              <p><strong id="route-time">49</strong><span>min</span></p>
-            </div>
-            <p id="route-note">Starts and ends at your location.</p>
-          </article>
+            <article id="route-summary" class="route-summary" hidden aria-live="polite">
+              <div class="route-summary-top">
+                <span class="route-badge">Your loop</span>
+                <button id="clear-route" type="button" aria-label="Clear route">×</button>
+              </div>
+              <div class="route-metrics">
+                <p><strong id="route-distance">4.1</strong><span>km</span></p>
+                <p><strong id="route-time">49</strong><span>min</span></p>
+                <p id="route-repeat-metric"><strong id="route-repeat">0</strong><span>% repeated</span></p>
+              </div>
+              <p id="route-note">Starts and ends at your location.</p>
+              <button id="copy-debug" class="debug-button" type="button">
+                Copy debugging information
+              </button>
+            </article>
+          </div>
         </div>
       </section>
 
@@ -142,14 +230,14 @@
         </div>
         <div class="map-tip" id="map-tip" hidden>
           <span>Click the map, or use its center</span>
-          <button id="center-spot" type="button">Use center</button>
-          <button id="cancel-spot" type="button">Cancel</button>
+          <button id="center-point" type="button">Use center</button>
+          <button id="cancel-point" type="button">Cancel</button>
         </div>
-        <form id="spot-form" class="spot-form" hidden>
-          <button class="spot-form-close" type="button" aria-label="Close">×</button>
-          <label for="spot-name">Name this walk-by spot</label>
+        <form id="point-form" class="point-form" hidden>
+          <button class="point-form-close" type="button" aria-label="Close">×</button>
+          <label for="point-name" id="point-form-title">Name this place</label>
           <div>
-            <input id="spot-name" maxlength="40" placeholder="e.g. The old oak" required />
+            <input id="point-name" maxlength="40" placeholder="e.g. Home" required />
             <button type="submit">Save</button>
           </div>
         </form>
