@@ -188,6 +188,10 @@ h1 {
   line-height: 1.5;
 }
 
+.planner-options > summary {
+  display: none;
+}
+
 .points-section {
   padding: 21px 0 20px;
 }
@@ -982,6 +986,10 @@ h1 {
 }
 
 @media (max-width: 760px) {
+  body {
+    padding-bottom: calc(66px + env(safe-area-inset-bottom));
+  }
+
   .topbar {
     height: 62px;
     padding: 0 17px;
@@ -1027,9 +1035,58 @@ h1 {
     padding: 29px 22px 36px;
   }
 
+  .planner-options > summary {
+    position: relative;
+    min-height: 58px;
+    padding: 0 2px;
+    border-block: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: var(--forest);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .planner-options > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .planner-options > summary::after {
+    position: absolute;
+    right: 24px;
+    content: "+";
+    font-size: 22px;
+    font-weight: 400;
+  }
+
+  .planner-options[open] > summary::after {
+    content: "−";
+  }
+
+  .planner-options > summary span {
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .planner-options > summary small {
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 10px;
+  }
+
   .route-output {
     position: static;
     box-shadow: none;
+  }
+
+  #make-route {
+    position: fixed;
+    z-index: 1000;
+    right: 16px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    left: 16px;
+    width: auto;
   }
 
   h1 {
@@ -1053,12 +1110,16 @@ h1 {
 
   .map-caption {
     left: 13px;
-    bottom: 13px;
+    bottom: 82px;
+  }
+
+  .leaflet-bottom {
+    bottom: 70px;
   }
 
   .toast {
     right: 13px;
-    bottom: 13px;
+    bottom: 82px;
   }
 }
 

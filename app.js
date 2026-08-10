@@ -8,6 +8,7 @@ const PREFERENCES_KEY = "radiusly:preferences";
 const ROUTE_ALGORITHMS = ["organic", "tangent", "orbit-same", "orbit-near", "spaghetti"];
 
 const $ = (selector) => document.querySelector(selector);
+if (matchMedia("(max-width: 760px)").matches) $(".planner-options").open = false;
 const targetInput = $("#target");
 const targetRange = $("#target-range");
 const makeRouteButton = $("#make-route");
