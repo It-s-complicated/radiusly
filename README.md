@@ -42,11 +42,10 @@ Configure the GitHub OAuth callback as `http://localhost:5173/api/auth/callback/
 
 ```bash
 npm run build
-PORT=4173 npm run preview
+npm run preview
 ```
 
-The node adapter serves the page and the `/api` proxy routes from `build/`.
-Open `http://localhost:4173`.
+The Netlify adapter deploys the page and `/api` proxy routes as Netlify Functions.
 
 ### Tests
 

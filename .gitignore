@@ -5,6 +5,7 @@ playwright-report/
 test-results/
 .vitest-attachments/
 dist/
+.netlify/
 *.tsbuildinfo
 .env
 .env.*
