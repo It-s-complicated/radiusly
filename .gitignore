@@ -1,0 +1,12 @@
+node_modules/
+build/
+.svelte-kit/
+playwright-report/
+test-results/
+.vitest-attachments/
+dist/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+.auth/
