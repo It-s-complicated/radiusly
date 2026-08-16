@@ -5,10 +5,9 @@
 	import PointForm from '$lib/components/PointForm.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import { starts, selectedStartId, favorites } from '$lib/stores/points';
-	import { mode, distanceTarget, timeTarget, pace, algorithm, targetKm } from '$lib/stores/preferences';
+	import { mode, distanceTarget, timeTarget, pace, targetKm } from '$lib/stores/preferences';
 	import { currentRoute, routeDebug, isLoading, showToast } from '$lib/stores/route';
-	import { walkingLoop } from '$lib/route/api';
-	import { loopPoints } from '$lib/route/shapes';
+	import { generateRoute, RouteRequestError } from '$lib/route/api';
 	import type { LatLng, SavedPoint } from '$lib/types';
 
 	const DEFAULT_LOCATION: LatLng = [52.5208, 13.4095];
@@ -16,8 +15,6 @@
 	let mapStart = $state<LatLng>(DEFAULT_LOCATION);
 	let previewPoints = $state<LatLng[]>([]);
 	let routePoints = $state<LatLng[]>([]);
-	let fallbackMode = $state(false);
-	let bearing = $state(25);
 	let pinMode = $state<'start' | 'favorite' | undefined>(undefined);
 	let pendingPoint = $state<LatLng | undefined>(undefined);
 	let pointFormKind = $state<'start' | 'favorite'>('start');
@@ -33,36 +30,9 @@
 		currentRoute.set(null);
 	});
 
-	// Draw preview when stores change and no route displayed
 	$effect(() => {
-		const _ = [$targetKm, $algorithm, $mode, $pace, $distanceTarget, $timeTarget];
-		if ($currentRoute) return;
-		drawPreview();
+		if (!$currentRoute) routePoints = [];
 	});
-
-	// Clear route points when currentRoute is set to null (keep the dashed
-	// fallback loop, which is shown without a currentRoute)
-	$effect(() => {
-		if (!$currentRoute) {
-			if (!fallbackMode) routePoints = [];
-			drawPreview();
-		}
-	});
-
-	function drawPreview() {
-		if ($currentRoute) return;
-		const km = $targetKm;
-		if (!Number.isFinite(km) || km < 0.5) {
-			previewPoints = [];
-			return;
-		}
-		try {
-			const selectedFavs = $favorites.filter((f) => f.selected).map((f) => [f.lat, f.lng] as LatLng);
-			previewPoints = loopPoints(mapStart, km, bearing, selectedFavs, 1, $algorithm);
-		} catch {
-			previewPoints = [];
-		}
-	}
 
 	async function makeRoute() {
 		const km = $targetKm;
@@ -73,58 +43,38 @@
 
 		isLoading.set(true);
 		routeDebug.set(null);
-		const routeBearing = bearing;
-		const selectedFavs = $favorites.filter((f) => f.selected).map((f) => [f.lat, f.lng] as LatLng);
+		const selectedSpots = $favorites
+			.filter((favorite) => favorite.selected)
+			.map((favorite) => ({
+				name: favorite.name,
+				coordinates: [favorite.lat, favorite.lng] as LatLng,
+			}));
 
 		try {
-			const route = await walkingLoop(mapStart, km, routeBearing, selectedFavs, $algorithm);
-			const coords = route.geometry.coordinates.map(([lng, lat]) => [lat, lng] as LatLng);
-			routePoints = coords;
-			fallbackMode = false;
-			currentRoute.set(route);
-			routeDebug.set({
-				schemaVersion: 12,
-				generatedAt: new Date().toISOString(),
-				input: {
-					start: { name: $starts.find((s) => s.id === $selectedStartId)?.name, coordinates: mapStart },
+			const response = await generateRoute({
+				start: mapStart,
+				target: {
 					mode: $mode,
-					enteredTarget: $mode === 'time' ? $timeTarget : $distanceTarget,
-					targetKm: km,
-					paceKmH: $pace,
-					bearing: routeBearing,
-					algorithm: $algorithm,
-					selectedSpots: $favorites.filter((f) => f.selected).map((f) => ({ name: f.name, coordinates: [f.lat, f.lng] })),
+					value: $mode === 'time' ? $timeTarget : $distanceTarget,
 				},
-				candidates: route.debugCandidates,
-				stationData: route.debugStationData,
-				selectedRoute: {
-					candidate: route.candidate,
-					distance: route.distance,
-					distanceError: route.distanceError,
-					distanceErrorDistance: route.distanceErrorDistance,
-					repeatRatio: route.repeatRatio,
-					repeatedDistance: route.repeatedDistance,
-					longestRepeatRatio: route.longestRepeatRatio,
-					longestRepeatDistance: route.longestRepeatDistance,
-					stationRepeatDistance: route.stationRepeatDistance,
-					geometry: route.geometry,
-				},
+				paceKmH: $pace,
+				requiredSpots: selectedSpots,
+				preferences: { backtracking: 'avoid' },
+				seed: crypto.randomUUID().replaceAll('-', ''),
 			});
-			bearing = (bearing + 67) % 360;
+			routePoints = response.route.geometry.coordinates.map(([lng, lat]) => [lat, lng] as LatLng);
+			currentRoute.set(response.route);
+			routeDebug.set(response.debug);
 		} catch (error: unknown) {
-			const err = error as Error & { code?: string };
-			if (err.code === 'ROUTE_QUALITY') {
-				routeDebug.set({ schemaVersion: 12, generatedAt: new Date().toISOString(), input: {}, error: err.message });
-				bearing = (bearing + 67) % 360;
-				showToast('No low-backtracking route found. Try again or choose another route shape.');
-				return;
+			const routeError = error instanceof RouteRequestError ? error : undefined;
+			if (routeError?.debug) routeDebug.set(routeError.debug);
+			if (routeError?.code === 'ROUTE_QUALITY') {
+				showToast('No low-backtracking route found. Make another route or adjust the walk.');
+			} else if (routeError?.code === 'RATE_LIMITED') {
+				showToast('Too many route requests. Wait a minute and try again.');
+			} else {
+				showToast('Street routing is temporarily unavailable. Try again shortly.');
 			}
-			const fallback = loopPoints(mapStart, km, routeBearing, selectedFavs, 1, $algorithm);
-			routePoints = fallback;
-			fallbackMode = true;
-			previewPoints = [];
-			showToast('Street routing is unavailable, so this is an approximate loop.');
-			routeDebug.set({ schemaVersion: 12, generatedAt: new Date().toISOString(), input: {}, error: err.message, fallbackCoordinates: fallback });
 		} finally {
 			isLoading.set(false);
 		}
@@ -256,8 +206,6 @@
 		currentRoute.set(null);
 		routeDebug.set(null);
 		routePoints = [];
-		fallbackMode = false;
-		drawPreview();
 	}
 </script>
 
@@ -278,7 +226,7 @@
 			favorites={$favorites}
 			{previewPoints}
 			{routePoints}
-			dashed={fallbackMode}
+			dashed={false}
 			pinMode={pinMode !== undefined}
 			onMapClick={handleMapClick}
 			onCenterClick={handleCenterClick}

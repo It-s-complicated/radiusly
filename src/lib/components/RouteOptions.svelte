@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { SavedPoint, Mode, Pace, Algorithm } from '$lib/types';
+	import type { SavedPoint } from '$lib/types';
 	import { starts, selectedStartId, favorites } from '$lib/stores/points';
-	import { mode, distanceTarget, timeTarget, pace, algorithm } from '$lib/stores/preferences';
-	import { currentRoute, routeDebug, isLoading, showToast } from '$lib/stores/route';
+	import { mode, distanceTarget, timeTarget, pace } from '$lib/stores/preferences';
+	import { currentRoute, isLoading } from '$lib/stores/route';
 	import RouteSummary from './RouteSummary.svelte';
 
 	let {
@@ -72,13 +72,6 @@
 		else distanceTarget.set(v);
 	}
 
-	const ROUTE_ALGORITHMS: { value: Algorithm; label: string; desc: string }[] = [
-		{ value: 'organic', label: 'Organic', desc: 'Varied loop' },
-		{ value: 'tangent', label: 'Tangent', desc: 'Start on rim' },
-		{ value: 'orbit-same', label: 'Orbit', desc: 'Same return' },
-		{ value: 'orbit-near', label: 'Orbit', desc: 'Nearby return' },
-		{ value: 'spaghetti', label: 'Spaghetti', desc: 'Tangled crossings' },
-	];
 </script>
 
 <section class="planner" aria-labelledby="planner-title">
@@ -92,7 +85,7 @@
 		<details class="planner-options" open>
 			<summary>
 				<span>Route options</span>
-				<small>Starting point, distance, shape, pace & stops</small>
+				<small>Starting point, distance, pace & stops</small>
 			</summary>
 
 			<!-- Starting points -->
@@ -150,56 +143,6 @@
 				</div>
 			</section>
 
-			<!-- Route shape -->
-			<fieldset class="route-shape-field">
-				<legend>Route shape</legend>
-				<div class="route-shape-grid">
-					{#each ROUTE_ALGORITHMS as algo}
-						<label>
-							<input
-								type="radio"
-								name="route-algorithm"
-								value={algo.value}
-								checked={$algorithm === algo.value}
-								onchange={() => {
-									algorithm.set(algo.value);
-									currentRoute.set(null);
-								}}
-							/>
-							<span>
-								{#if algo.value === 'organic'}
-									<svg viewBox="0 0 80 48" aria-hidden="true">
-										<path d="M14 34C7 25 14 13 27 12C38 11 42 6 54 11C68 16 72 29 62 37C52 45 43 35 34 38C25 42 10 43 14 34" />
-										<circle cx="14" cy="34" r="3" />
-									</svg>
-								{:else if algo.value === 'tangent'}
-									<svg viewBox="0 0 80 48" aria-hidden="true">
-										<path d="M40 42a18 18 0 1 1 0-36 18 18 0 1 1 0 36Z" />
-										<circle cx="40" cy="42" r="3" />
-									</svg>
-								{:else if algo.value === 'orbit-same'}
-									<svg viewBox="0 0 80 48" aria-hidden="true">
-										<path d="M40 24V40a16 16 0 1 1 0-32 16 16 0 1 1 0 32V24" />
-										<circle cx="40" cy="24" r="3" />
-									</svg>
-								{:else if algo.value === 'orbit-near'}
-									<svg viewBox="0 0 80 48" aria-hidden="true">
-										<path d="M40 24 36 39a16 16 0 1 1 8 0L40 24" />
-										<circle cx="40" cy="24" r="3" />
-									</svg>
-								{:else if algo.value === 'spaghetti'}
-									<svg viewBox="0 0 80 48" aria-hidden="true">
-										<path d="M40 24C55 8 74 14 66 30C58 45 38 34 50 23C62 12 45 4 32 9C18 15 19 31 31 34C43 37 39 20 25 17C11 14 5 29 16 37C28 46 51 40 57 27C63 14 48 13 40 24" />
-										<circle cx="40" cy="24" r="3" />
-									</svg>
-								{/if}
-								<b>{algo.label}</b>
-								<small>{algo.desc}</small>
-							</span>
-						</label>
-					{/each}
-				</div>
-			</fieldset>
 
 			<!-- Mode switch -->
 			<div class="mode-switch" role="group" aria-label="Plan by">

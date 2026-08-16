@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import type { RouteResult, RouteDebug } from '$lib/types';
+import type { RouteResult, RouteDebug } from '$lib/route/contracts';
 
 export const currentRoute = writable<RouteResult | null>(null);
 export const routeDebug = writable<RouteDebug | null>(null);
