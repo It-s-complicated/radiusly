@@ -1,0 +1,39 @@
+services:
+  valhalla:
+    image: ${VALHALLA_IMAGE:-ghcr.io/gis-ops/docker-valhalla/valhalla@sha256:060da5b92e6024a67f65135c236d918b021d63e73d1808a0d55b7e7cbd17240c}
+    restart: unless-stopped
+    environment:
+      use_tiles_ignore_pbf: "True"
+      build_admins: "True"
+      build_time_zones: "True"
+      build_tar: "True"
+      server_threads: ${VALHALLA_SERVER_THREADS:-4}
+    volumes:
+      - ./data/current:/custom_files
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1:8002/status"]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+
+  gateway:
+    image: caddy:2.10.0-alpine
+    restart: unless-stopped
+    depends_on:
+      valhalla:
+        condition: service_healthy
+    environment:
+      VALHALLA_API_TOKEN: ${VALHALLA_API_TOKEN:-configuration-required}
+      VALHALLA_HOST: ${VALHALLA_HOST:-localhost}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:
