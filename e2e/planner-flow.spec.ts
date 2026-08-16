@@ -34,16 +34,10 @@ test.describe('Planner critical flow', () => {
 		await expect(page.locator('#target-unit')).toHaveText('km');
 	});
 
-	test('5 route shape radio buttons are present and selectable', async ({
-		page,
-	}) => {
+	test('legacy route shape controls are absent', async ({ page }) => {
 		await page.goto('/');
-		const shapeRadios = page.locator('input[name="route-algorithm"]');
-		await expect(shapeRadios).toHaveCount(5);
-
-		// Select tangent
-		await shapeRadios.nth(1).check();
-		await expect(shapeRadios.nth(1)).toBeChecked();
+		await expect(page.locator('input[name="route-algorithm"]')).toHaveCount(0);
+		await expect(page.locator('input[name="pace"]')).toHaveCount(3);
 	});
 
 	test('locate button is visible', async ({ page }) => {

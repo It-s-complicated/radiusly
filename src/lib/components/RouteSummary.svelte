@@ -1,15 +1,11 @@
 <script lang="ts">
 	import { currentRoute, routeDebug, showToast } from '$lib/stores/route';
-	import { pace } from '$lib/stores/preferences';
 	import { starts, selectedStartId, favorites } from '$lib/stores/points';
 
 	function formatDistance(meters: number): string {
 		return (meters / 1000).toFixed(1);
 	}
 
-	function formatTime(distanceKm: number): string {
-		return Math.round((distanceKm / $pace) * 60).toString();
-	}
 
 	function routeNote(): string {
 		if (!$currentRoute) return '';
@@ -43,11 +39,10 @@
 				<strong>{formatDistance($currentRoute.distance)}</strong><span>km</span>
 			</p>
 			<p>
-				<strong>{formatTime($currentRoute.distance / 1000)}</strong><span>min</span>
+				<strong>{Math.round($currentRoute.duration / 60)}</strong><span>min</span>
 			</p>
 			<p>
-				<strong>{Math.round($currentRoute.repeatRatio * 100)}</strong
-				><span>% repeated</span>
+				<strong>{Math.round($currentRoute.scores.repeatRatio * 100)}</strong><span>% repeated</span>
 			</p>
 		</div>
 		<p>{routeNote()}</p>

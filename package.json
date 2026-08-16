@@ -33,6 +33,7 @@
   "dependencies": {
     "@opentelemetry/api": "^1.9.1",
     "better-auth": "^1.6.29",
-    "leaflet": "^1.9.4"
+    "leaflet": "^1.9.4",
+    "redis": "^6.2.1"
   }
 }

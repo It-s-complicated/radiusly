@@ -25,10 +25,25 @@ test.describe('without a session', () => {
 		);
 	});
 
-	test('rejects API requests', async ({ request }) => {
-		const response = await request.get('/api/routing?coordinates=13.4,52.5;13.5,52.6');
+	test('rejects route generation', async ({ request }) => {
+		const response = await request.post('/api/routing', {
+			data: {
+				start: [52.52, 13.4],
+				target: { mode: 'distance', value: 4 },
+				paceKmH: 5,
+				requiredSpots: [],
+				preferences: { backtracking: 'avoid' },
+				seed: 'unauthenticated',
+			},
+		});
 
 		expect(response.status()).toBe(401);
+	});
+
+	test('allows unauthenticated health checks', async ({ request }) => {
+		const response = await request.get('/api/health');
+
+		expect(response.status()).not.toBe(401);
 	});
 });
 
