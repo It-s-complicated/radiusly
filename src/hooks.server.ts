@@ -7,6 +7,10 @@ export const handle: Handle = async ({ event, resolve }) => {
 		return auth.handler(event.request);
 	}
 
+	if (event.url.pathname === '/api/health') {
+		return resolve(event);
+	}
+
 	const current = await auth.api.getSession({ headers: event.request.headers });
 	event.locals.session = current?.session ?? null;
 	event.locals.user = current?.user ?? null;
