@@ -129,4 +129,12 @@ describe('network-aware route generation', () => {
 			first.debug.candidates.map(({ candidate }) => candidate.anchors),
 		);
 	});
+
+	it('classifies an isochrone failure as an upstream error', async () => {
+		vi.stubGlobal('fetch', vi.fn(async () => new Response('unavailable', { status: 503 })));
+
+		await expect(generateRoute(request, client(), 'graph')).rejects.toMatchObject({
+			code: 'ROUTING_UPSTREAM',
+		});
+	});
 });

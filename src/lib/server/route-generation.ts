@@ -28,8 +28,11 @@ interface EvaluatedCandidate {
 }
 
 export class RouteGenerationError extends Error {
-	readonly code = 'ROUTE_QUALITY';
-	constructor(message: string, readonly debug: RouteDebug) {
+	constructor(
+		message: string,
+		readonly debug: RouteDebug,
+		readonly code: 'ROUTE_QUALITY' | 'ROUTING_UPSTREAM' | 'TIMEOUT' = 'ROUTE_QUALITY',
+	) {
 		super(message);
 	}
 }
@@ -100,14 +103,24 @@ export async function generateRoute(
 		const winner = accepted[0];
 		if (!winner) {
 			debug.error = 'No candidate met the route-quality limits';
-			throw new RouteGenerationError(debug.error, finishDebug(debug, valhalla, startedAt));
+			const allRoutesFailed = evaluated.length === 0
+				&& debug.candidates.length > 0
+				&& debug.candidates.every((candidate) => candidate.rejectionReasons.includes('ROUTING_ERROR'));
+			throw new RouteGenerationError(
+				debug.error,
+				finishDebug(debug, valhalla, startedAt),
+				allRoutesFailed ? 'ROUTING_UPSTREAM' : 'ROUTE_QUALITY',
+			);
 		}
 		debug.selectedCandidateId = winner.result.candidate.id;
 		return { route: winner.result, debug: finishDebug(debug, valhalla, startedAt) };
 	} catch (error) {
 		if (error instanceof RouteGenerationError) throw error;
 		debug.error = error instanceof Error ? error.message : 'Route generation failed';
-		throw new RouteGenerationError(debug.error, finishDebug(debug, valhalla, startedAt));
+		const code = error instanceof DOMException && error.name === 'TimeoutError'
+			? 'TIMEOUT'
+			: 'ROUTING_UPSTREAM';
+		throw new RouteGenerationError(debug.error, finishDebug(debug, valhalla, startedAt), code);
 	}
 }
 
