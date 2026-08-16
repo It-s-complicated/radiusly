@@ -57,6 +57,44 @@ npm test
 npm run test:e2e
 ```
 
+### Route-generator validation
+
+The application continues to use its existing route provider. The private Valhalla variables are optional and are used only by the comparison harness:
+
+```bash
+export VALHALLA_URL=https://valhalla.example.com
+export VALHALLA_API_TOKEN=replace-me
+export VALHALLA_GRAPH_VERSION=2026-08-16-berlin
+npm run validate:routes -- validation/cases.json validation/results-local.json
+```
+
+The harness runs the seeded network generator and the legacy shape baseline through the same Valhalla graph-edge scorer. It records targets, routed distances, repeated edges, longest repeated runs, versions, seeds, candidate rejection reasons, and accepted legacy-candidate counts. `validation/benchmark-2026-08-16.json` is one-off validation evidence from a public Valhalla instance; application and production traffic must never depend on that service.
+
+### Private Valhalla service
+
+Valhalla runs separately from Netlify on a long-lived container host:
+
+```bash
+cd ops/valhalla
+cp .env.example .env
+# Configure the DNS name, bearer token, supported-region PBF URL, and capacity.
+./update-graph.sh 2026-08-16-berlin
+docker compose up -d
+```
+
+The compose stack exposes only the Caddy HTTPS gateway. Caddy requires the configured bearer token; Valhalla has no direct public host port. Preprocessed graph releases remain under `ops/valhalla/data`, outside the container lifecycle.
+
+`update-graph.sh` builds into `data/releases/<version>`, verifies the tile archive, atomically switches `data/current`, restarts Valhalla, and checks token-authenticated `/status`. A failed health check restores the previous release. Successful releases remain available for explicit rollback.
+
+For each graph update:
+
+1. Choose an immutable version containing the OSM extract date and region.
+2. Configure the supported-region PBF URL in `ops/valhalla/.env`.
+3. Run `./update-graph.sh <version>`.
+4. Confirm `docker compose ps` reports Valhalla healthy.
+5. Run the checked-in validation matrix against the activated graph.
+6. Preserve the prior release until representative regression requests pass.
+
 ## Stack
 
 - **SvelteKit** with strict TypeScript, node adapter (server routes at runtime)
