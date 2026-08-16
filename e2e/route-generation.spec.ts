@@ -1,8 +1,5 @@
 import { test, expect } from '@playwright/test';
-
-// Critical user flows with mocked API proxies — deterministic, no external
-// services. The production server routes (/api/*) are what the app calls;
-// these tests stub the upstream side of those proxies.
+import type { Page } from '@playwright/test';
 
 const LOOP_COORDS: [number, number][] = [
 	[13.4095, 52.5208],
@@ -12,84 +9,114 @@ const LOOP_COORDS: [number, number][] = [
 	[13.4095, 52.5208],
 ];
 
-async function mockApis(page: import('@playwright/test').Page) {
-	await page.route('**/api/routing?*', (route) => {
-		route.fulfill({
+async function mockRouteGeneration(page: Page) {
+	await page.route('**/api/routing', async (interception) => {
+		const input = interception.request().postDataJSON();
+		await interception.fulfill({
 			contentType: 'application/json',
 			body: JSON.stringify({
-				code: 'Ok',
-				routes: [
-					{
-						distance: 4000,
-						duration: 3000,
-						weight: 1,
-						geometry: { coordinates: LOOP_COORDS },
+				route: {
+					distance: 4000,
+					duration: 2880,
+					geometry: { type: 'LineString', coordinates: LOOP_COORDS },
+					candidate: {
+						id: 'candidate-1',
+						anchorCount: 2,
+						contourDistanceKm: 1.2,
+						traversal: 'clockwise',
+						adjustment: 0,
+						anchors: [],
 					},
-				],
+					scores: {
+						distanceErrorRatio: 0,
+						distanceErrorMeters: 0,
+						repeatedDistanceMeters: 0,
+						repeatRatio: 0,
+						longestRepeatedRunMeters: 0,
+						immediateReversalMeters: 0,
+						unsuitableAccessMeters: 0,
+						requiredSpotsMissed: 0,
+						softExposures: {
+							majorRoadMeters: 0,
+							stepsMeters: 0,
+							tunnelMeters: 0,
+							roughSurfaceMeters: 0,
+						},
+						total: 0,
+					},
+				},
+				debug: {
+					schemaVersion: 13,
+					generatedAt: '2026-08-16T00:00:00.000Z',
+					seed: input.seed,
+					generatorVersion: 'network-contours-1',
+					graphDataVersion: 'test-graph',
+					input: { ...input, targetKm: 4 },
+					candidates: [],
+					selectedCandidateId: 'candidate-1',
+					requestBudget: { maximumValhallaCalls: 12, usedValhallaCalls: 9, elapsedMs: 25 },
+				},
 			}),
-		});
-	});
-	await page.route('**/api/stations?*', (route) => {
-		route.fulfill({
-			contentType: 'application/json',
-			body: JSON.stringify({ available: true, stations: [] }),
 		});
 	});
 }
 
-test.describe('Route generation through the server proxy', () => {
-	test('generates a route and shows the summary', async ({ page }) => {
-		await mockApis(page);
+test.describe('Route generation through one server request', () => {
+	test('sends one durable request per route and changes the seed', async ({ page }) => {
+		const routeRequests: Record<string, unknown>[] = [];
+		await mockRouteGeneration(page);
+		await page.route('**/api/routing', async (interception) => {
+			routeRequests.push(interception.request().postDataJSON());
+			await interception.fallback();
+		});
 		await page.goto('/');
 		await page.getByRole('button', { name: /Make my route/ }).click();
 
-		await expect(page.getByText('Your loop')).toBeVisible();
+		await expect(page.getByText('Your loop', { exact: true })).toBeVisible();
 		await expect(page.getByText('4.0', { exact: true })).toBeVisible();
-		await expect(page.getByRole('button', { name: /Make another route/ })).toBeVisible();
+		const anotherRoute = page.getByRole('button', { name: /Make another route/ });
+		await expect(anotherRoute).toBeVisible();
 		await expect(page.getByText(/Starts and ends at/)).toBeVisible();
+		expect(routeRequests).toHaveLength(1);
+		expect(routeRequests[0]).toMatchObject({
+			start: [52.5208, 13.4095],
+			target: { mode: 'distance', value: 4 },
+			paceKmH: 5,
+			requiredSpots: [],
+			preferences: { backtracking: 'avoid' },
+		});
+		expect(routeRequests[0]?.seed).toMatch(/^[A-Za-z0-9_-]{1,64}$/);
+		expect(await page.locator('.leaflet-overlay-pane path').count()).toBeGreaterThan(0);
 
-		const hasRouteLine = await page.evaluate(() =>
-			document.querySelectorAll('.leaflet-overlay-pane path').length > 0,
-		);
-		expect(hasRouteLine).toBe(true);
+		await anotherRoute.click();
+		await expect.poll(() => routeRequests.length).toBe(2);
+		expect(routeRequests[1]?.seed).toMatch(/^[A-Za-z0-9_-]{1,64}$/);
+		expect(routeRequests[1]?.seed).not.toBe(routeRequests[0]?.seed);
 	});
 
-	test('shows a dashed approximate loop when street routing fails', async ({
-		page,
-	}) => {
-		await page.route('**/api/routing?*', (route) =>
-			route.fulfill({ status: 502, body: 'upstream down' }),
-		);
-		await page.route('**/api/stations?*', (route) =>
-			route.fulfill({
-				contentType: 'application/json',
-				body: JSON.stringify({ available: false, stations: [] }),
-			}),
-		);
+	test('reports an upstream failure without drawing a fake route', async ({ page }) => {
+		await page.route('**/api/routing', (interception) => interception.fulfill({
+			status: 502,
+			contentType: 'application/json',
+			body: JSON.stringify({ code: 'ROUTING_UPSTREAM', message: 'upstream down' }),
+		}));
 		await page.goto('/');
 		await page.getByRole('button', { name: /Make my route/ }).click();
 
-		await expect(page.getByText(/Street routing is unavailable/)).toBeVisible();
-		const dashedLoop = await page.evaluate(() => {
-			const paths = [...document.querySelectorAll('.leaflet-overlay-pane path')] as SVGPathElement[];
-			return paths.some((p) => p.getAttribute('stroke-dasharray') === '8 9');
-		});
-		expect(dashedLoop).toBe(true);
+		await expect(page.getByText(/Street routing is temporarily unavailable/)).toBeVisible();
+		await expect(page.getByText('Your loop', { exact: true })).not.toBeVisible();
 	});
 });
 
 test.describe('Starting points', () => {
-	test('use my location keeps the start ephemeral (no saved point)', async ({
-		page,
-	}) => {
-		await mockApis(page);
+	test('use my location keeps the start ephemeral', async ({ page }) => {
+		await mockRouteGeneration(page);
 		await page.goto('/');
 		await page.context().grantPermissions(['geolocation']);
 		await page.context().setGeolocation({ latitude: 52.53, longitude: 13.41 });
 
 		await page.getByRole('button', { name: /Use my location/ }).click();
 		await expect(page.getByText(/Starting point updated to your location/)).toBeVisible();
-		// The location must not be persisted as a named starting point.
 		await expect(page.getByText('No saved starting points yet.')).toBeVisible();
 	});
 
@@ -105,18 +132,16 @@ test.describe('Starting points', () => {
 
 test.describe('Place search', () => {
 	test('search results save a walk-by spot', async ({ page }) => {
-		await page.route('**/api/search?*', (route) => {
-			route.fulfill({
+		await page.route('**/api/search?*', (interception) => {
+			interception.fulfill({
 				contentType: 'application/json',
-				body: JSON.stringify([
-					{
-						place_id: 1,
-						display_name: 'Test Café, Berlin, Germany',
-						name: 'Test Café',
-						lat: '52.52',
-						lon: '13.40',
-					},
-				]),
+				body: JSON.stringify([{
+					place_id: 1,
+					display_name: 'Test Café, Berlin, Germany',
+					name: 'Test Café',
+					lat: '52.52',
+					lon: '13.40',
+				}]),
 			});
 		});
 		await page.goto('/');
