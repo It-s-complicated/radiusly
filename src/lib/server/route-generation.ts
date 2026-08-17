@@ -8,7 +8,7 @@ import type {
 	RouteGenerationResponse,
 	RouteResult,
 } from '$lib/route/contracts';
-import type { IsodistanceContour, ValhallaClient } from './valhalla';
+import type { IsodistanceContour, RouteProvider } from './valhalla';
 
 export const GENERATOR_VERSION = 'network-contours-1';
 
@@ -36,7 +36,7 @@ export class RouteGenerationError extends Error {
 
 export async function generateRoute(
 	request: RouteGenerationRequest,
-	valhalla: ValhallaClient,
+	valhalla: RouteProvider,
 	graphDataVersion: string,
 ): Promise<RouteGenerationResponse> {
 	const startedAt = performance.now();
@@ -116,7 +116,7 @@ async function evaluateBatch(
 	contours: IsodistanceContour[],
 	request: RouteGenerationRequest,
 	targetKm: number,
-	valhalla: ValhallaClient,
+	valhalla: RouteProvider,
 	debug: RouteDebug,
 ): Promise<EvaluatedCandidate[]> {
 	const settled = await Promise.allSettled(
@@ -271,7 +271,7 @@ function seededRandom(seed: string): () => number {
 	};
 }
 
-function finishDebug(debug: RouteDebug, valhalla: ValhallaClient, startedAt: number): RouteDebug {
+function finishDebug(debug: RouteDebug, valhalla: RouteProvider, startedAt: number): RouteDebug {
 	debug.requestBudget.usedValhallaCalls = valhalla.usedCalls;
 	debug.requestBudget.elapsedMs = Math.round(performance.now() - startedAt);
 	return debug;

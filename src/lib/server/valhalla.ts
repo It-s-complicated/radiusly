@@ -207,6 +207,18 @@ export class ValhallaClient {
 	}
 }
 
+/**
+ * The subset of ValhallaClient that generateRoute() consumes. Road-network and
+ * geometric providers both satisfy it, so a provider can be swapped per deploy.
+ */
+export interface RouteProvider {
+	readonly maximumCalls: number;
+	readonly usedCalls: number;
+	isodistance(start: LatLng, distancesKm: number[]): Promise<IsodistanceContour[]>;
+	route(points: LatLng[]): Promise<ValhallaRoute>;
+	traceEdges(coordinates: LngLat[]): Promise<RoutedEdge[]>;
+}
+
 export async function valhallaStatus(
 	baseUrl: string,
 	apiToken: string,
