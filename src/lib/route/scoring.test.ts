@@ -3,7 +3,6 @@ import {
 	distance,
 	pathRepetition,
 	repeatedPathRatio,
-	stationRepeatedDistance,
 	scoreRoute,
 	routeIsAcceptable,
 	needsMoreCandidates,
@@ -46,30 +45,6 @@ describe('repeatedPathRatio', () => {
 	});
 });
 
-describe('stationRepeatedDistance', () => {
-	it('detects repeated segment near station', () => {
-		// Repeated segment near a station (within 250m radius)
-		// A→B: about 111m at lat 52°, station at midpoint
-		const outAndBack: [number, number][] = [
-			[13.4, 52.52],
-			[13.401, 52.52],
-			[13.4, 52.52],
-		];
-		const stations = [{ coordinates: [13.4005, 52.52] as [number, number] }];
-		const repeated = stationRepeatedDistance(outAndBack, stations);
-		expect(repeated).toBeGreaterThan(0);
-	});
-
-	it('returns 0 when segment is not repeated', () => {
-		const segment: [number, number][] = [
-			[13.4, 52.52],
-			[13.405, 52.52],
-		];
-		const stations = [{ coordinates: [13.405, 52.52] as [number, number] }];
-		expect(stationRepeatedDistance(segment, stations)).toBe(0);
-	});
-});
-
 describe('routeIsAcceptable', () => {
 	it('rejects route with high repeat ratio', () => {
 		const route = {
@@ -77,7 +52,6 @@ describe('routeIsAcceptable', () => {
 			distanceError: 0.026,
 			repeatRatio: 0.186,
 			longestRepeatDistance: 1919,
-			stationRepeatDistance: 0,
 		};
 		expect(routeIsAcceptable(route)).toBe(false);
 	});
@@ -88,7 +62,6 @@ describe('routeIsAcceptable', () => {
 			distanceError: 0.1,
 			repeatRatio: 0.02,
 			longestRepeatDistance: 100,
-			stationRepeatDistance: 0,
 		};
 		expect(routeIsAcceptable(route)).toBe(true);
 	});
@@ -99,7 +72,6 @@ describe('routeIsAcceptable', () => {
 			distanceError: 0.1,
 			repeatRatio: 0.03,
 			longestRepeatDistance: 250,
-			stationRepeatDistance: 0,
 		};
 		expect(routeIsAcceptable(route)).toBe(true);
 	});
@@ -112,7 +84,6 @@ describe('needsMoreCandidates', () => {
 			distanceError: 0.087,
 			repeatRatio: 0.154,
 			longestRepeatDistance: 951,
-			stationRepeatDistance: 0,
 		};
 		expect(needsMoreCandidates(route, 'orbit-same')).toBe(true);
 	});
@@ -126,7 +97,6 @@ describe('compareRoutes', () => {
 			repeatRatio: 0.04,
 			repeatedDistance: 500,
 			longestRepeatDistance: 100,
-			stationRepeatDistance: 0,
 			score: 1,
 		};
 		const worse = {
@@ -134,8 +104,7 @@ describe('compareRoutes', () => {
 			distanceErrorDistance: 100,
 			repeatRatio: 0.04,
 			repeatedDistance: 500,
-			longestRepeatDistance: 100,
-			stationRepeatDistance: 80,
+			longestRepeatDistance: 300,
 			score: 1,
 		};
 		expect(compareRoutes(better, worse)).toBeLessThan(0);
@@ -148,7 +117,6 @@ describe('compareRoutes', () => {
 			repeatRatio: 0.04,
 			repeatedDistance: 500,
 			longestRepeatDistance: 100,
-			stationRepeatDistance: 0,
 			score: 0.5,
 		};
 		const unacceptable = {

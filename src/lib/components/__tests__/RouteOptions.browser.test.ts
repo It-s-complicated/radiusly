@@ -19,7 +19,6 @@ function sampleRoute(): RouteResult {
 		repeatedDistance: 0,
 		longestRepeatRatio: 0,
 		longestRepeatDistance: 0,
-		stationRepeatDistance: 0,
 		score: 0,
 	};
 }

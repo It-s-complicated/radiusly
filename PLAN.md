@@ -35,7 +35,7 @@ Possible next signals are parks and green space, road class, crossings, surface,
 
 ## Priority 3: Production hardening, if validated
 
-Consider dedicated routing infrastructure, caching, monitoring, accounts, sync, or a native client only after repeated use justifies their cost. Public map, search, routing, and Overpass services are acceptable for prototype validation but are not a production service guarantee.
+Consider dedicated routing infrastructure, caching, monitoring, accounts, sync, or a native client only after repeated use justifies their cost. Public map, search, and routing services are acceptable for prototype validation but are not a production service guarantee.
 
 ## Regression cases
 

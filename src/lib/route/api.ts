@@ -2,7 +2,7 @@ import type { Algorithm, LatLng, RouteResult } from '$lib/types';
 
 /**
  * Generate a walking loop via a single backend request. The server runs all
- * candidate rounds, station penalties, fallbacks, and calibration.
+ * candidate rounds, fallbacks, and calibration.
  */
 export async function walkingLoop(
 	start: LatLng,

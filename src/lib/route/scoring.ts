@@ -1,9 +1,7 @@
 import type { InternalAlgorithm, LngLat, RouteCandidate, RouteResult } from '$lib/types';
 
-const STATION_RADIUS_METERS = 250;
 const MAX_REPEAT_RATIO = 0.05;
 const MAX_REPEAT_RUN_METERS = 210;
-const MAX_STATION_REPEAT_METERS = 100;
 const MAX_ORBIT_STEM_METERS = 500;
 
 /**
@@ -71,36 +69,6 @@ export function pathRepetition(coordinates: LngLat[]): PathRepetition & { repeat
 }
 
 /**
- * Measure repeated distance near railway stations.
- */
-export function stationRepeatedDistance(
-	coordinates: LngLat[],
-	stations: { coordinates: LngLat }[],
-): number {
-	const seen = new Set<string>();
-	let repeated = 0;
-
-	for (let index = 1; index < coordinates.length; index++) {
-		const from = coordinates[index - 1]!;
-		const to = coordinates[index]!;
-		const key = segmentKey(from, to);
-		const midpoint: LngLat = [(from[0] + to[0]) / 2, (from[1] + to[1]) / 2];
-		if (
-			seen.has(key) &&
-			stations.some(
-				({ coordinates: station }) =>
-					distance(midpoint, station) <= STATION_RADIUS_METERS,
-			)
-		) {
-			repeated += distance(from, to);
-		}
-		seen.add(key);
-	}
-
-	return repeated;
-}
-
-/**
  * Legacy wrapper — repeat ratio only.
  */
 export function repeatedPathRatio(coordinates: LngLat[]): number {
@@ -140,10 +108,7 @@ export function scoreRoute(
  * Check if backtracking in a route is within acceptable limits.
  */
 export function backtrackingIsAcceptable(
-	route: Pick<
-		RouteResult,
-		'repeatRatio' | 'longestRepeatDistance' | 'stationRepeatDistance' | 'candidate'
-	>,
+	route: Pick<RouteResult, 'repeatRatio' | 'longestRepeatDistance' | 'candidate'>,
 ): boolean {
 	const maxRepeatRun =
 		route.candidate?.algorithm === 'spaghetti-cross' ||
@@ -151,10 +116,9 @@ export function backtrackingIsAcceptable(
 			? 260
 			: MAX_REPEAT_RUN_METERS;
 	return (
-		route.stationRepeatDistance <= MAX_STATION_REPEAT_METERS &&
-		(route.candidate?.algorithm === 'orbit-same' ||
-			(route.repeatRatio <= MAX_REPEAT_RATIO &&
-				route.longestRepeatDistance <= maxRepeatRun))
+		route.candidate?.algorithm === 'orbit-same' ||
+		(route.repeatRatio <= MAX_REPEAT_RATIO &&
+			route.longestRepeatDistance <= maxRepeatRun)
 	);
 }
 
@@ -164,20 +128,10 @@ export function backtrackingIsAcceptable(
 export function routeIsAcceptable(
 	route: Pick<
 		RouteResult,
-		| 'distanceError'
-		| 'repeatRatio'
-		| 'longestRepeatDistance'
-		| 'stationRepeatDistance'
-		| 'candidate'
+		'distanceError' | 'repeatRatio' | 'longestRepeatDistance' | 'candidate'
 	>,
 ): boolean {
-	return (
-		route.distanceError <= 0.25 &&
-		backtrackingIsAcceptable({
-			...route,
-			stationRepeatDistance: 0,
-		})
-	);
+	return route.distanceError <= 0.25 && backtrackingIsAcceptable(route);
 }
 
 /**
@@ -186,11 +140,7 @@ export function routeIsAcceptable(
 export function needsMoreCandidates(
 	route: Pick<
 		RouteResult,
-		| 'distanceError'
-		| 'repeatRatio'
-		| 'longestRepeatDistance'
-		| 'stationRepeatDistance'
-		| 'candidate'
+		'distanceError' | 'repeatRatio' | 'longestRepeatDistance' | 'candidate'
 	>,
 	algorithm: InternalAlgorithm,
 ): boolean {
@@ -208,7 +158,6 @@ interface CompareRoute {
 	repeatRatio: number;
 	repeatedDistance: number;
 	longestRepeatDistance: number;
-	stationRepeatDistance?: number;
 	score: number;
 }
 
@@ -220,21 +169,10 @@ export function compareRoutes(a: CompareRoute, b: CompareRoute): number {
 	const bAcceptable = routeIsAcceptable(b as Parameters<typeof routeIsAcceptable>[0]);
 	if (aAcceptable !== bAcceptable) return aAcceptable ? -1 : 1;
 	if (aAcceptable) {
-		const penalty = ({
-			distanceErrorDistance,
-			repeatedDistance,
-			longestRepeatDistance,
-			stationRepeatDistance = 0,
-		}: {
-			distanceErrorDistance: number;
-			repeatedDistance: number;
-			longestRepeatDistance: number;
-			stationRepeatDistance?: number;
-		}) =>
-			distanceErrorDistance +
-			repeatedDistance +
-			longestRepeatDistance * 2 +
-			stationRepeatDistance * 4;
+		const penalty = (route: CompareRoute) =>
+			route.distanceErrorDistance +
+			route.repeatedDistance +
+			route.longestRepeatDistance * 2;
 		return penalty(a) - penalty(b);
 	}
 	return a.score - b.score;

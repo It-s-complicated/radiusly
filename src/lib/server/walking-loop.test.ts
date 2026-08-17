@@ -19,10 +19,6 @@ const mockOsrmResponse = {
 	],
 };
 
-const mockOverpassResponse = {
-	elements: [],
-};
-
 describe('walkingLoop', () => {
 	beforeEach(() => {
 		vi.restoreAllMocks();
@@ -30,14 +26,6 @@ describe('walkingLoop', () => {
 			if (url.includes('routing.openstreetmap.de')) {
 				return Promise.resolve(
 					new Response(JSON.stringify(mockOsrmResponse), {
-						status: 200,
-						headers: { 'content-type': 'application/json' },
-					}),
-				);
-			}
-			if (url.includes('overpass-api.de')) {
-				return Promise.resolve(
-					new Response(JSON.stringify(mockOverpassResponse), {
 						status: 200,
 						headers: { 'content-type': 'application/json' },
 					}),
@@ -61,12 +49,7 @@ describe('walkingLoop', () => {
 	});
 
 	it('throws ROUTE_QUALITY when no candidate is acceptable', async () => {
-		globalThis.fetch = vi.fn((url: string) => {
-			if (url.includes('overpass-api.de')) {
-				return Promise.resolve(
-					new Response(JSON.stringify(mockOverpassResponse), { status: 200 }),
-				);
-			}
+		globalThis.fetch = vi.fn(() => {
 			// 8 km route for a 4 km target — 100% distance error, never acceptable
 			return Promise.resolve(
 				new Response(

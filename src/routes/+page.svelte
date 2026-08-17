@@ -96,7 +96,6 @@
 					selectedSpots: $favorites.filter((f) => f.selected).map((f) => ({ name: f.name, coordinates: [f.lat, f.lng] })),
 				},
 				candidates: route.debugCandidates,
-				stationData: route.debugStationData,
 				selectedRoute: {
 					candidate: route.candidate,
 					distance: route.distance,
@@ -106,7 +105,6 @@
 					repeatedDistance: route.repeatedDistance,
 					longestRepeatRatio: route.longestRepeatRatio,
 					longestRepeatDistance: route.longestRepeatDistance,
-					stationRepeatDistance: route.stationRepeatDistance,
 					geometry: route.geometry,
 				},
 			});

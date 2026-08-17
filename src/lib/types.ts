@@ -43,10 +43,8 @@ export interface RouteResult {
 	repeatedDistance: number;
 	longestRepeatRatio: number;
 	longestRepeatDistance: number;
-	stationRepeatDistance: number;
 	score: number;
 	debugCandidates?: unknown[];
-	debugStationData?: unknown;
 }
 
 export interface RouteDebug {
@@ -54,7 +52,6 @@ export interface RouteDebug {
 	generatedAt: string;
 	input: unknown;
 	candidates?: unknown[];
-	stationData?: unknown;
 	selectedRoute?: unknown;
 	error?: string;
 	fallbackCoordinates?: LatLng[];
