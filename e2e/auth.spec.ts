@@ -26,7 +26,7 @@ test.describe('without a session', () => {
 	});
 
 	test('rejects API requests', async ({ request }) => {
-		const response = await request.get('/api/routing?coordinates=13.4,52.5;13.5,52.6');
+		const response = await request.post('/api/routing', { data: {} });
 
 		expect(response.status()).toBe(401);
 	});

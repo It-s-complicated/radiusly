@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { walkingLoop } from '../api';
+import { walkingLoop } from './walking-loop';
 
 const mockOsrmResponse = {
 	code: 'Ok',
@@ -27,7 +27,7 @@ describe('walkingLoop', () => {
 	beforeEach(() => {
 		vi.restoreAllMocks();
 		globalThis.fetch = vi.fn((url: string) => {
-			if (url.includes('/api/routing')) {
+			if (url.includes('routing.openstreetmap.de')) {
 				return Promise.resolve(
 					new Response(JSON.stringify(mockOsrmResponse), {
 						status: 200,
@@ -35,7 +35,7 @@ describe('walkingLoop', () => {
 					}),
 				);
 			}
-			if (url.includes('/api/stations')) {
+			if (url.includes('overpass-api.de')) {
 				return Promise.resolve(
 					new Response(JSON.stringify(mockOverpassResponse), {
 						status: 200,
@@ -58,5 +58,41 @@ describe('walkingLoop', () => {
 	it('returns a route result for spaghetti algorithm', async () => {
 		const route = await walkingLoop([52.52, 13.4], 4, 25, [], 'spaghetti');
 		expect(route).toBeDefined();
+	});
+
+	it('throws ROUTE_QUALITY when no candidate is acceptable', async () => {
+		globalThis.fetch = vi.fn((url: string) => {
+			if (url.includes('overpass-api.de')) {
+				return Promise.resolve(
+					new Response(JSON.stringify(mockOverpassResponse), { status: 200 }),
+				);
+			}
+			// 8 km route for a 4 km target — 100% distance error, never acceptable
+			return Promise.resolve(
+				new Response(
+					JSON.stringify({
+						code: 'Ok',
+						routes: [
+							{
+								distance: 8000,
+								duration: 3600,
+								weight: 3600,
+								geometry: {
+									coordinates: [
+										[13.4, 52.52],
+										[13.41, 52.5201],
+										[13.4, 52.5202],
+									],
+								},
+							},
+						],
+					}),
+					{ status: 200, headers: { 'content-type': 'application/json' } },
+				),
+			);
+		}) as any;
+		await expect(walkingLoop([52.52, 13.4], 4, 25)).rejects.toMatchObject({
+			code: 'ROUTE_QUALITY',
+		});
 	});
 });

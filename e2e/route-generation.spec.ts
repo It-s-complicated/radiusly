@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-// Critical user flows with mocked API proxies — deterministic, no external
-// services. The production server routes (/api/*) are what the app calls;
-// these tests stub the upstream side of those proxies.
+// Critical user flows with a mocked route API — deterministic, no external
+// services. The app makes a single POST /api/routing request; the server
+// handles all upstream calls.
 
 const LOOP_COORDS: [number, number][] = [
 	[13.4095, 52.5208],
@@ -12,27 +12,29 @@ const LOOP_COORDS: [number, number][] = [
 	[13.4095, 52.5208],
 ];
 
+const ROUTE_RESULT = {
+	distance: 4000,
+	duration: 3000,
+	weight: 1,
+	geometry: { coordinates: LOOP_COORDS },
+	candidate: { algorithm: 'organic', bearing: 25, scale: 1, points: [] },
+	distanceError: 0,
+	distanceErrorDistance: 0,
+	repeatRatio: 0,
+	repeatedDistance: 0,
+	longestRepeatRatio: 0,
+	longestRepeatDistance: 0,
+	stationRepeatDistance: 0,
+	score: 0,
+	debugCandidates: [],
+	debugStationData: { available: true, stations: [] },
+};
+
 async function mockApis(page: import('@playwright/test').Page) {
-	await page.route('**/api/routing?*', (route) => {
+	await page.route('**/api/routing', (route) => {
 		route.fulfill({
 			contentType: 'application/json',
-			body: JSON.stringify({
-				code: 'Ok',
-				routes: [
-					{
-						distance: 4000,
-						duration: 3000,
-						weight: 1,
-						geometry: { coordinates: LOOP_COORDS },
-					},
-				],
-			}),
-		});
-	});
-	await page.route('**/api/stations?*', (route) => {
-		route.fulfill({
-			contentType: 'application/json',
-			body: JSON.stringify({ available: true, stations: [] }),
+			body: JSON.stringify(ROUTE_RESULT),
 		});
 	});
 }
@@ -57,14 +59,8 @@ test.describe('Route generation through the server proxy', () => {
 	test('shows a dashed approximate loop when street routing fails', async ({
 		page,
 	}) => {
-		await page.route('**/api/routing?*', (route) =>
+		await page.route('**/api/routing', (route) =>
 			route.fulfill({ status: 502, body: 'upstream down' }),
-		);
-		await page.route('**/api/stations?*', (route) =>
-			route.fulfill({
-				contentType: 'application/json',
-				body: JSON.stringify({ available: false, stations: [] }),
-			}),
 		);
 		await page.goto('/');
 		await page.getByRole('button', { name: /Make my route/ }).click();
