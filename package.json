@@ -30,7 +30,14 @@
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.1",
-    "better-auth": "^1.6.29",
+    "better-auth": "^1.6.30",
     "leaflet": "^1.9.4"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "npm",
+      "version": "12.0.2",
+      "onFail": "download"
+    }
   }
 }
