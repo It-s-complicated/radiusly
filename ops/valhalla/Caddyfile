@@ -1,9 +1,0 @@
-{$VALHALLA_HOST} {
-	@authorized header Authorization "Bearer {$VALHALLA_API_TOKEN}"
-	handle @authorized {
-		reverse_proxy valhalla:8002
-	}
-	handle {
-		respond "Not found" 404
-	}
-}

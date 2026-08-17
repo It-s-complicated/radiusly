@@ -10,8 +10,7 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
-    "validate:routes": "tsx scripts/validate-routes.ts"
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
@@ -24,7 +23,6 @@
     "@vitest/browser-playwright": "^4.1.10",
     "svelte": "^5.56.9",
     "svelte-check": "^4.7.6",
-    "tsx": "^4.23.12",
     "typescript": "^6.0.3",
     "vite": "^8.2.1",
     "vitest": "^4.1.10",

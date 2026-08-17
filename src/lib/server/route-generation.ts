@@ -1,5 +1,5 @@
 import { bearing, rejectionReasons, scoreRoute } from '$lib/route/edge-scoring';
-import type { LatLng } from '$lib/types';
+import type { LatLng, LngLat } from '$lib/types';
 import type {
 	CandidateDebug,
 	RouteCandidateMetadata,
@@ -7,10 +7,30 @@ import type {
 	RouteGenerationRequest,
 	RouteGenerationResponse,
 	RouteResult,
+	RoutedEdge,
 } from '$lib/route/contracts';
-import type { IsodistanceContour, RouteProvider } from './valhalla';
 
 export const GENERATOR_VERSION = 'network-contours-1';
+
+export interface IsodistanceContour {
+	distanceKm: number;
+	rings: LngLat[][];
+}
+
+export interface ProviderRoute {
+	distance: number;
+	duration: number;
+	geometry: { type: 'LineString'; coordinates: LngLat[] };
+}
+
+/** Pluggable route/contour source — road-network or geometric — swapped per deploy. */
+export interface RouteProvider {
+	readonly maximumCalls: number;
+	readonly usedCalls: number;
+	isodistance(start: LatLng, distancesKm: number[]): Promise<IsodistanceContour[]>;
+	route(points: LatLng[]): Promise<ProviderRoute>;
+	traceEdges(coordinates: LngLat[]): Promise<RoutedEdge[]>;
+}
 
 interface CandidateSpec {
 	id: string;
@@ -36,7 +56,7 @@ export class RouteGenerationError extends Error {
 
 export async function generateRoute(
 	request: RouteGenerationRequest,
-	valhalla: RouteProvider,
+	router: RouteProvider,
 	graphDataVersion: string,
 ): Promise<RouteGenerationResponse> {
 	const startedAt = performance.now();
@@ -50,8 +70,8 @@ export async function generateRoute(
 		input: { ...request, targetKm },
 		candidates: [],
 		requestBudget: {
-			maximumValhallaCalls: valhalla.maximumCalls,
-			usedValhallaCalls: 0,
+			maximumRouterCalls: router.maximumCalls,
+			usedRouterCalls: 0,
 			elapsedMs: 0,
 		},
 	};
@@ -60,9 +80,9 @@ export async function generateRoute(
 		const random = seededRandom(request.seed);
 		const baseContourDistance = Math.max(0.15, targetKm / 3.2);
 		const distances = [0.78, 0.95, 1.12].map((scale) => baseContourDistance * scale);
-		const contours = await valhalla.isodistance(request.start, distances);
+		const contours = await router.isodistance(request.start, distances);
 		const specs = candidateSpecs(distances, random);
-		const evaluated = await evaluateBatch(specs, contours, request, targetKm, valhalla, debug);
+		const evaluated = await evaluateBatch(specs, contours, request, targetKm, router, debug);
 
 		const calibrationSource = [...evaluated].sort(
 			(a, b) => a.result.scores.distanceErrorRatio - b.result.scores.distanceErrorRatio,
@@ -75,7 +95,7 @@ export async function generateRoute(
 					calibrationSource.spec.contourDistanceKm * targetKm * 1000 / calibrationSource.result.distance,
 				),
 			);
-			const adjustedContours = await valhalla.isodistance(request.start, [adjustedDistance]);
+			const adjustedContours = await router.isodistance(request.start, [adjustedDistance]);
 			const adjustedSpec: CandidateSpec = {
 				...calibrationSource.spec,
 				id: `${calibrationSource.spec.id}-adjusted`,
@@ -88,7 +108,7 @@ export async function generateRoute(
 					adjustedContours,
 					request,
 					targetKm,
-					valhalla,
+					router,
 					debug,
 				)),
 			);
@@ -100,14 +120,14 @@ export async function generateRoute(
 		const winner = accepted[0];
 		if (!winner) {
 			debug.error = 'No candidate met the route-quality limits';
-			throw new RouteGenerationError(debug.error, finishDebug(debug, valhalla, startedAt));
+			throw new RouteGenerationError(debug.error, finishDebug(debug, router, startedAt));
 		}
 		debug.selectedCandidateId = winner.result.candidate.id;
-		return { route: winner.result, debug: finishDebug(debug, valhalla, startedAt) };
+		return { route: winner.result, debug: finishDebug(debug, router, startedAt) };
 	} catch (error) {
 		if (error instanceof RouteGenerationError) throw error;
 		debug.error = error instanceof Error ? error.message : 'Route generation failed';
-		throw new RouteGenerationError(debug.error, finishDebug(debug, valhalla, startedAt));
+		throw new RouteGenerationError(debug.error, finishDebug(debug, router, startedAt));
 	}
 }
 
@@ -116,7 +136,7 @@ async function evaluateBatch(
 	contours: IsodistanceContour[],
 	request: RouteGenerationRequest,
 	targetKm: number,
-	valhalla: RouteProvider,
+	router: RouteProvider,
 	debug: RouteDebug,
 ): Promise<EvaluatedCandidate[]> {
 	const settled = await Promise.allSettled(
@@ -133,8 +153,8 @@ async function evaluateBatch(
 				anchors,
 			};
 			const points = orderedThroughPoints(request.start, anchors, request.requiredSpots.map((spot) => spot.coordinates), spec);
-			const routed = await valhalla.route([request.start, ...points, request.start]);
-			const edges = await valhalla.traceEdges(routed.geometry.coordinates);
+			const routed = await router.route([request.start, ...points, request.start]);
+			const edges = await router.traceEdges(routed.geometry.coordinates);
 			const scores = scoreRoute(routed, edges, targetKm * 1000, request.requiredSpots);
 			const reasons = rejectionReasons(scores, request.preferences);
 			const result: RouteResult = {
@@ -241,7 +261,7 @@ function nearestContour(contours: IsodistanceContour[], distanceKm: number): Iso
 	const contour = [...contours].sort(
 		(a, b) => Math.abs(a.distanceKm - distanceKm) - Math.abs(b.distanceKm - distanceKm),
 	)[0];
-	if (!contour) throw new Error('Valhalla returned no usable contour');
+	if (!contour) throw new Error('Router returned no usable contour');
 	return contour;
 }
 
@@ -271,8 +291,8 @@ function seededRandom(seed: string): () => number {
 	};
 }
 
-function finishDebug(debug: RouteDebug, valhalla: RouteProvider, startedAt: number): RouteDebug {
-	debug.requestBudget.usedValhallaCalls = valhalla.usedCalls;
+function finishDebug(debug: RouteDebug, router: RouteProvider, startedAt: number): RouteDebug {
+	debug.requestBudget.usedRouterCalls = router.usedCalls;
 	debug.requestBudget.elapsedMs = Math.round(performance.now() - startedAt);
 	return debug;
 }

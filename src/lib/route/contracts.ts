@@ -87,8 +87,8 @@ export interface RouteDebug {
 	candidates: CandidateDebug[];
 	selectedCandidateId?: string;
 	requestBudget: {
-		maximumValhallaCalls: number;
-		usedValhallaCalls: number;
+		maximumRouterCalls: number;
+		usedRouterCalls: number;
 		elapsedMs: number;
 	};
 	error?: string;

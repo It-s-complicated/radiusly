@@ -2,7 +2,7 @@ import { distance } from '$lib/route/edge-scoring';
 import { pointAt } from '$lib/route/shapes';
 import type { RoutedEdge } from '$lib/route/contracts';
 import type { LatLng, LngLat } from '$lib/types';
-import type { IsodistanceContour, ValhallaRoute } from './valhalla';
+import type { IsodistanceContour, ProviderRoute } from './route-generation';
 
 /** Vertices per isodistance ring (73 with the closing point), inside the 64–128 range the anchor sampler tolerates. */
 const RING_POINTS = 72;
@@ -40,7 +40,7 @@ export class GeometricRouter {
 		});
 	}
 
-	async route(points: LatLng[]): Promise<ValhallaRoute> {
+	async route(points: LatLng[]): Promise<ProviderRoute> {
 		if (points.length < 2) {
 			throw new Error('GeometricRouter needs at least two coordinates for a route');
 		}
@@ -61,7 +61,7 @@ export class GeometricRouter {
 		this.callCount += 1;
 		// ponytail: no road-network data exists here, so edge-derived score components
 		// (repetition, unsuitable access, soft exposures) stay at zero. Wiring a real
-		// trace source — e.g. Valhalla trace_attributes — restores full edge scoring.
+		// road-network trace source restores full edge scoring.
 		return [];
 	}
 }

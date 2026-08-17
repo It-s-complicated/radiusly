@@ -71,9 +71,9 @@ describe('geometric route generation', () => {
 		expect(first.debug.graphDataVersion).toBe('geometric-1');
 		expect(first.debug.candidates.length).toBeGreaterThanOrEqual(4);
 		expect(first.debug.candidates.every(({ candidate }) => candidate.anchors.length > 0)).toBe(true);
-		expect(first.debug.requestBudget.usedValhallaCalls).toBeGreaterThan(0);
-		expect(first.debug.requestBudget.usedValhallaCalls).toBeLessThanOrEqual(
-			first.debug.requestBudget.maximumValhallaCalls,
+		expect(first.debug.requestBudget.usedRouterCalls).toBeGreaterThan(0);
+		expect(first.debug.requestBudget.usedRouterCalls).toBeLessThanOrEqual(
+			first.debug.requestBudget.maximumRouterCalls,
 		);
 
 		const second = await generateRoute(request, geometricRouter(), 'geometric-1');

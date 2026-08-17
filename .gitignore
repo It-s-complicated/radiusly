@@ -11,5 +11,3 @@ dist/
 .env.*
 !.env.example
 .auth/
-ops/valhalla/data/
-validation/results*.json
