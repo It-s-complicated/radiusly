@@ -6,6 +6,21 @@ import type { LatLng, Pace } from '$lib/types';
 import type { RequestHandler } from './$types';
 
 const OSRM_BASE = 'https://routing.openstreetmap.de/routed-foot/route/v1/driving';
+
+// ponytail: single global 1 req/s gate per instance; FOSSGIS limits by IP anyway. Per-user fairness if multi-user ever matters.
+let upstreamQueue: Promise<unknown> = Promise.resolve();
+let lastUpstreamCall = 0;
+
+function throttleUpstream<T>(call: () => Promise<T>): Promise<T> {
+	const run = upstreamQueue.then(async () => {
+		const wait = 1100 - (Date.now() - lastUpstreamCall);
+		if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
+		lastUpstreamCall = Date.now();
+		return call();
+	});
+	upstreamQueue = run.catch(() => {});
+	return run;
+}
 const GRAPH_DATA_VERSION = 'geometric-1';
 const MAXIMUM_ROUTER_CALLS = 12;
 
@@ -48,14 +63,16 @@ export const GET: RequestHandler = async ({ url }) => {
 	}
 
 	try {
-		const response = await fetch(
-			`${OSRM_BASE}/${coordinates}?overview=full&geometries=geojson&steps=false`,
-			{
-				signal: AbortSignal.timeout(15000),
-				headers: {
-					'User-Agent': 'Radiusly/0.1 (neighborhood-walk-planner)',
+		const response = await throttleUpstream(() =>
+			fetch(
+				`${OSRM_BASE}/${coordinates}?overview=full&geometries=geojson&steps=false`,
+				{
+					signal: AbortSignal.timeout(15000),
+					headers: {
+						'User-Agent': 'Radiusly/0.1 (neighborhood-walk-planner)',
+					},
 				},
-			},
+			),
 		);
 
 		if (!response.ok) {
