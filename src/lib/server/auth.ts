@@ -22,7 +22,7 @@ export const auth = betterAuth({
 			clientSecret: requiredEnv('GITHUB_CLIENT_SECRET'),
 			mapProfileToUser(profile) {
 				assertAllowedGithubUser(profile.id, allowedGithubId);
-				return { id: String(profile.id) };
+				return {};
 			},
 		},
 	},

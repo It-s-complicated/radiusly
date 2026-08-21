@@ -29,11 +29,11 @@ Known limitations:
 ## Run locally
 
 ```bash
-npm install
+pnpm install
 cp .env.example .env
 # Fill in the GitHub OAuth credentials and generate BETTER_AUTH_SECRET:
 # openssl rand -base64 32
-npm run dev
+pnpm dev
 ```
 
 Configure the GitHub OAuth callback as `http://localhost:5173/api/auth/callback/github` (or `${BETTER_AUTH_URL}/api/auth/callback/github` in production). Open `http://localhost:5173`. Use HTTPS when hosting it so authentication, installation, and geolocation work securely.
@@ -41,8 +41,8 @@ Configure the GitHub OAuth callback as `http://localhost:5173/api/auth/callback/
 ### Production build
 
 ```bash
-npm run build
-npm run preview
+pnpm build
+pnpm preview
 ```
 
 The Netlify adapter deploys the page and `/api` proxy routes as Netlify Functions.
@@ -51,10 +51,10 @@ The Netlify adapter deploys the page and `/api` proxy routes as Netlify Function
 
 ```bash
 # Unit and integration tests
-npm test
+pnpm test
 
 # E2E tests (requires production build)
-npm run test:e2e
+pnpm test:e2e
 ```
 
 ### Route-generator validation
@@ -65,7 +65,7 @@ The application continues to use its existing route provider. The private Valhal
 export VALHALLA_URL=https://valhalla.example.com
 export VALHALLA_API_TOKEN=replace-me
 export VALHALLA_GRAPH_VERSION=2026-08-16-berlin
-npm run validate:routes -- validation/cases.json validation/results-local.json
+pnpm validate:routes validation/cases.json validation/results-local.json
 ```
 
 The harness runs the seeded network generator and the legacy shape baseline through the same Valhalla graph-edge scorer. It records targets, routed distances, repeated edges, longest repeated runs, versions, seeds, candidate rejection reasons, and accepted legacy-candidate counts. `validation/benchmark-2026-08-16.json` is one-off validation evidence from a public Valhalla instance; application and production traffic must never depend on that service.

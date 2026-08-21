@@ -208,7 +208,7 @@ Tune these limits last. A failure isolated to one shape usually means its waypoi
 
 1. Copy the route debugging information and identify whether failures come from distance error, total repetition, the longest repeated run, or station repetition.
 2. Change one shape constant or offset sequence at a time.
-3. Run `npm test`.
+3. Run `pnpm test`.
 4. Manually test short, medium, and long targets in dense, sparse, barrier-heavy, and station-adjacent neighborhoods.
 5. Compare several consecutive generations, not only the first successful route.
 

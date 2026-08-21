@@ -10,7 +10,7 @@ interface ValidationCase extends RouteGenerationRequest {
 }
 
 const [casesPath, outputPath] = process.argv.slice(2);
-if (!casesPath) throw new Error('Usage: npm run validate:routes -- <cases.json> [results.json]');
+if (!casesPath) throw new Error('Usage: pnpm validate:routes <cases.json> [results.json]');
 
 const baseUrl = process.env.VALHALLA_URL;
 const apiToken = process.env.VALHALLA_API_TOKEN;
