@@ -2,6 +2,7 @@ import { building } from '$app/environment';
 import { env } from '$env/dynamic/private';
 import { betterAuth } from 'better-auth';
 import { assertAllowedGithubUser } from './github-access';
+import { AUTH_CLIENT_IP_HEADER } from './trusted-auth-headers';
 
 function requiredEnv(name: string): string {
 	const value = env[name];
@@ -44,6 +45,9 @@ export const auth = betterAuth({
 		defaultCookieAttributes: {
 			httpOnly: true,
 			sameSite: 'lax',
+		},
+		ipAddress: {
+			ipAddressHeaders: [AUTH_CLIENT_IP_HEADER],
 		},
 	},
 	onAPIError: {
