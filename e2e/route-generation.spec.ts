@@ -43,7 +43,7 @@ test.describe('Route generation through the server proxy', () => {
 		await page.goto('/');
 		await page.getByRole('button', { name: /Make my route/ }).click();
 
-		await expect(page.getByText('Your loop')).toBeVisible();
+		await expect(page.getByText('Your loop', { exact: true })).toBeVisible();
 		await expect(page.getByText('4.0', { exact: true })).toBeVisible();
 		await expect(page.getByRole('button', { name: /Make another route/ })).toBeVisible();
 		await expect(page.getByText(/Starts and ends at/)).toBeVisible();

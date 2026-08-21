@@ -2,7 +2,7 @@
 
 ## Goal
 
-Validate that Radiusly can consistently create convenient, varied, enjoyable walking loops. Keep the vanilla JavaScript PWA until route quality or real usage proves it insufficient.
+Validate that Radiusly can consistently create convenient, varied, enjoyable walking loops. Keep the current SvelteKit PWA until route quality or real usage proves it insufficient.
 
 ## Implemented
 
@@ -46,4 +46,4 @@ Consider dedicated routing infrastructure, caching, monitoring, accounts, sync, 
 
 ## Decision gate
 
-Keep vanilla JavaScript, Leaflet, local browser storage, and the current public data services during validation. Reconsider the stack only when measured route-quality failures or validated usage require it.
+Keep SvelteKit, Leaflet, local browser storage, and the current public data services during validation. Reconsider the stack only when measured route-quality failures or validated usage require it.

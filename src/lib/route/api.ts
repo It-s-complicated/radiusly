@@ -132,23 +132,25 @@ async function routeCandidates(
 	const scales = favorites.length
 		? [0.35, 0.55, 0.75, 0.95]
 		: [0.75, 0.9, 1.05, 1.2];
-	const results = await Promise.allSettled(
-		offsets.map((offset, index) => {
-			const candidateBearing = (bearing + offset) % 360;
-			return routeCandidate(
+	const routes: RouteResult[] = [];
+	for (const [index, offset] of offsets.entries()) {
+		try {
+			const route = await routeCandidate(
 				start,
 				targetKm,
-				candidateBearing,
+				(bearing + offset) % 360,
 				favorites,
 				scales[index]!,
 				stations,
 				algorithm,
 			);
-		}),
-	);
-	return results
-		.filter((r) => r.status === 'fulfilled')
-		.map((r) => (r as PromiseFulfilledResult<RouteResult>).value);
+			routes.push(route);
+			if (route.distanceError <= 0.1 && !needsMoreCandidates(route, algorithm)) break;
+		} catch {
+			// Try the next candidate.
+		}
+	}
+	return routes;
 }
 
 /* ------------------------------------------------------------------ */

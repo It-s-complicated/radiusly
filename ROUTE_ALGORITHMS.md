@@ -2,7 +2,7 @@
 
 Radiusly does not draw a route directly. A shape algorithm creates geographic waypoints, the walking router connects them using real paths, and the result is accepted or rejected by shared quality rules.
 
-The implementation lives in [`route.mjs`](route.mjs). `loopPoints()` defines the shapes and `walkingLoop()` generates, scores, calibrates, and selects routed candidates.
+The implementation lives in [`src/lib/route/shapes.ts`](src/lib/route/shapes.ts) and [`src/lib/route/api.ts`](src/lib/route/api.ts). `loopPoints()` defines the shapes and `walkingLoop()` generates, scores, calibrates, and selects routed candidates.
 
 ## Shape summary
 
@@ -167,7 +167,7 @@ These are internal fallbacks, not user-selectable shapes. Tune them when Spaghet
 
 ## Candidate generation and calibration
 
-The first batch contains four bearings and four scales. Spaghetti uses bearing offsets divisible by three so every candidate keeps the selected topology.
+Each batch offers up to four bearing/scale pairs. Candidates run sequentially and the batch stops as soon as one passes the quality rules with at most `10%` distance error. Spaghetti uses bearing offsets divisible by three so every candidate keeps the selected topology.
 
 | Batch | Normal bearing offsets | Spaghetti bearing offsets |
 | --- | --- | --- |
@@ -208,7 +208,7 @@ Tune these limits last. A failure isolated to one shape usually means its waypoi
 
 1. Copy the route debugging information and identify whether failures come from distance error, total repetition, the longest repeated run, or station repetition.
 2. Change one shape constant or offset sequence at a time.
-3. Run `node test-route.mjs`.
+3. Run `npm test`.
 4. Manually test short, medium, and long targets in dense, sparse, barrier-heavy, and station-adjacent neighborhoods.
 5. Compare several consecutive generations, not only the first successful route.
 

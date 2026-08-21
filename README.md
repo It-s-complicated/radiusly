@@ -97,7 +97,7 @@ For each graph update:
 
 ## Stack
 
-- **SvelteKit** with strict TypeScript, node adapter (server routes at runtime)
+- **SvelteKit** with strict TypeScript and the Netlify adapter
 - Server routes proxy external search, routing, and map-data APIs
 - **Leaflet** for maps (client-side)
 - **Vitest** with Playwright-backed browser mode for component tests
