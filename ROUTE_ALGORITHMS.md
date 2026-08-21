@@ -6,13 +6,13 @@ The implementation lives in [`src/lib/route/shapes.ts`](src/lib/route/shapes.ts)
 
 ## Shape summary
 
-| Shape | Waypoint geometry | Focus |
-| --- | --- | --- |
-| Organic | Three evenly spaced points around the start | A simple, balanced neighborhood loop |
-| Tangent | A circular loop whose rim passes through the start | Immediate circulation without an outbound stem |
-| Orbit — same return | A loop around the start with the same outbound and inbound point | A clear stem and predictable orbit |
-| Orbit — nearby return | An orbit with outbound and inbound points separated by 18° | Similar to Orbit, with less exact backtracking near home |
-| Spaghetti | One of three four-detour crossing patterns around an offset center | Deliberately tangled routes with visibly different layouts |
+| Shape                 | Waypoint geometry                                                  | Focus                                                      |
+| --------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------- |
+| Organic               | Three evenly spaced points around the start                        | A simple, balanced neighborhood loop                       |
+| Tangent               | A circular loop whose rim passes through the start                 | Immediate circulation without an outbound stem             |
+| Orbit — same return   | A loop around the start with the same outbound and inbound point   | A clear stem and predictable orbit                         |
+| Orbit — nearby return | An orbit with outbound and inbound points separated by 18°         | Similar to Orbit, with less exact backtracking near home   |
+| Spaghetti             | One of three four-detour crossing patterns around an offset center | Deliberately tangled routes with visibly different layouts |
 
 ## Shared inputs
 
@@ -170,9 +170,9 @@ These are internal fallbacks, not user-selectable shapes. Tune them when Spaghet
 Each batch offers up to four bearing/scale pairs. Candidates run sequentially and the batch stops as soon as one passes the quality rules with at most `10%` distance error. Spaghetti uses bearing offsets divisible by three so every candidate keeps the selected topology.
 
 | Batch | Normal bearing offsets | Spaghetti bearing offsets |
-| --- | --- | --- |
-| First | `0, 53, 127, 211` | `0, 54, 126, 210` |
-| Extra | `29, 91, 169, 257` | `30, 90, 168, 258` |
+| ----- | ---------------------- | ------------------------- |
+| First | `0, 53, 127, 211`      | `0, 54, 126, 210`         |
+| Extra | `29, 91, 169, 257`     | `30, 90, 168, 258`        |
 
 Without favorites, scales are `0.75, 0.9, 1.05, 1.2`. With favorites they are `0.35, 0.55, 0.75, 0.95`, because fixed walk-by points already contribute distance and geographic spread.
 

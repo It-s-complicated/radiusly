@@ -4,7 +4,6 @@ import {
 	pathRepetition,
 	repeatedPathRatio,
 	stationRepeatedDistance,
-	scoreRoute,
 	routeIsAcceptable,
 	needsMoreCandidates,
 	compareRoutes,

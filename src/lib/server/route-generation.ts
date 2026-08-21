@@ -29,7 +29,10 @@ interface EvaluatedCandidate {
 
 export class RouteGenerationError extends Error {
 	readonly code = 'ROUTE_QUALITY';
-	constructor(message: string, readonly debug: RouteDebug) {
+	constructor(
+		message: string,
+		readonly debug: RouteDebug,
+	) {
 		super(message);
 	}
 }
@@ -72,7 +75,8 @@ export async function generateRoute(
 				0.15,
 				Math.min(
 					targetKm * 0.65,
-					calibrationSource.spec.contourDistanceKm * targetKm * 1000 / calibrationSource.result.distance,
+					(calibrationSource.spec.contourDistanceKm * targetKm * 1000) /
+						calibrationSource.result.distance,
 				),
 			);
 			const adjustedContours = await valhalla.isodistance(request.start, [adjustedDistance]);
@@ -122,7 +126,11 @@ async function evaluateBatch(
 	const settled = await Promise.allSettled(
 		specs.map(async (spec) => {
 			const anchors = spec.bearings.map((anchorBearing) =>
-				sampleAnchor(request.start, nearestContour(contours, spec.contourDistanceKm), anchorBearing),
+				sampleAnchor(
+					request.start,
+					nearestContour(contours, spec.contourDistanceKm),
+					anchorBearing,
+				),
 			);
 			const candidate: RouteCandidateMetadata = {
 				id: spec.id,
@@ -132,14 +140,19 @@ async function evaluateBatch(
 				adjustment: spec.adjustment,
 				anchors,
 			};
-			const points = orderedThroughPoints(request.start, anchors, request.requiredSpots.map((spot) => spot.coordinates), spec);
+			const points = orderedThroughPoints(
+				request.start,
+				anchors,
+				request.requiredSpots.map((spot) => spot.coordinates),
+				spec,
+			);
 			const routed = await valhalla.route([request.start, ...points, request.start]);
 			const edges = await valhalla.traceEdges(routed.geometry.coordinates);
 			const scores = scoreRoute(routed, edges, targetKm * 1000, request.requiredSpots);
 			const reasons = rejectionReasons(scores, request.preferences);
 			const result: RouteResult = {
 				distance: routed.distance,
-				duration: routed.distance / 1000 / request.paceKmH * 3600,
+				duration: (routed.distance / 1000 / request.paceKmH) * 3600,
 				geometry: routed.geometry,
 				candidate,
 				scores,
@@ -189,8 +202,9 @@ function candidateSpecs(distances: number[], random: () => number): CandidateSpe
 		const traversal = index % 2 === 0 ? 'clockwise' : 'counterclockwise';
 		const phase = rotation + index * 47 + (random() - 0.5) * 30;
 		const separation = 360 / anchorCount;
-		const bearings = Array.from({ length: anchorCount }, (_, anchorIndex) =>
-			(phase + anchorIndex * separation + (random() - 0.5) * 22 + 360) % 360,
+		const bearings = Array.from(
+			{ length: anchorCount },
+			(_, anchorIndex) => (phase + anchorIndex * separation + (random() - 0.5) * 22 + 360) % 360,
 		);
 		if (traversal === 'counterclockwise') bearings.reverse();
 		return {
@@ -253,7 +267,7 @@ function angularDifference(a: number, b: number): number {
 function targetDistanceKm(request: RouteGenerationRequest): number {
 	return request.target.mode === 'distance'
 		? request.target.value
-		: request.target.value / 60 * request.paceKmH;
+		: (request.target.value / 60) * request.paceKmH;
 }
 
 function seededRandom(seed: string): () => number {
@@ -265,9 +279,9 @@ function seededRandom(seed: string): () => number {
 	return () => {
 		state += 0x6d2b79f5;
 		let value = state;
-		value = Math.imul(value ^ value >>> 15, value | 1);
-		value ^= value + Math.imul(value ^ value >>> 7, value | 61);
-		return ((value ^ value >>> 14) >>> 0) / 4294967296;
+		value = Math.imul(value ^ (value >>> 15), value | 1);
+		value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+		return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
 	};
 }
 

@@ -14,8 +14,11 @@ const request: RouteGenerationRequest = {
 
 function contourRing(distanceKm: number): [number, number][] {
 	return Array.from({ length: 37 }, (_, index) => {
-		const angle = index / 36 * Math.PI * 2;
-		return [13.4 + Math.sin(angle) * distanceKm / 70, 52.52 + Math.cos(angle) * distanceKm / 111];
+		const angle = (index / 36) * Math.PI * 2;
+		return [
+			13.4 + (Math.sin(angle) * distanceKm) / 70,
+			52.52 + (Math.cos(angle) * distanceKm) / 111,
+		];
 	});
 }
 
@@ -38,14 +41,16 @@ function mockValhalla(routeLengthKm = 4) {
 		if (Array.isArray(body.locations)) {
 			const locations = body.locations as { lat: number; lon: number; type: string }[];
 			return Response.json({
-				routes: [{
-					distance: routeLengthKm * 1000,
-					duration: 2880,
-					geometry: {
-						type: 'LineString',
-						coordinates: locations.map(({ lon, lat }) => [lon, lat]),
+				routes: [
+					{
+						distance: routeLengthKm * 1000,
+						duration: 2880,
+						geometry: {
+							type: 'LineString',
+							coordinates: locations.map(({ lon, lat }) => [lon, lat]),
+						},
 					},
-				}],
+				],
 			});
 		}
 		if (Array.isArray(body.shape)) {
@@ -90,9 +95,13 @@ describe('network-aware route generation', () => {
 		expect(response.debug.generatorVersion).toBe('network-contours-1');
 		expect(response.debug.graphDataVersion).toBe('berlin-2026-08-16');
 		expect(response.debug.candidates).toHaveLength(4);
-		expect(response.debug.candidates.map(({ candidate }) => candidate.anchorCount)).toEqual([2, 2, 3, 3]);
+		expect(response.debug.candidates.map(({ candidate }) => candidate.anchorCount)).toEqual([
+			2, 2, 3, 3,
+		]);
 		expect(response.debug.requestBudget.usedValhallaCalls).toBe(9);
-		expect(response.debug.candidates.every(({ rejectionReasons: reasons }) => reasons.length === 0)).toBe(true);
+		expect(
+			response.debug.candidates.every(({ rejectionReasons: reasons }) => reasons.length === 0),
+		).toBe(true);
 
 		const routeBodies = fetchMock.mock.calls
 			.map(([, init]) => JSON.parse(String(init?.body)) as Record<string, unknown>)
@@ -109,9 +118,9 @@ describe('network-aware route generation', () => {
 		vi.stubGlobal('fetch', mockValhalla(3.5));
 		await generateRoute(request, client(), 'graph');
 
-		const calls = vi.mocked(fetch).mock.calls.map(([, init]) =>
-			JSON.parse(String(init?.body)) as Record<string, unknown>
-		);
+		const calls = vi
+			.mocked(fetch)
+			.mock.calls.map(([, init]) => JSON.parse(String(init?.body)) as Record<string, unknown>);
 		const contourRequests = calls.filter((body) => Array.isArray(body.contours));
 		expect(contourRequests).toHaveLength(2);
 		const adjustedContours = contourRequests[1]?.contours as { distance: number }[];

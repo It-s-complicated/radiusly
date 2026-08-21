@@ -45,10 +45,9 @@ export const GET: RequestHandler = async ({ url }) => {
 					Number.isFinite(s.coordinates[0]) && Number.isFinite(s.coordinates[1]),
 			);
 
-		return new Response(
-			JSON.stringify({ available: true, stations }),
-			{ headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } },
-		);
+		return new Response(JSON.stringify({ available: true, stations }), {
+			headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
+		});
 	} catch {
 		return new Response('Station lookup upstream request failed', {
 			status: 502,

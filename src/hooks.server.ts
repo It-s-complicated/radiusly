@@ -9,7 +9,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		return auth.handler(new Request(event.request, { headers }));
 	}
 
-	const current   = await auth.api.getSession({ headers });
+	const current = await auth.api.getSession({ headers });
 	event.locals.session = current?.session ?? null;
 	event.locals.user = current?.user ?? null;
 

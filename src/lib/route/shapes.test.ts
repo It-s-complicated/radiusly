@@ -41,33 +41,26 @@ describe('loopPoints', () => {
 	});
 
 	it('spaghetti maintains consistent length across bearings', () => {
-		const lengths = [25, 92, 159].map((b) =>
-			loopPoints(start, 4, b, [], 1, 'spaghetti').length,
-		);
+		const lengths = [25, 92, 159].map((b) => loopPoints(start, 4, b, [], 1, 'spaghetti').length);
 		expect(lengths).toEqual([6, 6, 6]);
 	});
 
 	it('spaghetti-cross generates 5 points', () => {
-		expect(loopPoints(start, 4, 25, [], 1, 'spaghetti-cross').length).toBe(
-			5,
-		);
+		expect(loopPoints(start, 4, 25, [], 1, 'spaghetti-cross').length).toBe(5);
 	});
 
 	it('spaghetti-safe generates 5 points', () => {
-		expect(loopPoints(start, 4, 25, [], 1, 'spaghetti-safe').length).toBe(
-			5,
-		);
+		expect(loopPoints(start, 4, 25, [], 1, 'spaghetti-safe').length).toBe(5);
 	});
 
 	it('spaghetti creates different signatures for different bearings', () => {
 		const signatures = [25, 92, 159, 226].map((bearing) => {
 			const points = loopPoints(start, 4, bearing, [], 1, 'spaghetti');
-			const lengths = points.slice(1).map((point, index) =>
-				Math.hypot(
-					point[0] - points[index]![0],
-					(point[1] - points[index]![1]) * 0.61,
-				),
-			);
+			const lengths = points
+				.slice(1)
+				.map((point, index) =>
+					Math.hypot(point[0] - points[index]![0], (point[1] - points[index]![1]) * 0.61),
+				);
 			const total = lengths.reduce((sum, length) => sum + length, 0);
 			return lengths.map((length) => (length / total).toFixed(2)).join(',');
 		});

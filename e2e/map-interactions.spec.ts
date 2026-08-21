@@ -11,9 +11,6 @@ test.describe('Map interactions', () => {
 		await page.goto('/');
 		const searchInput = page.locator('#place-query');
 		await expect(searchInput).toBeVisible();
-		await expect(searchInput).toHaveAttribute(
-			'placeholder',
-			/Search/,
-		);
+		await expect(searchInput).toHaveAttribute('placeholder', /Search/);
 	});
 });

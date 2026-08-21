@@ -1,9 +1,6 @@
 import { rejectionReasons, scoreRoute } from '$lib/route/edge-scoring';
 import type { LatLng } from '$lib/types';
-import type {
-	RouteGenerationRequest,
-	RouteScoreComponents,
-} from '$lib/route/contracts';
+import type { RouteGenerationRequest, RouteScoreComponents } from '$lib/route/contracts';
 import type { ValhallaClient } from './valhalla';
 
 export type LegacyAlgorithm = 'organic' | 'tangent' | 'orbit-same' | 'orbit-near' | 'spaghetti';
@@ -29,9 +26,10 @@ export async function evaluateLegacyBaseline(
 	request: RouteGenerationRequest,
 	valhalla: ValhallaClient,
 ): Promise<LegacyBaselineResult[]> {
-	const targetKm = request.target.mode === 'distance'
-		? request.target.value
-		: request.target.value / 60 * request.paceKmH;
+	const targetKm =
+		request.target.mode === 'distance'
+			? request.target.value
+			: (request.target.value / 60) * request.paceKmH;
 	const favoritePoints = request.requiredSpots.map((spot) => spot.coordinates);
 	const bearing = seedBearing(request.seed);
 	const settled = await Promise.allSettled(
@@ -69,15 +67,17 @@ function legacyLoopPoints(
 	algorithm: LegacyAlgorithm,
 ): LatLng[] {
 	if (algorithm === 'tangent') {
-		const radius = Math.max(0.18, targetKm / (2 * Math.PI) * 0.9);
+		const radius = Math.max(0.18, (targetKm / (2 * Math.PI)) * 0.9);
 		const center = pointAt(start, radius, bearing);
 		const startBearing = (bearing + 180) % 360;
-		const perimeter = [90, 180, 270].map((offset) => pointAt(center, radius, startBearing + offset));
+		const perimeter = [90, 180, 270].map((offset) =>
+			pointAt(center, radius, startBearing + offset),
+		);
 		return [start, ...orderAround(center, [...favorites, ...perimeter], startBearing), start];
 	}
 
 	if (algorithm === 'orbit-same' || algorithm === 'orbit-near') {
-		const radius = Math.max(0.18, targetKm / (2 + 2 * Math.PI) * 0.9);
+		const radius = Math.max(0.18, (targetKm / (2 + 2 * Math.PI)) * 0.9);
 		const gap = algorithm === 'orbit-near' ? 9 : 0;
 		const outboundBearing = bearing - gap;
 		const outbound = pointAt(start, radius, outboundBearing);
@@ -98,8 +98,9 @@ function legacyLoopPoints(
 			[144, 288, 72, 216],
 			[108, 276, 72, 228],
 		];
-		const pattern = patterns[((Math.round(bearing) % patterns.length) + patterns.length) % patterns.length]!;
-		const radius = Math.max(0.18, targetKm / 11.5 * 0.9);
+		const pattern =
+			patterns[((Math.round(bearing) % patterns.length) + patterns.length) % patterns.length]!;
+		const radius = Math.max(0.18, (targetKm / 11.5) * 0.9);
 		const centerBearing = bearing + (seededUnit(bearing + 7) - 0.5) * 28;
 		const centerDistance = radius * (0.8 + seededUnit(bearing + 11) * 0.35);
 		const center = pointAt(start, centerDistance, centerBearing);
@@ -110,29 +111,27 @@ function legacyLoopPoints(
 		return [start, detours[0]!, ...favorites, ...detours.slice(1), start];
 	}
 
-	const radius = Math.max(0.18, targetKm / (2 * Math.PI) * 0.87);
+	const radius = Math.max(0.18, (targetKm / (2 * Math.PI)) * 0.87);
 	const detours = [0, 120, 240].map((offset) => pointAt(start, radius, bearing + offset));
 	return [start, ...orderAround(start, [...favorites, ...detours], 180), start];
 }
 
-function pointAt(
-	[lat, lng]: LatLng,
-	distanceKm: number,
-	bearingDegrees: number,
-): LatLng {
+function pointAt([lat, lng]: LatLng, distanceKm: number, bearingDegrees: number): LatLng {
 	const angularDistance = distanceKm / 6371;
-	const direction = bearingDegrees * Math.PI / 180;
-	const latitude = lat * Math.PI / 180;
-	const longitude = lng * Math.PI / 180;
+	const direction = (bearingDegrees * Math.PI) / 180;
+	const latitude = (lat * Math.PI) / 180;
+	const longitude = (lng * Math.PI) / 180;
 	const nextLatitude = Math.asin(
 		Math.sin(latitude) * Math.cos(angularDistance) +
-		Math.cos(latitude) * Math.sin(angularDistance) * Math.cos(direction),
+			Math.cos(latitude) * Math.sin(angularDistance) * Math.cos(direction),
 	);
-	const nextLongitude = longitude + Math.atan2(
-		Math.sin(direction) * Math.sin(angularDistance) * Math.cos(latitude),
-		Math.cos(angularDistance) - Math.sin(latitude) * Math.sin(nextLatitude),
-	);
-	return [nextLatitude * 180 / Math.PI, nextLongitude * 180 / Math.PI];
+	const nextLongitude =
+		longitude +
+		Math.atan2(
+			Math.sin(direction) * Math.sin(angularDistance) * Math.cos(latitude),
+			Math.cos(angularDistance) - Math.sin(latitude) * Math.sin(nextLatitude),
+		);
+	return [(nextLatitude * 180) / Math.PI, (nextLongitude * 180) / Math.PI];
 }
 
 function seededUnit(seed: number): number {
@@ -149,20 +148,23 @@ function irregularPoint(center: LatLng, radius: number, direction: number, seed:
 }
 
 function angleFrom(center: LatLng, [lat, lng]: LatLng): number {
-	const latitudeScale = Math.cos(center[0] * Math.PI / 180);
-	return (Math.atan2((lng - center[1]) * latitudeScale, lat - center[0]) * 180 / Math.PI + 360) % 360;
+	const latitudeScale = Math.cos((center[0] * Math.PI) / 180);
+	return (
+		((Math.atan2((lng - center[1]) * latitudeScale, lat - center[0]) * 180) / Math.PI + 360) % 360
+	);
 }
 
 function orderAround(center: LatLng, points: LatLng[], startBearing: number): LatLng[] {
 	return points.sort(
 		(a, b) =>
-		(angleFrom(center, a) - startBearing + 360) % 360 -
-		(angleFrom(center, b) - startBearing + 360) % 360,
+			((angleFrom(center, a) - startBearing + 360) % 360) -
+			((angleFrom(center, b) - startBearing + 360) % 360),
 	);
 }
 
 function seedBearing(seed: string): number {
 	let value = 0;
-	for (let index = 0; index < seed.length; index += 1) value = Math.imul(value ^ seed.charCodeAt(index), 16777619);
+	for (let index = 0; index < seed.length; index += 1)
+		value = Math.imul(value ^ seed.charCodeAt(index), 16777619);
 	return (value >>> 0) % 360;
 }

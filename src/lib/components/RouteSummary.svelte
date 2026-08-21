@@ -22,9 +22,7 @@
 	async function copyDebug() {
 		if (!$routeDebug) return;
 		try {
-			await navigator.clipboard.writeText(
-				JSON.stringify($routeDebug, null, 2),
-			);
+			await navigator.clipboard.writeText(JSON.stringify($routeDebug, null, 2));
 			showToast('Debugging information copied.');
 		} catch {
 			showToast("Couldn't copy debugging information.");
@@ -36,7 +34,9 @@
 	<article class="route-summary" aria-live="polite">
 		<div class="route-summary-top">
 			<span class="route-badge">Your loop</span>
-			<button type="button" aria-label="Clear route" onclick={() => currentRoute.set(null)}>×</button>
+			<button type="button" aria-label="Clear route" onclick={() => currentRoute.set(null)}
+				>×</button
+			>
 		</div>
 		<div class="route-metrics">
 			<p>
@@ -46,8 +46,7 @@
 				<strong>{formatTime($currentRoute.distance / 1000)}</strong><span>min</span>
 			</p>
 			<p>
-				<strong>{Math.round($currentRoute.repeatRatio * 100)}</strong
-				><span>% repeated</span>
+				<strong>{Math.round($currentRoute.repeatRatio * 100)}</strong><span>% repeated</span>
 			</p>
 		</div>
 		<p>{routeNote()}</p>

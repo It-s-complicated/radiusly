@@ -48,15 +48,13 @@ test.describe('Route generation through the server proxy', () => {
 		await expect(page.getByRole('button', { name: /Make another route/ })).toBeVisible();
 		await expect(page.getByText(/Starts and ends at/)).toBeVisible();
 
-		const hasRouteLine = await page.evaluate(() =>
-			document.querySelectorAll('.leaflet-overlay-pane path').length > 0,
+		const hasRouteLine = await page.evaluate(
+			() => document.querySelectorAll('.leaflet-overlay-pane path').length > 0,
 		);
 		expect(hasRouteLine).toBe(true);
 	});
 
-	test('shows a dashed approximate loop when street routing fails', async ({
-		page,
-	}) => {
+	test('shows a dashed approximate loop when street routing fails', async ({ page }) => {
 		await page.route('**/api/routing?*', (route) =>
 			route.fulfill({ status: 502, body: 'upstream down' }),
 		);
@@ -71,7 +69,9 @@ test.describe('Route generation through the server proxy', () => {
 
 		await expect(page.getByText(/Street routing is unavailable/)).toBeVisible();
 		const dashedLoop = await page.evaluate(() => {
-			const paths = [...document.querySelectorAll('.leaflet-overlay-pane path')] as SVGPathElement[];
+			const paths = [
+				...document.querySelectorAll('.leaflet-overlay-pane path'),
+			] as SVGPathElement[];
 			return paths.some((p) => p.getAttribute('stroke-dasharray') === '8 9');
 		});
 		expect(dashedLoop).toBe(true);
@@ -79,9 +79,7 @@ test.describe('Route generation through the server proxy', () => {
 });
 
 test.describe('Starting points', () => {
-	test('use my location keeps the start ephemeral (no saved point)', async ({
-		page,
-	}) => {
+	test('use my location keeps the start ephemeral (no saved point)', async ({ page }) => {
 		await mockApis(page);
 		await page.goto('/');
 		await page.context().grantPermissions(['geolocation']);

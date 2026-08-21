@@ -20,11 +20,13 @@ if (!baseUrl || !apiToken || !graphVersion) {
 }
 
 const allCases = JSON.parse(await readFile(casesPath, 'utf8')) as ValidationCase[];
-if (!Array.isArray(allCases) || allCases.length === 0) throw new Error('Validation cases must be a non-empty array');
+if (!Array.isArray(allCases) || allCases.length === 0)
+	throw new Error('Validation cases must be a non-empty array');
 const cases = process.env.VALIDATION_CASE_ID
 	? allCases.filter((validationCase) => validationCase.id === process.env.VALIDATION_CASE_ID)
 	: allCases;
-if (cases.length === 0) throw new Error(`Validation case ${process.env.VALIDATION_CASE_ID} was not found`);
+if (cases.length === 0)
+	throw new Error(`Validation case ${process.env.VALIDATION_CASE_ID} was not found`);
 
 const results = [];
 for (const validationCase of cases) {
@@ -56,12 +58,16 @@ for (const validationCase of cases) {
 	});
 }
 
-const report = JSON.stringify({
-	generatedAt: new Date().toISOString(),
-	graphVersion,
-	generatorVersion: 'network-contours-1',
-	results,
-}, null, 2);
+const report = JSON.stringify(
+	{
+		generatedAt: new Date().toISOString(),
+		graphVersion,
+		generatorVersion: 'network-contours-1',
+		results,
+	},
+	null,
+	2,
+);
 if (outputPath) {
 	await writeFile(outputPath, `${report}\n`, 'utf8');
 } else {

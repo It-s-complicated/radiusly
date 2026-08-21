@@ -1,17 +1,9 @@
 export type LatLng = [number, number]; // [lat, lng]
 export type LngLat = [number, number]; // [lng, lat] — OSRM/GeoJSON
 
-export type Algorithm =
-	| 'organic'
-	| 'tangent'
-	| 'orbit-same'
-	| 'orbit-near'
-	| 'spaghetti';
+export type Algorithm = 'organic' | 'tangent' | 'orbit-same' | 'orbit-near' | 'spaghetti';
 
-export type InternalAlgorithm =
-	| Algorithm
-	| 'spaghetti-cross'
-	| 'spaghetti-safe';
+export type InternalAlgorithm = Algorithm | 'spaghetti-cross' | 'spaghetti-safe';
 
 export type Mode = 'distance' | 'time';
 export type Pace = 4 | 5 | 6;

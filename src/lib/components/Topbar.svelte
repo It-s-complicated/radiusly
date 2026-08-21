@@ -24,10 +24,7 @@
 	}
 
 	if (typeof window !== 'undefined') {
-		window.addEventListener(
-			'beforeinstallprompt',
-			onBeforeInstall as EventListener,
-		);
+		window.addEventListener('beforeinstallprompt', onBeforeInstall as EventListener);
 	}
 </script>
 

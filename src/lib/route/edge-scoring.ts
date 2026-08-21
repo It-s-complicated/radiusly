@@ -1,10 +1,5 @@
 import type { LatLng, LngLat } from '$lib/types';
-import type {
-	RequiredSpot,
-	RoutePreferences,
-	RouteScoreComponents,
-	RoutedEdge,
-} from './contracts';
+import type { RequiredSpot, RoutePreferences, RouteScoreComponents, RoutedEdge } from './contracts';
 
 const REQUIRED_SPOT_TOLERANCE_METERS = 40;
 const ROUGH_SURFACES: Record<string, true> = {
@@ -71,7 +66,9 @@ function repetition(edges: RoutedEdge[]): {
 function missedRequiredSpots(coordinates: LngLat[], spots: RequiredSpot[]): number {
 	return spots.filter((spot) => {
 		const point: LngLat = [spot.coordinates[1], spot.coordinates[0]];
-		return !coordinates.some((coordinate) => distance(coordinate, point) <= REQUIRED_SPOT_TOLERANCE_METERS);
+		return !coordinates.some(
+			(coordinate) => distance(coordinate, point) <= REQUIRED_SPOT_TOLERANCE_METERS,
+		);
 	}).length;
 }
 
@@ -121,7 +118,7 @@ export function scoreRoute(
 			repeatRatio * 5 +
 			repeated.longestRepeatedRunMeters / Math.max(route.distance, 1) +
 			repeated.immediateReversalMeters / Math.max(route.distance, 1) +
-			unsuitableAccessMeters / Math.max(route.distance, 1) * 10 +
+			(unsuitableAccessMeters / Math.max(route.distance, 1)) * 10 +
 			requiredSpotsMissed * 10,
 	};
 }
@@ -130,9 +127,10 @@ export function rejectionReasons(
 	scores: RouteScoreComponents,
 	preferences: RoutePreferences,
 ): string[] {
-	const limits = preferences.backtracking === 'avoid'
-		? { repeatRatio: 0.05, repeatedRun: 180, reversal: 60 }
-		: { repeatRatio: 0.08, repeatedRun: 260, reversal: 120 };
+	const limits =
+		preferences.backtracking === 'avoid'
+			? { repeatRatio: 0.05, repeatedRun: 180, reversal: 60 }
+			: { repeatRatio: 0.08, repeatedRun: 260, reversal: 120 };
 	const reasons: string[] = [];
 	if (scores.distanceErrorRatio > 0.15) reasons.push('TARGET_DISTANCE_ERROR');
 	if (scores.repeatRatio > limits.repeatRatio) reasons.push('TOTAL_REPEATED_DISTANCE');

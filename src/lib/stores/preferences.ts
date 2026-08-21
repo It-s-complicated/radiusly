@@ -12,13 +12,7 @@ interface Preferences {
 	algorithm: Algorithm;
 }
 
-const ROUTE_ALGORITHMS: string[] = [
-	'organic',
-	'tangent',
-	'orbit-same',
-	'orbit-near',
-	'spaghetti',
-];
+const ROUTE_ALGORITHMS: string[] = ['organic', 'tangent', 'orbit-same', 'orbit-near', 'spaghetti'];
 
 const ALLOWED_PACES = [4, 5, 6];
 
@@ -28,17 +22,14 @@ function storedPreferences(): Preferences {
 	}
 	try {
 		const raw = JSON.parse(localStorage.getItem(PREFERENCES_KEY) || '{}');
-		if (typeof raw !== 'object' || raw === null || Array.isArray(raw))
-			return defaultPrefs();
+		if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return defaultPrefs();
 
 		let algo = String(raw.algorithm || '');
 		if (algo === 'chaos') algo = 'spaghetti';
 		if (!ROUTE_ALGORITHMS.includes(algo)) algo = 'organic';
 
 		const rawPace = Number(raw.pace);
-		const validPace: Pace = ALLOWED_PACES.includes(rawPace)
-			? (rawPace as Pace)
-			: 5;
+		const validPace: Pace = ALLOWED_PACES.includes(rawPace) ? (rawPace as Pace) : 5;
 
 		return {
 			mode: raw.mode === 'time' ? 'time' : 'distance',

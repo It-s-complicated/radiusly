@@ -31,24 +31,14 @@
 		if (q) onSearchPlaces?.(q);
 	}
 
-	function renamePoint(
-		points: SavedPoint[],
-		save: (p: SavedPoint[]) => void,
-		point: SavedPoint,
-	) {
+	function renamePoint(points: SavedPoint[], save: (p: SavedPoint[]) => void, point: SavedPoint) {
 		const name = prompt('Rename this place', point.name)?.trim();
 		if (!name) return;
-		const updated = points.map((p) =>
-			p.id === point.id ? { ...p, name } : p,
-		);
+		const updated = points.map((p) => (p.id === point.id ? { ...p, name } : p));
 		save(updated);
 	}
 
-	function deletePoint(
-		points: SavedPoint[],
-		save: (p: SavedPoint[]) => void,
-		point: SavedPoint,
-	) {
+	function deletePoint(points: SavedPoint[], save: (p: SavedPoint[]) => void, point: SavedPoint) {
 		const updated = points.filter((p) => p.id !== point.id);
 		save(updated);
 	}
@@ -58,14 +48,10 @@
 	}
 
 	function toggleFavorite(fav: SavedPoint) {
-		favorites.update((f) =>
-			f.map((x) => (x.id === fav.id ? { ...x, selected: !x.selected } : x)),
-		);
+		favorites.update((f) => f.map((x) => (x.id === fav.id ? { ...x, selected: !x.selected } : x)));
 	}
 
-	let targetValue = $derived(
-		$mode === 'time' ? $timeTarget : $distanceTarget,
-	);
+	let targetValue = $derived($mode === 'time' ? $timeTarget : $distanceTarget);
 
 	function setTarget(v: number) {
 		if ($mode === 'time') timeTarget.set(v);
@@ -85,9 +71,7 @@
 	<div class="planner-inner">
 		<p class="eyebrow">Plan a loop</p>
 		<h1 id="planner-title">A good walk starts right here.</h1>
-		<p class="intro">
-			Tell us how far—or how long—and we'll find a way back.
-		</p>
+		<p class="intro">Tell us how far—or how long—and we'll find a way back.</p>
 
 		<details class="planner-options" open>
 			<summary>
@@ -136,14 +120,14 @@
 									class="rename"
 									type="button"
 									aria-label="Rename {point.name}"
-									onclick={() => renamePoint($starts, (p) => starts.set(p), point)}
-								>✎</button>
+									onclick={() => renamePoint($starts, (p) => starts.set(p), point)}>✎</button
+								>
 								<button
 									class="delete"
 									type="button"
 									aria-label="Delete {point.name}"
-									onclick={() => deletePoint($starts, (p) => starts.set(p), point)}
-								>×</button>
+									onclick={() => deletePoint($starts, (p) => starts.set(p), point)}>×</button
+								>
 							</div>
 						</div>
 					{/each}
@@ -169,7 +153,9 @@
 							<span>
 								{#if algo.value === 'organic'}
 									<svg viewBox="0 0 80 48" aria-hidden="true">
-										<path d="M14 34C7 25 14 13 27 12C38 11 42 6 54 11C68 16 72 29 62 37C52 45 43 35 34 38C25 42 10 43 14 34" />
+										<path
+											d="M14 34C7 25 14 13 27 12C38 11 42 6 54 11C68 16 72 29 62 37C52 45 43 35 34 38C25 42 10 43 14 34"
+										/>
 										<circle cx="14" cy="34" r="3" />
 									</svg>
 								{:else if algo.value === 'tangent'}
@@ -189,7 +175,9 @@
 									</svg>
 								{:else if algo.value === 'spaghetti'}
 									<svg viewBox="0 0 80 48" aria-hidden="true">
-										<path d="M40 24C55 8 74 14 66 30C58 45 38 34 50 23C62 12 45 4 32 9C18 15 19 31 31 34C43 37 39 20 25 17C11 14 5 29 16 37C28 46 51 40 57 27C63 14 48 13 40 24" />
+										<path
+											d="M40 24C55 8 74 14 66 30C58 45 38 34 50 23C62 12 45 4 32 9C18 15 19 31 31 34C43 37 39 20 25 17C11 14 5 29 16 37C28 46 51 40 57 27C63 14 48 13 40 24"
+										/>
 										<circle cx="40" cy="24" r="3" />
 									</svg>
 								{/if}
@@ -206,13 +194,11 @@
 				<button
 					type="button"
 					class:active={$mode === 'distance'}
-					onclick={() => mode.set('distance')}
-				>Distance</button>
-				<button
-					type="button"
-					class:active={$mode === 'time'}
-					onclick={() => mode.set('time')}
-				>Time</button>
+					onclick={() => mode.set('distance')}>Distance</button
+				>
+				<button type="button" class:active={$mode === 'time'} onclick={() => mode.set('time')}
+					>Time</button
+				>
 			</div>
 
 			<!-- Target control -->
@@ -251,15 +237,33 @@
 			<fieldset class="pace-field">
 				<legend>Walking pace</legend>
 				<label>
-					<input type="radio" name="pace" value="4" checked={$pace === 4} onchange={() => pace.set(4)} />
+					<input
+						type="radio"
+						name="pace"
+						value="4"
+						checked={$pace === 4}
+						onchange={() => pace.set(4)}
+					/>
 					<span><b>Easy</b><small>4 km/h</small></span>
 				</label>
 				<label>
-					<input type="radio" name="pace" value="5" checked={$pace === 5} onchange={() => pace.set(5)} />
+					<input
+						type="radio"
+						name="pace"
+						value="5"
+						checked={$pace === 5}
+						onchange={() => pace.set(5)}
+					/>
 					<span><b>Steady</b><small>5 km/h</small></span>
 				</label>
 				<label>
-					<input type="radio" name="pace" value="6" checked={$pace === 6} onchange={() => pace.set(6)} />
+					<input
+						type="radio"
+						name="pace"
+						value="6"
+						checked={$pace === 6}
+						onchange={() => pace.set(6)}
+					/>
 					<span><b>Brisk</b><small>6 km/h</small></span>
 				</label>
 			</fieldset>
@@ -301,7 +305,11 @@
 					{#each $favorites as fav (fav.id)}
 						<div class="point-row">
 							<label>
-								<input type="checkbox" checked={fav.selected} onchange={() => toggleFavorite(fav)} />
+								<input
+									type="checkbox"
+									checked={fav.selected}
+									onchange={() => toggleFavorite(fav)}
+								/>
 								<span>★ &nbsp;{fav.name}</span>
 							</label>
 							<div class="row-actions">
@@ -309,14 +317,14 @@
 									class="rename"
 									type="button"
 									aria-label="Rename {fav.name}"
-									onclick={() => renamePoint($favorites, (p) => favorites.set(p), fav)}
-								>✎</button>
+									onclick={() => renamePoint($favorites, (p) => favorites.set(p), fav)}>✎</button
+								>
 								<button
 									class="delete"
 									type="button"
 									aria-label="Delete {fav.name}"
-									onclick={() => deletePoint($favorites, (p) => favorites.set(p), fav)}
-								>×</button>
+									onclick={() => deletePoint($favorites, (p) => favorites.set(p), fav)}>×</button
+								>
 							</div>
 						</div>
 					{/each}
@@ -325,13 +333,14 @@
 		</details>
 
 		<div class="route-output">
-			<button
-				class="primary-button"
-				type="button"
-				disabled={$isLoading}
-				onclick={onMakeRoute}
-			>
-				<span>{$isLoading ? 'Comparing route options…' : $currentRoute ? 'Make another route' : 'Make my route'}</span>
+			<button class="primary-button" type="button" disabled={$isLoading} onclick={onMakeRoute}>
+				<span
+					>{$isLoading
+						? 'Comparing route options…'
+						: $currentRoute
+							? 'Make another route'
+							: 'Make my route'}</span
+				>
 				<svg viewBox="0 0 24 24" aria-hidden="true">
 					<path d="M5 12h14m-5-5 5 5-5 5" />
 				</svg>

@@ -403,11 +403,7 @@ input:focus-visible {
 	height: 4px;
 	margin: 0;
 	border-radius: 99px;
-	background: linear-gradient(
-		to right,
-		var(--forest) 0 var(--value),
-		#dedfd9 var(--value) 100%
-	);
+	background: linear-gradient(to right, var(--forest) 0 var(--value), #dedfd9 var(--value) 100%);
 	appearance: none;
 }
 
@@ -997,9 +993,7 @@ input:focus-visible {
 	place-items: center;
 	color: var(--forest);
 	background: var(--lime);
-	clip-path: path(
-		'M12 28C9 23 2 16 2 10A10 10 0 0 1 22 10C22 16 15 23 12 28Z'
-	);
+	clip-path: path('M12 28C9 23 2 16 2 10A10 10 0 0 1 22 10C22 16 15 23 12 28Z');
 	font-size: 11px;
 	font-weight: 900;
 	filter: drop-shadow(0 3px 3px rgb(24 48 42 / 28%));

@@ -71,16 +71,18 @@ export class ValhallaClient {
 	}
 
 	async route(points: LatLng[]): Promise<ValhallaRoute> {
-		const data = asRecord(await this.post('/route', {
-			locations: points.map(([lat, lon], index) => ({
-				lat,
-				lon,
-				type: index === 0 || index === points.length - 1 ? 'break' : 'through',
-			})),
-			costing: 'pedestrian',
-			format: 'osrm',
-			shape_format: 'geojson',
-		}));
+		const data = asRecord(
+			await this.post('/route', {
+				locations: points.map(([lat, lon], index) => ({
+					lat,
+					lon,
+					type: index === 0 || index === points.length - 1 ? 'break' : 'through',
+				})),
+				costing: 'pedestrian',
+				format: 'osrm',
+				shape_format: 'geojson',
+			}),
+		);
 		if (!Array.isArray(data.routes) || data.routes.length === 0) {
 			throw new Error('Valhalla returned no routes');
 		}
@@ -97,28 +99,30 @@ export class ValhallaClient {
 	}
 
 	async traceEdges(coordinates: LngLat[]): Promise<RoutedEdge[]> {
-		const data = asRecord(await this.post('/trace_attributes', {
-			shape: coordinates.map(([lon, lat]) => ({ lat, lon })),
-			costing: 'pedestrian',
-			shape_match: 'walk_or_snap',
-			filters: {
-				action: 'include',
-				attributes: [
-					'edge.id',
-					'edge.way_id',
-					'edge.length',
-					'edge.begin_osm_node_id',
-					'edge.end_osm_node_id',
-					'edge.use',
-					'edge.road_class',
-					'edge.surface',
-					'edge.tunnel',
-					'edge.traversability',
-					'edge.forward',
-					'edge.travel_mode',
-				],
-			},
-		}));
+		const data = asRecord(
+			await this.post('/trace_attributes', {
+				shape: coordinates.map(([lon, lat]) => ({ lat, lon })),
+				costing: 'pedestrian',
+				shape_match: 'walk_or_snap',
+				filters: {
+					action: 'include',
+					attributes: [
+						'edge.id',
+						'edge.way_id',
+						'edge.length',
+						'edge.begin_osm_node_id',
+						'edge.end_osm_node_id',
+						'edge.use',
+						'edge.road_class',
+						'edge.surface',
+						'edge.tunnel',
+						'edge.traversability',
+						'edge.forward',
+						'edge.travel_mode',
+					],
+				},
+			}),
+		);
 		if (!Array.isArray(data.edges)) throw new Error('Valhalla returned no traced edges');
 
 		return data.edges.map((value, index) => {
@@ -130,9 +134,8 @@ export class ValhallaClient {
 			let nodePair = edgeId;
 			let direction: 1 | -1 = 1;
 			if (beginNodeId && endNodeId) {
-				nodePair = beginNodeId < endNodeId
-					? `${beginNodeId}:${endNodeId}`
-					: `${endNodeId}:${beginNodeId}`;
+				nodePair =
+					beginNodeId < endNodeId ? `${beginNodeId}:${endNodeId}` : `${endNodeId}:${beginNodeId}`;
 				direction = beginNodeId > endNodeId ? -1 : 1;
 			}
 			if (typeof edge.forward === 'boolean') direction = edge.forward ? 1 : -1;
@@ -168,7 +171,9 @@ export class ValhallaClient {
 			});
 			if (!response.ok) {
 				const detail = (await response.text().catch(() => '')).slice(0, 300);
-				throw new Error(`Valhalla ${path} failed (${response.status})${detail ? `: ${detail}` : ''}`);
+				throw new Error(
+					`Valhalla ${path} failed (${response.status})${detail ? `: ${detail}` : ''}`,
+				);
 			}
 			return await response.json();
 		} finally {
@@ -240,22 +245,23 @@ function polygonRings(geometry: Record<string, unknown>): LngLat[][] {
 function lngLatCoordinates(value: unknown): LngLat[] {
 	if (!Array.isArray(value)) throw new Error('Valhalla returned malformed coordinates');
 	return value.map((coordinate) => {
-		if (!Array.isArray(coordinate) || coordinate.length < 2) throw new Error('Valhalla returned malformed coordinates');
+		if (!Array.isArray(coordinate) || coordinate.length < 2)
+			throw new Error('Valhalla returned malformed coordinates');
 		return [numberValue(coordinate[0], 'longitude'), numberValue(coordinate[1], 'latitude')];
 	});
 }
 
-
 function asRecord(value: unknown): Record<string, unknown> {
-	if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Valhalla returned malformed JSON');
+	if (!value || typeof value !== 'object' || Array.isArray(value))
+		throw new Error('Valhalla returned malformed JSON');
 	return value as Record<string, unknown>;
 }
 
 function numberValue(value: unknown, name: string): number {
-	if (typeof value !== 'number' || !Number.isFinite(value)) throw new Error(`Valhalla returned invalid ${name}`);
+	if (typeof value !== 'number' || !Number.isFinite(value))
+		throw new Error(`Valhalla returned invalid ${name}`);
 	return value;
 }
-
 
 function optionalString(value: unknown): string | undefined {
 	return typeof value === 'string' || typeof value === 'number' ? String(value) : undefined;

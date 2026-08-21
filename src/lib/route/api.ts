@@ -7,13 +7,7 @@ import {
 	needsMoreCandidates,
 	routeIsAcceptable,
 } from './scoring';
-import type {
-	Algorithm,
-	InternalAlgorithm,
-	LatLng,
-	LngLat,
-	RouteResult,
-} from '$lib/types';
+import type { Algorithm, InternalAlgorithm, LatLng, LngLat, RouteResult } from '$lib/types';
 
 // Re-export for backward compat
 export {
@@ -38,25 +32,20 @@ async function walkingRoute(points: LatLng[]): Promise<{
 	weight: number;
 }> {
 	const coordinates = points.map(([lat, lng]) => `${lng},${lat}`).join(';');
-	const response = await fetch(
-		`/api/routing?coordinates=${encodeURIComponent(coordinates)}`,
-	);
+	const response = await fetch(`/api/routing?coordinates=${encodeURIComponent(coordinates)}`);
 	if (!response.ok) {
 		const text = await response.text().catch(() => '');
 		throw new Error(text || `Routing failed (${response.status})`);
 	}
 	const data = await response.json();
-	if (data.code !== 'Ok' || !data.routes?.[0])
-		throw new Error('No walkable loop found');
+	if (data.code !== 'Ok' || !data.routes?.[0]) throw new Error('No walkable loop found');
 	return data.routes[0];
 }
 
 /**
  * Fetch railway station data from the server-side Overpass proxy.
  */
-async function stationData(
-	routes: { geometry: { coordinates: LngLat[] } }[],
-): Promise<{
+async function stationData(routes: { geometry: { coordinates: LngLat[] } }[]): Promise<{
 	available: boolean;
 	stations: { name?: string; coordinates: LngLat }[];
 }> {
@@ -71,9 +60,7 @@ async function stationData(
 	].join(',');
 
 	try {
-		const response = await fetch(
-			`/api/stations?bbox=${encodeURIComponent(bbox)}`,
-		);
+		const response = await fetch(`/api/stations?bbox=${encodeURIComponent(bbox)}`);
 		if (!response.ok) throw new Error();
 		return await response.json();
 	} catch {
@@ -85,10 +72,7 @@ async function stationData(
 /*  Helper to apply station penalty to a route                        */
 /* ------------------------------------------------------------------ */
 
-function applyStationPenalty(
-	route: RouteResult,
-	stations: { coordinates: LngLat }[],
-): RouteResult {
+function applyStationPenalty(route: RouteResult, stations: { coordinates: LngLat }[]): RouteResult {
 	route.stationRepeatDistance = srd(route.geometry.coordinates, stations);
 	route.score += (route.stationRepeatDistance / route.distance) * 4;
 	return route;
@@ -109,10 +93,7 @@ async function routeCandidate(
 ): Promise<RouteResult> {
 	const points = loopPoints(start, targetKm, bearing, favorites, scale, algorithm);
 	const route = await walkingRoute(points);
-	const scored = scoreRoute(
-		{ distance: route.distance, geometry: route.geometry },
-		targetKm,
-	);
+	const scored = scoreRoute({ distance: route.distance, geometry: route.geometry }, targetKm);
 	Object.assign(route, {
 		candidate: { algorithm, bearing, scale, points },
 		...scored,
@@ -129,9 +110,7 @@ async function routeCandidates(
 	stations: { coordinates: LngLat }[],
 	algorithm: InternalAlgorithm,
 ): Promise<RouteResult[]> {
-	const scales = favorites.length
-		? [0.35, 0.55, 0.75, 0.95]
-		: [0.75, 0.9, 1.05, 1.2];
+	const scales = favorites.length ? [0.35, 0.55, 0.75, 0.95] : [0.75, 0.9, 1.05, 1.2];
 	const routes: RouteResult[] = [];
 	for (const [index, offset] of offsets.entries()) {
 		try {
@@ -199,11 +178,7 @@ export async function walkingLoop(
 		routes.sort(compareRoutes);
 	}
 
-	if (
-		!routeIsAcceptable(routes[0]!) &&
-		internalAlgo === 'organic' &&
-		!favorites.length
-	) {
+	if (!routeIsAcceptable(routes[0]!) && internalAlgo === 'organic' && !favorites.length) {
 		routes = routes.concat(
 			await routeCandidates(
 				start,
@@ -250,15 +225,11 @@ export async function walkingLoop(
 
 	// Calibration — try to correct distance error
 	const calibrationSource =
-		routes
-			.filter(backtrackingIsAcceptable)
-			.sort((a, b) => a.distanceError - b.distanceError)[0] ?? routes[0]!;
+		routes.filter(backtrackingIsAcceptable).sort((a, b) => a.distanceError - b.distanceError)[0] ??
+		routes[0]!;
 	if (calibrationSource.distanceError > 0.1) {
 		const best = calibrationSource;
-		const scale = Math.min(
-			1.4,
-			best.candidate!.scale * ((targetKm * 1000) / best.distance),
-		);
+		const scale = Math.min(1.4, best.candidate!.scale * ((targetKm * 1000) / best.distance));
 		try {
 			routes.push(
 				await routeCandidate(

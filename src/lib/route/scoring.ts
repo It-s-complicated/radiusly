@@ -1,4 +1,4 @@
-import type { InternalAlgorithm, LngLat, RouteCandidate, RouteResult } from '$lib/types';
+import type { InternalAlgorithm, LngLat, RouteResult } from '$lib/types';
 
 const STATION_RADIUS_METERS = 250;
 const MAX_REPEAT_RATIO = 0.05;
@@ -15,9 +15,7 @@ export function distance([lng1, lat1]: LngLat, [lng2, lat2]: LngLat): number {
 	const longitude = toRadians(lng2 - lng1);
 	const a =
 		Math.sin(latitude / 2) ** 2 +
-		Math.cos(toRadians(lat1)) *
-			Math.cos(toRadians(lat2)) *
-			Math.sin(longitude / 2) ** 2;
+		Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(longitude / 2) ** 2;
 	return 12742000 * Math.asin(Math.sqrt(a));
 }
 
@@ -88,8 +86,7 @@ export function stationRepeatedDistance(
 		if (
 			seen.has(key) &&
 			stations.some(
-				({ coordinates: station }) =>
-					distance(midpoint, station) <= STATION_RADIUS_METERS,
+				({ coordinates: station }) => distance(midpoint, station) <= STATION_RADIUS_METERS,
 			)
 		) {
 			repeated += distance(from, to);
@@ -131,8 +128,7 @@ export function scoreRoute(
 		distanceError,
 		distanceErrorDistance,
 		...repetition,
-		score:
-			distanceError + repetition.repeatRatio * 2 + repetition.longestRepeatRatio * 4,
+		score: distanceError + repetition.repeatRatio * 2 + repetition.longestRepeatRatio * 4,
 	};
 }
 
@@ -153,8 +149,7 @@ export function backtrackingIsAcceptable(
 	return (
 		route.stationRepeatDistance <= MAX_STATION_REPEAT_METERS &&
 		(route.candidate?.algorithm === 'orbit-same' ||
-			(route.repeatRatio <= MAX_REPEAT_RATIO &&
-				route.longestRepeatDistance <= maxRepeatRun))
+			(route.repeatRatio <= MAX_REPEAT_RATIO && route.longestRepeatDistance <= maxRepeatRun))
 	);
 }
 

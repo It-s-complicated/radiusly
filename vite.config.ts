@@ -12,8 +12,7 @@ export default defineConfig({
 			manifest: {
 				name: 'Radiusly — Neighborhood Walks',
 				short_name: 'Radiusly',
-				description:
-					'Plan a neighborhood walk that fits the distance or time you have.',
+				description: 'Plan a neighborhood walk that fits the distance or time you have.',
 				start_url: '/',
 				display: 'standalone',
 				background_color: '#f8f6f0',

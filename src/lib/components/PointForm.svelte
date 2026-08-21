@@ -2,7 +2,12 @@
 	import { onMount } from 'svelte';
 	import type { LatLng } from '$lib/types';
 
-	let { show = false, kind = 'start', onsubmit, onclose }: {
+	let {
+		show = false,
+		kind = 'start',
+		onsubmit,
+		onclose,
+	}: {
 		show?: boolean;
 		kind?: 'start' | 'favorite';
 		onsubmit?: (name: string) => void;
@@ -28,19 +33,8 @@
 {#if show}
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<!-- svelte-ignore a11y_interactive_supports_focus -->
-	<div
-		class="point-form"
-		role="dialog"
-		aria-modal="true"
-		tabindex="0"
-		onkeydown={handleKeydown}
-	>
-		<button
-			class="point-form-close"
-			type="button"
-			aria-label="Close"
-			onclick={onclose}
-		>×</button>
+	<div class="point-form" role="dialog" aria-modal="true" tabindex="0" onkeydown={handleKeydown}>
+		<button class="point-form-close" type="button" aria-label="Close" onclick={onclose}>×</button>
 		<form onsubmit={handleSubmit}>
 			<label for="point-name" id="point-form-title">
 				{kind === 'start' ? 'Name this starting point' : 'Name this walk-by spot'}

@@ -34,11 +34,13 @@ describe('edge-based route scoring', () => {
 		expect(scores.repeatRatio).toBe(0.5);
 		expect(scores.longestRepeatedRunMeters).toBe(200);
 		expect(scores.immediateReversalMeters).toBe(200);
-		expect(rejectionReasons(scores, { backtracking: 'avoid' })).toEqual(expect.arrayContaining([
-			'TOTAL_REPEATED_DISTANCE',
-			'LONGEST_REPEATED_RUN',
-			'IMMEDIATE_REVERSAL',
-		]));
+		expect(rejectionReasons(scores, { backtracking: 'avoid' })).toEqual(
+			expect.arrayContaining([
+				'TOTAL_REPEATED_DISTANCE',
+				'LONGEST_REPEATED_RUN',
+				'IMMEDIATE_REVERSAL',
+			]),
+		);
 	});
 
 	it('distinguishes same-direction repetition from immediate reversal', () => {
@@ -97,6 +99,8 @@ describe('edge-based route scoring', () => {
 			[],
 		);
 
-		expect(rejectionReasons(scores, { backtracking: 'avoid' })).toContain('UNSUITABLE_PEDESTRIAN_ACCESS');
+		expect(rejectionReasons(scores, { backtracking: 'avoid' })).toContain(
+			'UNSUITABLE_PEDESTRIAN_ACCESS',
+		);
 	});
 });

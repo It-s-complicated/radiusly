@@ -5,7 +5,14 @@
 	import PointForm from '$lib/components/PointForm.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import { starts, selectedStartId, favorites } from '$lib/stores/points';
-	import { mode, distanceTarget, timeTarget, pace, algorithm, targetKm } from '$lib/stores/preferences';
+	import {
+		mode,
+		distanceTarget,
+		timeTarget,
+		pace,
+		algorithm,
+		targetKm,
+	} from '$lib/stores/preferences';
 	import { currentRoute, routeDebug, isLoading, showToast } from '$lib/stores/route';
 	import { walkingLoop } from '$lib/route/api';
 	import { loopPoints } from '$lib/route/shapes';
@@ -57,7 +64,9 @@
 			return;
 		}
 		try {
-			const selectedFavs = $favorites.filter((f) => f.selected).map((f) => [f.lat, f.lng] as LatLng);
+			const selectedFavs = $favorites
+				.filter((f) => f.selected)
+				.map((f) => [f.lat, f.lng] as LatLng);
 			previewPoints = loopPoints(mapStart, km, bearing, selectedFavs, 1, $algorithm);
 		} catch {
 			previewPoints = [];
@@ -86,14 +95,19 @@
 				schemaVersion: 12,
 				generatedAt: new Date().toISOString(),
 				input: {
-					start: { name: $starts.find((s) => s.id === $selectedStartId)?.name, coordinates: mapStart },
+					start: {
+						name: $starts.find((s) => s.id === $selectedStartId)?.name,
+						coordinates: mapStart,
+					},
 					mode: $mode,
 					enteredTarget: $mode === 'time' ? $timeTarget : $distanceTarget,
 					targetKm: km,
 					paceKmH: $pace,
 					bearing: routeBearing,
 					algorithm: $algorithm,
-					selectedSpots: $favorites.filter((f) => f.selected).map((f) => ({ name: f.name, coordinates: [f.lat, f.lng] })),
+					selectedSpots: $favorites
+						.filter((f) => f.selected)
+						.map((f) => ({ name: f.name, coordinates: [f.lat, f.lng] })),
 				},
 				candidates: route.debugCandidates,
 				stationData: route.debugStationData,
@@ -114,7 +128,12 @@
 		} catch (error: unknown) {
 			const err = error as Error & { code?: string };
 			if (err.code === 'ROUTE_QUALITY') {
-				routeDebug.set({ schemaVersion: 12, generatedAt: new Date().toISOString(), input: {}, error: err.message });
+				routeDebug.set({
+					schemaVersion: 12,
+					generatedAt: new Date().toISOString(),
+					input: {},
+					error: err.message,
+				});
 				bearing = (bearing + 67) % 360;
 				showToast('No low-backtracking route found. Try again or choose another route shape.');
 				return;
@@ -124,7 +143,13 @@
 			fallbackMode = true;
 			previewPoints = [];
 			showToast('Street routing is unavailable, so this is an approximate loop.');
-			routeDebug.set({ schemaVersion: 12, generatedAt: new Date().toISOString(), input: {}, error: err.message, fallbackCoordinates: fallback });
+			routeDebug.set({
+				schemaVersion: 12,
+				generatedAt: new Date().toISOString(),
+				input: {},
+				error: err.message,
+				fallbackCoordinates: fallback,
+			});
 		} finally {
 			isLoading.set(false);
 		}
@@ -212,7 +237,12 @@
 
 	function handlePointFormSubmit(name: string) {
 		if (!pendingPoint) return;
-		const point: SavedPoint = { id: crypto.randomUUID(), name, lat: pendingPoint[0], lng: pendingPoint[1] };
+		const point: SavedPoint = {
+			id: crypto.randomUUID(),
+			name,
+			lat: pendingPoint[0],
+			lng: pendingPoint[1],
+		};
 		if (pointFormKind === 'start') {
 			starts.update((s) => [...s, point]);
 			selectedStartId.set(point.id);
@@ -236,14 +266,29 @@
 			const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
 			if (!response.ok) throw new Error();
 			const results = await response.json();
-			if (!results.length) { showToast('No places found.'); searchResults = []; return; }
-			searchResults = results.map((r: { place_id: number; display_name: string; name?: string; lat: string; lon: string }) => ({
-				id: String(r.place_id),
-				name: r.name || r.display_name.split(',')[0] || '',
-				lat: Number(r.lat),
-				lng: Number(r.lon),
-			}));
-		} catch { showToast('Place search is temporarily unavailable.'); searchResults = []; }
+			if (!results.length) {
+				showToast('No places found.');
+				searchResults = [];
+				return;
+			}
+			searchResults = results.map(
+				(r: {
+					place_id: number;
+					display_name: string;
+					name?: string;
+					lat: string;
+					lon: string;
+				}) => ({
+					id: String(r.place_id),
+					name: r.name || r.display_name.split(',')[0] || '',
+					lat: Number(r.lat),
+					lng: Number(r.lon),
+				}),
+			);
+		} catch {
+			showToast('Place search is temporarily unavailable.');
+			searchResults = [];
+		}
 	}
 
 	function handleSearchResult(result: SavedPoint) {

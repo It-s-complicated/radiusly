@@ -53,9 +53,9 @@ describe('walkingLoop', () => {
 		expect(route.distance).toBe(4000);
 		expect(route.candidate).toBeDefined();
 		expect(route.candidate!.algorithm).toBe('organic');
-		const routingCalls = vi.mocked(globalThis.fetch).mock.calls.filter(([url]) =>
-			String(url).includes('/api/routing'),
-		);
+		const routingCalls = vi
+			.mocked(globalThis.fetch)
+			.mock.calls.filter(([url]) => String(url).includes('/api/routing'));
 		expect(routingCalls).toHaveLength(1);
 	});
 

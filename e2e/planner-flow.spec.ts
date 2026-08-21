@@ -34,9 +34,7 @@ test.describe('Planner critical flow', () => {
 		await expect(page.locator('#target-unit')).toHaveText('km');
 	});
 
-	test('5 route shape radio buttons are present and selectable', async ({
-		page,
-	}) => {
+	test('5 route shape radio buttons are present and selectable', async ({ page }) => {
 		await page.goto('/');
 		const shapeRadios = page.locator('input[name="route-algorithm"]');
 		await expect(shapeRadios).toHaveCount(5);
