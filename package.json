@@ -2,7 +2,7 @@
   "name": "radiusly",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@10.33.0",
+  "packageManager": "pnpm@11.22.0",
   "type": "module",
   "scripts": {
     "dev": "vite dev",
@@ -39,7 +39,7 @@
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
-      "version": "10.33.0",
+      "version": "11.22.0",
       "onFail": "download"
     }
   }
