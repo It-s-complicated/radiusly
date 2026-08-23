@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import type { LatLng, SavedPoint, RouteResult } from '$lib/types';
+	import type { LatLng, SavedPoint } from '$lib/types';
 	import 'leaflet/dist/leaflet.css';
 
 	let {
@@ -8,6 +8,7 @@
 		favorites = [] as SavedPoint[],
 		previewPoints = [] as LatLng[],
 		routePoints = [] as LatLng[],
+		syntheticPoints = [] as LatLng[],
 		dashed = false,
 		pinMode = false,
 		onMapClick,
@@ -18,6 +19,7 @@
 		favorites?: SavedPoint[];
 		previewPoints?: LatLng[];
 		routePoints?: LatLng[];
+		syntheticPoints?: LatLng[];
 		dashed?: boolean;
 		pinMode?: boolean;
 		onMapClick?: (latlng: LatLng) => void;
@@ -32,6 +34,7 @@
 	let favoriteLayer: any;
 	let previewLine: any;
 	let routeLine: any;
+	let syntheticLayer: any;
 
 	// Track internal state to avoid re-initialization
 	let mapInitialized = $state(false);
@@ -68,6 +71,7 @@
 			iconAnchor: [12, 28],
 		});
 		favoriteLayer = L.layerGroup().addTo(map);
+		syntheticLayer = L.layerGroup().addTo(map);
 
 		// Map click
 		map.on('click', (e: any) => {
@@ -150,6 +154,24 @@
 			className: 'route-pulse',
 		}).addTo(map);
 		map.fitBounds(routeLine.getBounds(), { padding: [54, 54] });
+	});
+
+	// Update generated waypoint markers
+	$effect(() => {
+		if (!mapInitialized || !syntheticLayer || !L) return;
+		syntheticLayer.clearLayers();
+		syntheticPoints.forEach((point, index) => {
+			L.circleMarker(point, {
+				radius: 5,
+				color: '#ffffff',
+				weight: 2,
+				fillColor: '#173f35',
+				fillOpacity: 0.95,
+				className: 'synthetic-waypoint',
+			})
+				.bindTooltip(`Generated waypoint ${index + 1}`, { direction: 'top', offset: [0, -6] })
+				.addTo(syntheticLayer);
+		});
 	});
 
 	// Pin mode cursor

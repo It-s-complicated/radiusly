@@ -25,6 +25,25 @@ describe('loopPoints', () => {
 		expect(loopPoints(start, 4).length).toBe(5);
 	});
 
+	it('adds perimeter waypoints as routes get longer', () => {
+		expect({
+			organic: loopPoints(start, 16, 25, [], 1, 'organic').length,
+			tangent: loopPoints(start, 16, 25, [], 1, 'tangent').length,
+			orbit: loopPoints(start, 16, 25, [], 1, 'orbit-near').length,
+		}).toEqual({ organic: 10, tangent: 9, orbit: 11 });
+	});
+
+	it('gives organic waypoints reproducible radial variation', () => {
+		const points = (bearing: number) => loopPoints(start, 4, bearing).slice(1, -1);
+		const first = points(25);
+		const radii = first.map(([lat, lng]) =>
+			Math.hypot(lat - start[0], (lng - start[1]) * Math.cos((start[0] * Math.PI) / 180)),
+		);
+		expect(new Set(radii.map((radius) => radius.toFixed(6))).size).toBeGreaterThan(1);
+		expect(points(92)).not.toEqual(first);
+		expect(points(25)).toEqual(first);
+	});
+
 	it('generates 5 points for tangent shape', () => {
 		expect(loopPoints(start, 4, 25, [], 1, 'tangent').length).toBe(5);
 	});

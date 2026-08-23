@@ -23,6 +23,7 @@
 	let mapStart = $state<LatLng>(DEFAULT_LOCATION);
 	let previewPoints = $state<LatLng[]>([]);
 	let routePoints = $state<LatLng[]>([]);
+	let syntheticPoints = $state<LatLng[]>([]);
 	let fallbackMode = $state(false);
 	let bearing = $state(25);
 	let pinMode = $state<'start' | 'favorite' | undefined>(undefined);
@@ -61,16 +62,29 @@
 		const km = $targetKm;
 		if (!Number.isFinite(km) || km < 0.5) {
 			previewPoints = [];
+			syntheticPoints = [];
 			return;
 		}
 		try {
 			const selectedFavs = $favorites
 				.filter((f) => f.selected)
 				.map((f) => [f.lat, f.lng] as LatLng);
-			previewPoints = loopPoints(mapStart, km, bearing, selectedFavs, 1, $algorithm);
+			const points = loopPoints(mapStart, km, bearing, selectedFavs, 1, $algorithm);
+			previewPoints = points;
+			syntheticPoints = generatedPoints(points, selectedFavs);
 		} catch {
 			previewPoints = [];
+			syntheticPoints = [];
 		}
+	}
+
+	function generatedPoints(points: LatLng[], selectedSpots: LatLng[]): LatLng[] {
+		return points
+			.slice(1, -1)
+			.filter(
+				([lat, lng]) =>
+					!selectedSpots.some(([spotLat, spotLng]) => lat === spotLat && lng === spotLng),
+			);
 	}
 
 	async function makeRoute() {
@@ -89,6 +103,7 @@
 			const route = await walkingLoop(mapStart, km, routeBearing, selectedFavs, $algorithm);
 			const coords = route.geometry.coordinates.map(([lng, lat]) => [lat, lng] as LatLng);
 			routePoints = coords;
+			syntheticPoints = generatedPoints(route.candidate?.points ?? [], selectedFavs);
 			fallbackMode = false;
 			currentRoute.set(route);
 			routeDebug.set({
@@ -140,6 +155,7 @@
 			}
 			const fallback = loopPoints(mapStart, km, routeBearing, selectedFavs, 1, $algorithm);
 			routePoints = fallback;
+			syntheticPoints = generatedPoints(fallback, selectedFavs);
 			fallbackMode = true;
 			previewPoints = [];
 			showToast('Street routing is unavailable, so this is an approximate loop.');
@@ -323,6 +339,7 @@
 			favorites={$favorites}
 			{previewPoints}
 			{routePoints}
+			{syntheticPoints}
 			dashed={fallbackMode}
 			pinMode={pinMode !== undefined}
 			onMapClick={handleMapClick}

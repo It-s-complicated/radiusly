@@ -12,6 +12,11 @@ test.describe('Planner critical flow', () => {
 		await expect(map).toBeVisible();
 	});
 
+	test('synthetic waypoints are visible on the route preview', async ({ page }) => {
+		await page.goto('/');
+		await expect(page.locator('.synthetic-waypoint')).toHaveCount(3);
+	});
+
 	test('make my route button exists', async ({ page }) => {
 		await page.goto('/');
 		const button = page.getByRole('button', { name: /Make my route/i });

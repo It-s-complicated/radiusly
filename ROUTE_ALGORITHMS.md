@@ -8,7 +8,7 @@ The implementation lives in [`src/lib/route/shapes.ts`](src/lib/route/shapes.ts)
 
 | Shape                 | Waypoint geometry                                                  | Focus                                                      |
 | --------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------- |
-| Organic               | Three evenly spaced points around the start                        | A simple, balanced neighborhood loop                       |
+| Organic               | Irregular points distributed around the start                      | A varied, balanced neighborhood loop                       |
 | Tangent               | A circular loop whose rim passes through the start                 | Immediate circulation without an outbound stem             |
 | Orbit — same return   | A loop around the start with the same outbound and inbound point   | A clear stem and predictable orbit                         |
 | Orbit — nearby return | An orbit with outbound and inbound points separated by 18°         | Similar to Orbit, with less exact backtracking near home   |
@@ -24,7 +24,7 @@ Every shape receives:
 - `favorites`: selected walk-by points that must be included.
 - `scale`: a candidate-specific radius multiplier.
 
-Every radius has a minimum of `0.18 km`. This prevents very short requests from collapsing all waypoints onto the same streets.
+Every radius has a minimum of `0.18 km`. This prevents very short requests from collapsing all waypoints onto the same streets. Perimeter-based shapes use `max(original count, ceil(targetKm / 2))` positions distributed around the perimeter. Short walks keep their original waypoint count while longer walks give the router enough intermediate guidance to avoid large shortcuts and repeated corridors.
 
 Organic, Tangent, and Orbit mix favorites into their angular waypoint order. Spaghetti inserts favorites after its first detour so the requested visit becomes part of the crossing sequence.
 
@@ -32,7 +32,7 @@ After each generation the app advances the base bearing by `67°`. Because 67 an
 
 ## Organic
 
-Organic places three detours around the start at offsets of `0°`, `120°`, and `240°`, then orders those detours and any favorites around the start before closing the loop.
+Organic starts with evenly distributed detours, then independently varies each radius from `72%` to `128%` and each angle by up to `±18°`. The variation is derived from the route bearing, so repeated inputs remain reproducible while each generation's `67°` bearing step produces a different silhouette. It uses three detours through `6 km`, adding more as the target grows.
 
 ```text
 radius = max(0.18, targetKm / (2π) × 0.87 × scale)
@@ -47,8 +47,7 @@ Focus:
 Tune it with:
 
 - `0.87`: increase it when routed Organic loops are consistently short; decrease it when they are long;
-- `[0, 120, 240]`: change the offsets to make the shape more asymmetric;
-- the number of detours: add one only if field tests show that three cannot produce enough variety, because every waypoint adds routing constraints and network requests.
+- the waypoint density: lower the `2 km` interval only if long routes still shortcut between detours, because every waypoint adds routing constraints.
 
 If no acceptable Organic candidate is found and there are no favorites, Radiusly also tries Tangent candidates.
 
@@ -69,7 +68,7 @@ Focus:
 Tune it with:
 
 - `0.9`: the main routed-distance calibration;
-- `[90, 180, 270]`: perimeter spacing relative to the start;
+- the waypoint density: perimeter points are spaced evenly relative to the start;
 - the center bearing: changing it rotates the entire loop without changing its topology.
 
 ## Orbit — same return
@@ -92,7 +91,7 @@ Tune it with:
 
 - `2 + 2π`: represents two stem lengths plus a circular perimeter; increasing the denominator shrinks the shape;
 - `MAX_ORBIT_STEM_METERS` (`500 m`): candidates with a longer repeated stem cause another candidate batch to be generated;
-- `[90, 180, 270]`: controls perimeter sampling.
+- the waypoint density: perimeter points are spaced evenly around the orbit.
 
 The same-return variant is exempt from the normal repeated-path limit because repeating its stem is intentional. Station-area repetition is still limited.
 

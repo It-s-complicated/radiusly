@@ -55,6 +55,12 @@ function orderAround(center: LatLng, points: LatLng[], startBearing: number): La
 	);
 }
 
+function perimeterOffsets(targetKm: number, minimum: number, skipFirst = false): number[] {
+	const count = Math.max(minimum, Math.ceil(targetKm / 2));
+	const first = skipFirst ? 1 : 0;
+	return Array.from({ length: count - first }, (_, index) => ((index + first) * 360) / count);
+}
+
 /**
  * Generate waypoints for a walking loop using the specified algorithm.
  */
@@ -70,7 +76,7 @@ export function loopPoints(
 		const radius = Math.max(0.18, (targetKm / (2 * Math.PI)) * 0.9 * scale);
 		const center = pointAt(start, radius, bearing);
 		const startBearing = (bearing + 180) % 360;
-		const perimeter = [90, 180, 270].map((offset) =>
+		const perimeter = perimeterOffsets(targetKm, 4, true).map((offset) =>
 			pointAt(center, radius, startBearing + offset),
 		);
 		return [start, ...orderAround(center, [...favorites, ...perimeter], startBearing), start];
@@ -83,7 +89,9 @@ export function loopPoints(
 		const inboundBearing = bearing + gap;
 		const outbound = pointAt(start, radius, outboundBearing);
 		const inbound = pointAt(start, radius, inboundBearing);
-		const perimeter = [90, 180, 270].map((offset) => pointAt(start, radius, bearing + offset));
+		const perimeter = perimeterOffsets(targetKm, 4, true).map((offset) =>
+			pointAt(start, radius, bearing + offset),
+		);
 		return [
 			start,
 			outbound,
@@ -134,7 +142,9 @@ export function loopPoints(
 
 	// Organic (default)
 	const radius = Math.max(0.18, (targetKm / (2 * Math.PI)) * 0.87 * scale);
-	const detours = [0, 120, 240].map((offset) => pointAt(start, radius, bearing + offset));
+	const detours = perimeterOffsets(targetKm, 3).map((offset, index) =>
+		irregularPoint(start, radius, bearing + offset, bearing + index * 31),
+	);
 	const points = orderAround(start, [...favorites, ...detours], 180);
 	return [start, ...points, start];
 }
