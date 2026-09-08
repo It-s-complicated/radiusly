@@ -1,4 +1,4 @@
-import { building } from '$app/environment';
+import { building } from '$app/env';
 import { env } from '$env/dynamic/private';
 import { betterAuth } from 'better-auth';
 import { assertAllowedGithubUser } from './github-access';
