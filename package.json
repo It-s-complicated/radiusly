@@ -15,9 +15,9 @@
 		"test:e2e": "playwright test"
 	},
 	"dependencies": {
-		"@better-auth/core": "1.7.3",
+		"@better-auth/core": "1.7.1",
 		"@opentelemetry/api": "^1.9.1",
-		"better-auth": "1.7.3",
+		"better-auth": "1.7.1",
 		"leaflet": "^1.9.4"
 	},
 	"devDependencies": {
