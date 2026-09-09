@@ -12,7 +12,8 @@ Currently implemented:
 - Routes planned by distance or time at 4, 5, or 6 km/h.
 - Five route shapes: Organic, Tangent, Orbit with the same return, Orbit with a nearby return, and Spaghetti.
 - Reusable walk-by spots added through place search or directly on the map.
-- Multiple route candidates scored by target-distance error, total repeated path, longest repeated section, and repeated walking near railway stations.
+- Multiple server-generated candidates scored by target-distance error, repeated physical path segments, longest repeated section, and repeated walking near railway stations.
+- Frontend-selectable A* and Dijkstra path searches, remembered locally.
 - Rejection of routes that exceed the configured backtracking limits, with additional candidate generation when needed.
 - Remembered planner mode, distance, time, pace, route shape, starting point, and saved spots.
 - Route summaries, "Make another route", and copyable debugging information for reporting poor routes.
@@ -21,9 +22,9 @@ Currently implemented:
 Known limitations:
 
 - Route quality is based on geometric heuristics. It does not yet score scenery, traffic, lighting, accessibility, construction, or personal safety.
-- Railway-station penalties depend on an optional OpenStreetMap lookup and are skipped when that lookup is unavailable.
-- Maps, place search, station lookup, and pedestrian routing use public third-party services and require an internet connection.
-- There is no cross-device sync, saved-route backend, or offline routing.
+- Railway-station penalties use station locations included in the local graph.
+- Maps and place search use public third-party services. Route generation uses locally prepared OSM data.
+- There is no cross-device sync, saved-route backend, or browser-offline routing. The routing server itself works without external routing access.
 - Representative routes still need systematic field testing in different neighborhood types.
 
 ## Run locally
@@ -42,10 +43,10 @@ Configure the GitHub OAuth callback as `http://localhost:5173/api/auth/callback/
 
 ```bash
 pnpm build
-pnpm preview
+pnpm start
 ```
 
-The Netlify adapter deploys the page and `/api` proxy routes as Netlify Functions.
+The Node adapter produces a persistent application server. Deploy the compiled worker and regional graph alongside the server; see [ROUTING.md](ROUTING.md).
 
 ### Tests
 
@@ -57,48 +58,16 @@ pnpm test
 pnpm test:e2e
 ```
 
-### Route-generator validation
+### Custom in-process routing
 
-The application continues to use its existing route provider. The private Valhalla variables are optional and are used only by the comparison harness:
+The application uses our TypeScript walking graph with frontend-selectable A* and Dijkstra searches. Build regional OSM data before generating routes. See [ROUTING.md](ROUTING.md) for data preparation, supported access rules, runtime limits and deployment.
 
-```bash
-export VALHALLA_URL=https://valhalla.example.com
-export VALHALLA_API_TOKEN=replace-me
-export VALHALLA_GRAPH_VERSION=2026-08-16-berlin
-pnpm validate:routes validation/cases.json validation/results-local.json
-```
-
-The harness runs the seeded network generator and the legacy shape baseline through the same Valhalla graph-edge scorer. It records targets, routed distances, repeated edges, longest repeated runs, versions, seeds, candidate rejection reasons, and accepted legacy-candidate counts. `validation/benchmark-2026-08-16.json` is one-off validation evidence from a public Valhalla instance; application and production traffic must never depend on that service.
-
-### Private Valhalla service
-
-Valhalla runs separately from Netlify on a long-lived container host:
-
-```bash
-cd ops/valhalla
-cp .env.example .env
-# Configure the DNS name, bearer token, supported-region PBF URL, and capacity.
-./update-graph.sh 2026-08-16-berlin
-docker compose up -d
-```
-
-The compose stack exposes only the Caddy HTTPS gateway. Caddy requires the configured bearer token; Valhalla has no direct public host port. Preprocessed graph releases remain under `ops/valhalla/data`, outside the container lifecycle.
-
-`update-graph.sh` builds into `data/releases/<version>`, verifies the tile archive, atomically switches `data/current`, restarts Valhalla, and checks token-authenticated `/status`. A failed health check restores the previous release. Successful releases remain available for explicit rollback.
-
-For each graph update:
-
-1. Choose an immutable version containing the OSM extract date and region.
-2. Configure the supported-region PBF URL in `ops/valhalla/.env`.
-3. Run `./update-graph.sh <version>`.
-4. Confirm `docker compose ps` reports Valhalla healthy.
-5. Run the checked-in validation matrix against the activated graph.
-6. Preserve the prior release until representative regression requests pass.
+Routing runs in a worker thread inside the SvelteKit Node server using a local walking graph.
 
 ## Stack
 
-- **SvelteKit** with strict TypeScript and the Netlify adapter
-- Server routes proxy external search, routing, and map-data APIs
+- **SvelteKit** with strict TypeScript and the Node adapter
+- Custom TypeScript routing in a server worker; server proxies for place search and optional map-data queries
 - **Leaflet** for maps (client-side)
 - **Vitest** with Playwright-backed browser mode for component tests
 - **Playwright** for critical browser flows
