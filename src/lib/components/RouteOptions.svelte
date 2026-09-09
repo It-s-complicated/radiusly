@@ -1,7 +1,14 @@
 <script lang="ts">
 	import type { SavedPoint, Mode, Pace, Algorithm } from '$lib/types';
 	import { starts, selectedStartId, favorites } from '$lib/stores/points';
-	import { mode, distanceTarget, timeTarget, pace, algorithm } from '$lib/stores/preferences';
+	import {
+		mode,
+		distanceTarget,
+		timeTarget,
+		pace,
+		algorithm,
+		searchAlgorithm,
+	} from '$lib/stores/preferences';
 	import { currentRoute, routeDebug, isLoading, showToast } from '$lib/stores/route';
 	import RouteSummary from './RouteSummary.svelte';
 
@@ -138,7 +145,7 @@
 			<fieldset class="route-shape-field">
 				<legend>Route shape</legend>
 				<div class="route-shape-grid">
-					{#each ROUTE_ALGORITHMS as algo}
+					{#each ROUTE_ALGORITHMS as algo (algo.value)}
 						<label>
 							<input
 								type="radio"
@@ -187,6 +194,38 @@
 						</label>
 					{/each}
 				</div>
+			</fieldset>
+
+			<fieldset class="pace-field path-search-field">
+				<legend>Path search</legend>
+				<label>
+					<input
+						type="radio"
+						name="path-search"
+						value="astar"
+						checked={$searchAlgorithm === 'astar'}
+						disabled={$isLoading}
+						onchange={() => {
+							searchAlgorithm.set('astar');
+							currentRoute.set(null);
+						}}
+					/>
+					<span><b>A*</b><small>Search toward the destination</small></span>
+				</label>
+				<label>
+					<input
+						type="radio"
+						name="path-search"
+						value="dijkstra"
+						checked={$searchAlgorithm === 'dijkstra'}
+						disabled={$isLoading}
+						onchange={() => {
+							searchAlgorithm.set('dijkstra');
+							currentRoute.set(null);
+						}}
+					/>
+					<span><b>Dijkstra</b><small>Explore outward by distance</small></span>
+				</label>
 			</fieldset>
 
 			<!-- Mode switch -->
@@ -291,7 +330,7 @@
 				</form>
 				{#if searchResults.length > 0}
 					<div class="place-results" aria-live="polite">
-						{#each searchResults as result}
+						{#each searchResults as result (result.id)}
 							<button type="button" onclick={() => onSearchResult?.(result)}>
 								{result.name}
 							</button>

@@ -11,6 +11,7 @@
 		timeTarget,
 		pace,
 		algorithm,
+		searchAlgorithm,
 		targetKm,
 	} from '$lib/stores/preferences';
 	import { currentRoute, routeDebug, isLoading, showToast } from '$lib/stores/route';
@@ -24,7 +25,6 @@
 	let previewPoints = $state<LatLng[]>([]);
 	let routePoints = $state<LatLng[]>([]);
 	let syntheticPoints = $state<LatLng[]>([]);
-	let fallbackMode = $state(false);
 	let bearing = $state(25);
 	let pinMode = $state<'start' | 'favorite' | undefined>(undefined);
 	let pendingPoint = $state<LatLng | undefined>(undefined);
@@ -48,11 +48,10 @@
 		drawPreview();
 	});
 
-	// Clear route points when currentRoute is set to null (keep the dashed
-	// fallback loop, which is shown without a currentRoute)
+	// Clear the routed geometry when the result is cleared.
 	$effect(() => {
 		if (!$currentRoute) {
-			if (!fallbackMode) routePoints = [];
+			routePoints = [];
 			drawPreview();
 		}
 	});
@@ -93,80 +92,39 @@
 			showToast('Choose a walk between 0.5 and 30 km.');
 			return;
 		}
-
 		isLoading.set(true);
 		routeDebug.set(null);
-		const routeBearing = bearing;
-		const selectedFavs = $favorites.filter((f) => f.selected).map((f) => [f.lat, f.lng] as LatLng);
-
+		currentRoute.set(null);
+		const request = {
+			start: mapStart,
+			target: { mode: $mode, value: $mode === 'time' ? $timeTarget : $distanceTarget },
+			pace: $pace,
+			shape: $algorithm,
+			search: $searchAlgorithm,
+			spots: $favorites.filter((f) => f.selected).map((f) => [f.lat, f.lng] as LatLng),
+			bearing,
+		};
 		try {
-			const route = await walkingLoop(mapStart, km, routeBearing, selectedFavs, $algorithm);
-			const coords = route.geometry.coordinates.map(([lng, lat]) => [lat, lng] as LatLng);
-			routePoints = coords;
-			syntheticPoints = generatedPoints(route.candidate?.points ?? [], selectedFavs);
-			fallbackMode = false;
+			const { route, debug } = await walkingLoop(request);
+			routePoints = route.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+			syntheticPoints = generatedPoints(route.candidate?.points ?? [], request.spots);
 			currentRoute.set(route);
+			routeDebug.set(debug);
+		} catch (error) {
+			const message = error instanceof Error ? error.message : 'Route generation failed.';
 			routeDebug.set({
-				schemaVersion: 12,
+				schemaVersion: 14,
 				generatedAt: new Date().toISOString(),
-				input: {
-					start: {
-						name: $starts.find((s) => s.id === $selectedStartId)?.name,
-						coordinates: mapStart,
-					},
-					mode: $mode,
-					enteredTarget: $mode === 'time' ? $timeTarget : $distanceTarget,
-					targetKm: km,
-					paceKmH: $pace,
-					bearing: routeBearing,
-					algorithm: $algorithm,
-					selectedSpots: $favorites
-						.filter((f) => f.selected)
-						.map((f) => ({ name: f.name, coordinates: [f.lat, f.lng] })),
-				},
-				candidates: route.debugCandidates,
-				stationData: route.debugStationData,
-				selectedRoute: {
-					candidate: route.candidate,
-					distance: route.distance,
-					distanceError: route.distanceError,
-					distanceErrorDistance: route.distanceErrorDistance,
-					repeatRatio: route.repeatRatio,
-					repeatedDistance: route.repeatedDistance,
-					longestRepeatRatio: route.longestRepeatRatio,
-					longestRepeatDistance: route.longestRepeatDistance,
-					stationRepeatDistance: route.stationRepeatDistance,
-					geometry: route.geometry,
-				},
+				input: request,
+				error: message,
+				candidates:
+					error && typeof error === 'object' && 'details' in error && Array.isArray(error.details)
+						? error.details
+						: undefined,
 			});
-			bearing = (bearing + 67) % 360;
-		} catch (error: unknown) {
-			const err = error as Error & { code?: string };
-			if (err.code === 'ROUTE_QUALITY') {
-				routeDebug.set({
-					schemaVersion: 12,
-					generatedAt: new Date().toISOString(),
-					input: {},
-					error: err.message,
-				});
-				bearing = (bearing + 67) % 360;
-				showToast('No low-backtracking route found. Try again or choose another route shape.');
-				return;
-			}
-			const fallback = loopPoints(mapStart, km, routeBearing, selectedFavs, 1, $algorithm);
-			routePoints = fallback;
-			syntheticPoints = generatedPoints(fallback, selectedFavs);
-			fallbackMode = true;
-			previewPoints = [];
-			showToast('Street routing is unavailable, so this is an approximate loop.');
-			routeDebug.set({
-				schemaVersion: 12,
-				generatedAt: new Date().toISOString(),
-				input: {},
-				error: err.message,
-				fallbackCoordinates: fallback,
-			});
+			showToast(message);
 		} finally {
+			bearing = (bearing + 67) % 360;
 			isLoading.set(false);
 		}
 	}
@@ -317,7 +275,6 @@
 		currentRoute.set(null);
 		routeDebug.set(null);
 		routePoints = [];
-		fallbackMode = false;
 		drawPreview();
 	}
 </script>
@@ -340,7 +297,7 @@
 			{previewPoints}
 			{routePoints}
 			{syntheticPoints}
-			dashed={fallbackMode}
+			dashed={false}
 			pinMode={pinMode !== undefined}
 			onMapClick={handleMapClick}
 			onCenterClick={handleCenterClick}

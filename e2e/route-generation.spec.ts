@@ -1,8 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-// Critical user flows with mocked API proxies — deterministic, no external
-// services. The production server routes (/api/*) are what the app calls;
-// these tests stub the upstream side of those proxies.
+// Browser contract checks mock the generation endpoint; native graph checks live in routing.test.ts.
 
 const LOOP_COORDS: [number, number][] = [
 	[13.4095, 52.5208],
@@ -13,68 +11,59 @@ const LOOP_COORDS: [number, number][] = [
 ];
 
 async function mockApis(page: import('@playwright/test').Page) {
-	await page.route('**/api/routing?*', (route) => {
+	await page.route('**/api/routing', (route) =>
 		route.fulfill({
 			contentType: 'application/json',
 			body: JSON.stringify({
-				code: 'Ok',
-				routes: [
-					{
-						distance: 4000,
-						duration: 3000,
-						weight: 1,
-						geometry: { coordinates: LOOP_COORDS },
-					},
-				],
+				route: {
+					distance: 4000,
+					duration: 3000,
+					weight: 1,
+					geometry: { coordinates: LOOP_COORDS },
+					repeatRatio: 0,
+					repeatedDistance: 0,
+					longestRepeatRatio: 0,
+					longestRepeatDistance: 0,
+					distanceError: 0,
+					distanceErrorDistance: 0,
+					stationRepeatDistance: 0,
+					score: 0,
+				},
+				debug: { schemaVersion: 14, generatedAt: new Date().toISOString(), input: {} },
 			}),
-		});
-	});
-	await page.route('**/api/stations?*', (route) => {
-		route.fulfill({
-			contentType: 'application/json',
-			body: JSON.stringify({ available: true, stations: [] }),
-		});
-	});
+		}),
+	);
 }
 
-test.describe('Route generation through the server proxy', () => {
-	test('generates a route and shows the summary', async ({ page }) => {
+test.describe('Local server route generation', () => {
+	test('submits the selected search and shows the server result', async ({ page }) => {
 		await mockApis(page);
 		await page.goto('/');
+		await page.getByRole('radio', { name: /Dijkstra/ }).check();
+		const posted = page.waitForRequest((request) => request.url().endsWith('/api/routing'));
 		await page.getByRole('button', { name: /Make my route/ }).click();
-
+		expect((await posted).postDataJSON().search).toBe('dijkstra');
 		await expect(page.getByText('Your loop', { exact: true })).toBeVisible();
 		await expect(page.getByText('4.0', { exact: true })).toBeVisible();
 		await expect(page.getByRole('button', { name: /Make another route/ })).toBeVisible();
-		await expect(page.getByText(/Starts and ends at/)).toBeVisible();
-
-		const hasRouteLine = await page.evaluate(
-			() => document.querySelectorAll('.leaflet-overlay-pane path').length > 0,
-		);
-		expect(hasRouteLine).toBe(true);
+		await page.reload();
+		await expect(page.getByRole('radio', { name: /Dijkstra/ })).toBeChecked();
 	});
-
-	test('shows a dashed approximate loop when street routing fails', async ({ page }) => {
-		await page.route('**/api/routing?*', (route) =>
-			route.fulfill({ status: 502, body: 'upstream down' }),
-		);
-		await page.route('**/api/stations?*', (route) =>
+	test('shows a useful missing-data error without a generated-route summary', async ({ page }) => {
+		await page.route('**/api/routing', (route) =>
 			route.fulfill({
+				status: 503,
 				contentType: 'application/json',
-				body: JSON.stringify({ available: false, stations: [] }),
+				body: JSON.stringify({
+					code: 'GRAPH_UNAVAILABLE',
+					message: 'Local walking data is unavailable. Build the regional graph.',
+				}),
 			}),
 		);
 		await page.goto('/');
 		await page.getByRole('button', { name: /Make my route/ }).click();
-
-		await expect(page.getByText(/Street routing is unavailable/)).toBeVisible();
-		const dashedLoop = await page.evaluate(() => {
-			const paths = [
-				...document.querySelectorAll('.leaflet-overlay-pane path'),
-			] as SVGPathElement[];
-			return paths.some((p) => p.getAttribute('stroke-dasharray') === '8 9');
-		});
-		expect(dashedLoop).toBe(true);
+		await expect(page.getByText(/Local walking data is unavailable/)).toBeVisible();
+		await expect(page.getByText('Your loop', { exact: true })).toHaveCount(0);
 	});
 });
 

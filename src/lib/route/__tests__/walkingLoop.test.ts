@@ -1,66 +1,43 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { walkingLoop } from '../api';
+import type { WalkingRequest } from '$lib/types';
 
-const mockOsrmResponse = {
-	code: 'Ok',
-	routes: [
-		{
-			distance: 4000,
-			duration: 1800,
-			weight: 1800,
-			geometry: {
-				coordinates: [
-					[13.4, 52.52],
-					[13.41, 52.5201],
-					[13.4, 52.5202],
-				],
-			},
-		},
-	],
+const input: WalkingRequest = {
+	start: [52.52, 13.4],
+	target: { mode: 'time', value: 45 },
+	pace: 4,
+	shape: 'spaghetti',
+	search: 'dijkstra',
+	spots: [[52.521, 13.4]],
+	bearing: 25,
 };
-
-const mockOverpassResponse = {
-	elements: [],
-};
-
-describe('walkingLoop', () => {
-	beforeEach(() => {
-		vi.restoreAllMocks();
-		globalThis.fetch = vi.fn((url: string) => {
-			if (url.includes('/api/routing')) {
-				return Promise.resolve(
-					new Response(JSON.stringify(mockOsrmResponse), {
-						status: 200,
-						headers: { 'content-type': 'application/json' },
-					}),
-				);
-			}
-			if (url.includes('/api/stations')) {
-				return Promise.resolve(
-					new Response(JSON.stringify(mockOverpassResponse), {
-						status: 200,
-						headers: { 'content-type': 'application/json' },
-					}),
-				);
-			}
-			return Promise.reject(new Error(`Unknown URL: ${url}`));
-		}) as any;
+afterEach(() => vi.unstubAllGlobals());
+describe('server loop request', () => {
+	it('sends every input in one POST and returns server diagnostics', async () => {
+		const result = { route: { distance: 3000 }, debug: { schemaVersion: 14 } };
+		const fetch = vi.fn().mockResolvedValue(Response.json(result));
+		vi.stubGlobal('fetch', fetch);
+		expect(await walkingLoop(input)).toEqual(result);
+		expect(fetch).toHaveBeenCalledExactlyOnceWith('/api/routing', {
+			method: 'POST',
+			headers: { 'content-type': 'application/json' },
+			body: JSON.stringify(input),
+		});
 	});
-
-	it('returns a route result for valid input', async () => {
-		const route = await walkingLoop([52.52, 13.4], 4, 25);
-		expect(route).toBeDefined();
-		expect(route.distance).toBe(4000);
-		expect(route.candidate).toBeDefined();
-		expect(route.candidate!.algorithm).toBe('organic');
-		const routingCalls = vi
-			.mocked(globalThis.fetch)
-			.mock.calls.filter(([url]) => String(url).includes('/api/routing'));
-		expect(routingCalls).toHaveLength(1);
-	});
-
-	it('returns a route result for spaghetti algorithm', async () => {
-		const route = await walkingLoop([52.52, 13.4], 4, 25, [], 'spaghetti');
-		expect(route).toBeDefined();
+	it('preserves actionable server errors without falling back to external routing', async () => {
+		const fetch = vi
+			.fn()
+			.mockResolvedValue(
+				Response.json(
+					{ code: 'GRAPH_UNAVAILABLE', message: 'Build the regional graph.' },
+					{ status: 503 },
+				),
+			);
+		vi.stubGlobal('fetch', fetch);
+		await expect(walkingLoop(input)).rejects.toMatchObject({
+			code: 'GRAPH_UNAVAILABLE',
+			message: 'Build the regional graph.',
+		});
+		expect(fetch).toHaveBeenCalledTimes(1);
 	});
 });

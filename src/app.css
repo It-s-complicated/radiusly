@@ -1159,3 +1159,19 @@ input:focus-visible {
 		transition-duration: 0.01ms !important;
 	}
 }
+
+.path-search-field {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.path-search-field span {
+	padding: 8px;
+	text-align: center;
+}
+.path-search-field input:focus-visible + span {
+	outline: 2px solid var(--forest);
+	outline-offset: 3px;
+}
+.path-search-field input:disabled + span {
+	opacity: 0.6;
+	cursor: wait;
+}
