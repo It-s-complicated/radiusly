@@ -1,0 +1,11 @@
+.git
+.netlify
+.routing
+.svelte-kit
+.venv-routing
+build
+data/routing
+node_modules
+playwright-report
+test-results
+.env*

@@ -34,6 +34,8 @@ pnpm start
 
 `pnpm dev` and `pnpm build` compile the worker into `.routing/`. Restart development after changing worker code. Run commands from the project root. Deploy `build/`, `.routing/`, `package.json`, production dependencies and the regional graph together. Set `ROUTING_GRAPH_PATH` for a graph outside `data/routing/graph.json`. `pnpm start` loads `.env` if present. Set `ORIGIN` to the public HTTPS origin when deploying adapter-node behind a reverse proxy.
 
+For Coolify, use the repository `Dockerfile` build pack and expose port 3000. Its independent graph stage downloads a dated Geofabrik snapshot and bakes the compiled graph into the image. Docker reuses that stage when only application code or Node dependencies change. To refresh the map data, change the `OSM_DATE` build argument to a dated snapshot available in Geofabrik's raw archive. A missing Docker cache can still cause a rebuild with unchanged inputs.
+
 The first request loads the graph; missing or invalid graph data returns a structured 503 error. One worker admits at most four requests, including requests waiting for graph initialization. Requests have a 2,000,000-node search budget and a 10-second compute deadline. A shared cancellation flag stops work when a request is cancelled; its slot stays occupied until the worker acknowledges completion. The queue deadline is 30 seconds. This is an initial single-worker capacity policy, not autoscaling.
 
 The real Berlin graph built during implementation contains approximately 2.01 million nodes and 2.21 million segments in 116 MB JSON. Observed standalone graph-process RSS was about 880 MiB after warm queries, excluding the rest of the SvelteKit app. Treat this as a regional prototype measurement, not a production memory ceiling.
