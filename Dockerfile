@@ -1,6 +1,7 @@
 FROM python:3.13-slim AS graph
 
 ARG OSM_DATE=260909
+ENV OSM_DATE=$OSM_DATE
 
 WORKDIR /src
 RUN apt-get update \
@@ -10,11 +11,8 @@ RUN apt-get update \
 COPY scripts/requirements-routing.txt .
 RUN pip install --no-cache-dir -r requirements-routing.txt
 
-COPY scripts/build-walking-graph.py .
-RUN python -c "from urllib.request import urlretrieve; urlretrieve('https://download.geofabrik.de/europe/germany/brandenburg-${OSM_DATE}.osm.pbf', '/tmp/source.osm.pbf')" \
-	&& python build-walking-graph.py /tmp/source.osm.pbf /graph/graph.json \
-		--region berlin --bounds 13.08 52.33 13.77 52.68 \
-	&& rm /tmp/source.osm.pbf
+COPY scripts/build-walking-graph.py scripts/build-graph.sh ./
+ENTRYPOINT ["./build-graph.sh"]
 
 FROM node:24-bookworm-slim AS build
 
@@ -39,7 +37,7 @@ COPY --from=build --chown=node:node /app/build ./build
 COPY --from=build --chown=node:node /app/.routing ./.routing
 COPY --from=build --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/package.json ./package.json
-COPY --from=graph --chown=node:node /graph/graph.json ./data/routing/graph.json
+# routing graph comes from the shared `graph` volume (see compose.yml), not from the image
 
 USER node
 EXPOSE 3000

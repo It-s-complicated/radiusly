@@ -1,0 +1,22 @@
+services:
+  graph:
+    build:
+      context: .
+      target: graph
+      args:
+        OSM_DATE: "${OSM_DATE:-260909}"
+    restart: "no"
+    volumes:
+      - graph:/graph
+
+  app:
+    build:
+      context: .
+    depends_on:
+      graph:
+        condition: service_completed_successfully
+    volumes:
+      - graph:/app/data/routing
+
+volumes:
+  graph:
