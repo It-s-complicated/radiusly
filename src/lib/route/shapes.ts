@@ -1,4 +1,4 @@
-import type { InternalAlgorithm, LatLng } from '$lib/types';
+import type { InternalAlgorithm, LatLng } from '../types.js';
 
 /**
  * Convert a mode + value into target kilometers.
@@ -71,6 +71,7 @@ export function loopPoints(
 	favorites: LatLng[] = [],
 	scale = 1,
 	algorithm: InternalAlgorithm = 'organic',
+	maxStemKm = 0.25,
 ): LatLng[] {
 	if (algorithm === 'tangent') {
 		const radius = Math.max(0.18, (targetKm / (2 * Math.PI)) * 0.9 * scale);
@@ -82,9 +83,20 @@ export function loopPoints(
 		return [start, ...orderAround(center, [...favorites, ...perimeter], startBearing), start];
 	}
 
-	if (algorithm === 'orbit-same' || algorithm === 'orbit-near') {
+	if (algorithm === 'orbit-same') {
+		// Keep the intended shared stem short while letting the outer loop grow.
+		const stemKm = Math.min(maxStemKm, targetKm / 8);
+		const rim = pointAt(start, stemKm, bearing);
+		return [
+			start,
+			...loopPoints(rim, targetKm - stemKm * 2, bearing, favorites, scale, 'tangent'),
+			start,
+		];
+	}
+
+	if (algorithm === 'orbit-near') {
 		const radius = Math.max(0.18, (targetKm / (2 + 2 * Math.PI)) * 0.9 * scale);
-		const gap = algorithm === 'orbit-near' ? 9 : 0;
+		const gap = 9;
 		const outboundBearing = bearing - gap;
 		const inboundBearing = bearing + gap;
 		const outbound = pointAt(start, radius, outboundBearing);

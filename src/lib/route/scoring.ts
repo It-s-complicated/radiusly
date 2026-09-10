@@ -1,4 +1,4 @@
-import type { InternalAlgorithm, LngLat, RouteResult } from '$lib/types';
+import type { InternalAlgorithm, LngLat, RouteResult } from '../types.js';
 
 const STATION_RADIUS_METERS = 250;
 const MAX_REPEAT_RATIO = 0.05;

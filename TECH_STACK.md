@@ -1,11 +1,13 @@
-# Planned Radiusly stack
+# Radiusly stack
 
 **Status:** Implemented.
 
 ## Application
 
 - **SvelteKit** with strict TypeScript
-- SvelteKit server routes for external search, routing, and map-data APIs
+- Node adapter with custom TypeScript A*/Dijkstra routing in a worker thread
+- Offline OSM graph importer; see [ROUTING.md](ROUTING.md)
+- SvelteKit server routes for external place search and optional map-data queries
 - **Vitest**, using browser mode for component tests
 - **Playwright** for critical browser flows
 
@@ -26,4 +28,4 @@ Stateless sessions cannot revoke one session immediately; invalidate all session
 
 ## External services
 
-Moving calls into SvelteKit does not grant permission to exceed upstream limits. Before public deployment, choose routing/geocoding providers with suitable quotas and add shared rate limiting, caching, and usage monitoring. Do not rely on the current public OSM routing endpoint for production traffic.
+Map tiles and place search remain external. Walking-route generation and station scoring use the local graph and do not call a routing provider.

@@ -2,7 +2,14 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-svelte';
 import { get } from 'svelte/store';
 import RouteOptions from '../RouteOptions.svelte';
-import { mode, distanceTarget, timeTarget, pace, algorithm } from '$lib/stores/preferences';
+import {
+	mode,
+	distanceTarget,
+	timeTarget,
+	pace,
+	algorithm,
+	searchAlgorithm,
+} from '$lib/stores/preferences';
 import { currentRoute } from '$lib/stores/route';
 import { resetStores } from '$lib/stores/points';
 import type { RouteResult } from '$lib/types';
@@ -32,6 +39,7 @@ describe('RouteOptions component', () => {
 		timeTarget.set(45);
 		pace.set(5);
 		algorithm.set('organic');
+		searchAlgorithm.set('astar');
 		currentRoute.set(null);
 	});
 
@@ -68,6 +76,16 @@ describe('RouteOptions component', () => {
 		await screen.getByRole('radio', { name: /Tangent/ }).click();
 
 		expect(get(currentRoute)).toBeNull();
+	});
+
+	it('selects Dijkstra independently of the route shape and remembers it', async () => {
+		const screen = await render(RouteOptions);
+		await screen.getByRole('radio', { name: /Dijkstra/ }).click();
+		expect(get(searchAlgorithm)).toBe('dijkstra');
+		expect(get(algorithm)).toBe('organic');
+		expect(JSON.parse(localStorage.getItem('radiusly:preferences')!).search).toBe('dijkstra');
+		await screen.getByRole('radio', { name: /A\*/ }).click();
+		expect(get(searchAlgorithm)).toBe('astar');
 	});
 
 	it('updates the target from the number input', async () => {

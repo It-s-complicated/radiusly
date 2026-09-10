@@ -7,6 +7,17 @@ export type InternalAlgorithm = Algorithm | 'spaghetti-cross' | 'spaghetti-safe'
 
 export type Mode = 'distance' | 'time';
 export type Pace = 4 | 5 | 6;
+export type SearchAlgorithm = 'astar' | 'dijkstra';
+
+export interface WalkingRequest {
+	start: LatLng;
+	target: { mode: Mode; value: number };
+	pace: Pace;
+	shape: Algorithm;
+	search: SearchAlgorithm;
+	spots: LatLng[];
+	bearing: number;
+}
 
 export interface SavedPoint {
 	id: string;

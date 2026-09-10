@@ -1,5 +1,7 @@
 # Route shape algorithms
 
+> Historical geometric-prototype notes. The live app now generates routes on a local graph; see [ROUTING.md](ROUTING.md) for current search, scoring and Orbit-stem behavior.
+
 Radiusly does not draw a route directly. A shape algorithm creates geographic waypoints, the walking router connects them using real paths, and the result is accepted or rejected by shared quality rules.
 
 The implementation lives in [`src/lib/route/shapes.ts`](src/lib/route/shapes.ts) and [`src/lib/route/api.ts`](src/lib/route/api.ts). `loopPoints()` defines the shapes and `walkingLoop()` generates, scores, calibrates, and selects routed candidates.

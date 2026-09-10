@@ -1,6 +1,6 @@
 import { writable, derived, get } from 'svelte/store';
 import { browser } from '$app/env';
-import type { Mode, Pace, Algorithm } from '$lib/types';
+import type { Mode, Pace, Algorithm, SearchAlgorithm } from '$lib/types';
 
 const PREFERENCES_KEY = 'radiusly:preferences';
 
@@ -10,6 +10,7 @@ interface Preferences {
 	time: number;
 	pace: Pace;
 	algorithm: Algorithm;
+	search: SearchAlgorithm;
 }
 
 const ROUTE_ALGORITHMS: string[] = ['organic', 'tangent', 'orbit-same', 'orbit-near', 'spaghetti'];
@@ -18,7 +19,14 @@ const ALLOWED_PACES = [4, 5, 6];
 
 function storedPreferences(): Preferences {
 	if (!browser) {
-		return { mode: 'distance', distance: 4, time: 45, pace: 5, algorithm: 'organic' };
+		return {
+			mode: 'distance',
+			distance: 4,
+			time: 45,
+			pace: 5,
+			algorithm: 'organic',
+			search: 'astar',
+		};
 	}
 	try {
 		const raw = JSON.parse(localStorage.getItem(PREFERENCES_KEY) || '{}');
@@ -37,6 +45,7 @@ function storedPreferences(): Preferences {
 			time: preferenceValue(raw.time, 10, 180, 45),
 			pace: validPace,
 			algorithm: algo as Algorithm,
+			search: raw.search === 'dijkstra' ? 'dijkstra' : 'astar',
 		};
 	} catch {
 		return defaultPrefs();
@@ -44,7 +53,14 @@ function storedPreferences(): Preferences {
 }
 
 function defaultPrefs(): Preferences {
-	return { mode: 'distance', distance: 4, time: 45, pace: 5, algorithm: 'organic' };
+	return {
+		mode: 'distance',
+		distance: 4,
+		time: 45,
+		pace: 5,
+		algorithm: 'organic',
+		search: 'astar',
+	};
 }
 
 function preferenceValue(value: unknown, min: number, max: number, fallback: number): number {
@@ -63,6 +79,7 @@ export const distanceTarget = writable<number>(initial.distance);
 export const timeTarget = writable<number>(initial.time);
 export const pace = writable<Pace>(initial.pace);
 export const algorithm = writable<Algorithm>(initial.algorithm);
+export const searchAlgorithm = writable<SearchAlgorithm>(initial.search);
 
 export const targetKm = derived(
 	[mode, distanceTarget, timeTarget, pace],
@@ -78,6 +95,7 @@ function currentPrefs(): Preferences {
 		time: get(timeTarget),
 		pace: get(pace),
 		algorithm: get(algorithm),
+		search: get(searchAlgorithm),
 	};
 }
 
@@ -86,3 +104,5 @@ distanceTarget.subscribe(() => save(currentPrefs()));
 timeTarget.subscribe(() => save(currentPrefs()));
 pace.subscribe(() => save(currentPrefs()));
 algorithm.subscribe(() => save(currentPrefs()));
+
+searchAlgorithm.subscribe(() => save(currentPrefs()));
