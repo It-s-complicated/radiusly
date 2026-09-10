@@ -9,9 +9,50 @@ import {
 	type Traversal,
 } from './graph.js';
 
+const STATION_RADIUS = 250;
+
+function stationIntervals(graph: WalkingGraph, edge: number): [number, number][] {
+	const [from, to] = graph.data.edges[edge]!;
+	const start = graph.data.nodes[from]!,
+		end = graph.data.nodes[to]!;
+	const lonScale = Math.cos(((start[0] + end[0]) * Math.PI) / 360);
+	const dx = (end[1] - start[1]) * lonScale,
+		dy = end[0] - start[0],
+		lengthSquared = dx * dx + dy * dy;
+	const intervals: [number, number][] = [];
+	for (const station of graph.data.stations) {
+		const closest = Math.max(
+			0,
+			Math.min(
+				1,
+				((station[1] - start[1]) * lonScale * dx + (station[0] - start[0]) * dy) / lengthSquared,
+			),
+		);
+		if (meters(graph.point(edge, closest), station) > STATION_RADIUS) continue;
+		const boundary = (outside: number, inside: number) => {
+			if (meters(graph.point(edge, outside), station) <= STATION_RADIUS) return outside;
+			for (let i = 0; i < 24; i++) {
+				const middle = (outside + inside) / 2;
+				if (meters(graph.point(edge, middle), station) <= STATION_RADIUS) inside = middle;
+				else outside = middle;
+			}
+			return inside;
+		};
+		intervals.push([boundary(0, closest), boundary(1, closest)]);
+	}
+	const merged: [number, number][] = [];
+	for (const interval of intervals.sort((a, b) => a[0] - b[0])) {
+		const last = merged.at(-1);
+		if (last && interval[0] <= last[1]) last[1] = Math.max(last[1], interval[1]);
+		else merged.push([...interval]);
+	}
+	return merged;
+}
+
 /** Physical segment intervals make scoring independent of polyline sampling. */
 export function repetition(graph: WalkingGraph, path: Traversal[], intentionalReturn = 0) {
 	const seen = new Map<number, [number, number][]>();
+	const stationCoverage = new Map<number, [number, number][]>();
 	let repeated = 0,
 		longest = 0,
 		run = 0,
@@ -41,9 +82,18 @@ export function repetition(graph: WalkingGraph, path: Traversal[], intentionalRe
 					accidentalRun += length;
 					longestAccidental = Math.max(longestAccidental, accidentalRun);
 				}
-				const point = graph.point(step.edge, mid);
-				if (graph.data.stations.some((station) => meters(point, station) <= 250))
-					stationRepeat += length;
+				let coverage = stationCoverage.get(step.edge);
+				if (!coverage) {
+					coverage = stationIntervals(graph, step.edge);
+					stationCoverage.set(step.edge, coverage);
+				}
+				const lower = Math.min(a, b),
+					upper = Math.max(a, b);
+				stationRepeat +=
+					coverage.reduce(
+						(sum, [from, to]) => sum + Math.max(0, Math.min(upper, to) - Math.max(lower, from)),
+						0,
+					) * graph.lengths[step.edge]!;
 			} else {
 				run = 0;
 				accidentalRun = 0;

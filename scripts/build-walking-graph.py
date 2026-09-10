@@ -11,6 +11,7 @@ ALLOWED = {'yes', 'designated', 'permissive', 'official'}
 HIGHWAYS = {'footway', 'path', 'pedestrian', 'steps', 'living_street', 'residential',
             'service', 'unclassified', 'tertiary', 'tertiary_link', 'secondary',
             'secondary_link', 'primary', 'primary_link', 'track'}
+STATIONS = {'station', 'halt'}
 
 
 def access(tags):
@@ -47,6 +48,25 @@ def flags(tags):
     return result
 
 
+def is_station(tags):
+    return tags.get('railway') in STATIONS
+
+
+def center(points):
+    return [(min(p[0] for p in points)+max(p[0] for p in points))/2,
+            (min(p[1] for p in points)+max(p[1] for p in points))/2]
+
+
+class StationRelations(osmium.SimpleHandler):
+    def __init__(self):
+        super().__init__()
+        self.relations = {}
+
+    def relation(self, relation):
+        if is_station(dict(relation.tags)):
+            self.relations[str(relation.id)] = [(member.type, member.ref) for member in relation.members]
+
+
 class Importer(osmium.SimpleHandler):
     def __init__(self, bounds):
         super().__init__()
@@ -55,7 +75,20 @@ class Importer(osmium.SimpleHandler):
         self.excluded_ways = set()
         self.ways = []
         self.stations = []
+        self.station_members = {}
+        self.station_relation_points = {}
         self.incomplete = 0
+
+    def apply_file(self, filename, **kwargs):
+        # ponytail: two passes avoid retaining every OSM node; use an area handler if I/O becomes the bottleneck.
+        relations = StationRelations()
+        relations.apply_file(filename)
+        self.station_relation_points = {relation: [] for relation in relations.relations}
+        for relation, members in relations.relations.items():
+            for kind, ref in members:
+                if kind in {'n', 'w'}:
+                    self.station_members.setdefault((kind, ref), []).append(relation)
+        return super().apply_file(filename, **kwargs)
 
     def inside(self, lat, lon):
         west, south, east, north = self.bounds
@@ -68,11 +101,24 @@ class Importer(osmium.SimpleHandler):
         tags = dict(node.tags)
         if not access(tags) or (tags.get('barrier') not in (None, 'no', 'entrance', 'bollard', 'kerb') and tags.get('foot') not in ALLOWED):
             self.blocked.add(node.id)
-        if tags.get('railway') in {'station', 'halt'} and node.location.valid() and self.inside(node.location.lat, node.location.lon):
-            self.stations.append([node.location.lat, node.location.lon])
+        if node.location.valid():
+            point = [node.location.lat, node.location.lon]
+            if is_station(tags) and self.inside(*point):
+                self.stations.append(point)
+            for relation in self.station_members.get(('n', node.id), []):
+                self.station_relation_points[relation].append(point)
 
     def way(self, way):
-        direction = flags(dict(way.tags))
+        tags = dict(way.tags)
+        points = [[node.lat, node.lon] for node in way.nodes if node.location.valid()]
+        if points:
+            if is_station(tags):
+                point = center(points)
+                if self.inside(*point):
+                    self.stations.append(point)
+            for relation in self.station_members.get(('w', way.id), []):
+                self.station_relation_points[relation].extend(points)
+        direction = flags(tags)
         if not direction:
             return
         if any(not n.location.valid() for n in way.nodes):
@@ -105,8 +151,14 @@ class Importer(osmium.SimpleHandler):
                 edges.append([*pair, way, direction])
         if not edges:
             raise ValueError('No walkable edges found in this region')
+        stations = [*self.stations]
+        for points in self.station_relation_points.values():
+            if points:
+                point = center(points)
+                if self.inside(*point):
+                    stations.append(point)
         return {'version':1, 'region':region, 'dataVersion':version, 'bounds':self.bounds,
-                'nodes':nodes, 'edges':edges, 'stations':self.stations}
+                'nodes':nodes, 'edges':edges, 'stations':stations}
 
 
 def main():

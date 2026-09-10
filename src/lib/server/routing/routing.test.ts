@@ -96,6 +96,25 @@ describe('local walking router', () => {
 		expect(repetition(graph, path).accidental).toBeGreaterThan(0);
 		expect(repetition(graph, path, 1).accidental).toBe(0);
 	});
+	it('clips station repetition to the part of an edge inside the station radius', () => {
+		const graph = new WalkingGraph({
+			version: 1,
+			region: 'station edge',
+			dataVersion: 'fixture',
+			nodes: [
+				[52.52, 13.39],
+				[52.52, 13.41],
+			],
+			edges: [[0, 1, 'long', 3]],
+			stations: [[52.52, 13.4]],
+		});
+		const repeat = repetition(graph, [
+			{ edge: 0, from: 0, to: 1 },
+			{ edge: 0, from: 1, to: 0 },
+		]);
+		expect(repeat.stationRepeat).toBeCloseTo(500, 0);
+		expect(repeat.stationRepeat).toBeLessThan(graph.lengths[0]!);
+	});
 	it('generates closed loops with both algorithms and visits a required segment midpoint', () => {
 		const graph = grid();
 		for (const search of ['astar', 'dijkstra'] as const) {
