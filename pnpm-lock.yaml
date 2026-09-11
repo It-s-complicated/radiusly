@@ -110,14 +110,14 @@ importers:
   .:
     dependencies:
       '@better-auth/core':
-        specifier: 1.7.1
-        version: 1.7.1(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1)
+        specifier: 1.7.4
+        version: 1.7.4(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1)
       '@opentelemetry/api':
         specifier: ^1.9.1
         version: 1.9.1
       better-auth:
-        specifier: 1.7.1
-        version: 1.7.1(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0)))(svelte@5.57.0)(typescript@6.0.3)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0)))(svelte@5.57.0)(vitest@5.0.0)
+        specifier: 1.7.4
+        version: 1.7.4(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0)))(svelte@5.57.0)(typescript@6.0.3)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0)))(svelte@5.57.0)(vitest@5.0.0)
       leaflet:
         specifier: ^1.9.4
         version: 1.9.4
@@ -127,25 +127,25 @@ importers:
         version: 1.63.0
       '@sveltejs/adapter-node':
         specifier: ^5.5.7
-        version: 5.5.7(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0)))(svelte@5.57.0)(typescript@6.0.3)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0)))
+        version: 5.5.7(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0)))(svelte@5.57.0)(typescript@6.0.3)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0)))
       '@sveltejs/kit':
         specifier: ^2.70.3
-        version: 2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0)))(svelte@5.57.0)(typescript@6.0.3)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))
+        version: 2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0)))(svelte@5.57.0)(typescript@6.0.3)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))
       '@sveltejs/vite-plugin-svelte':
         specifier: ^7.3.0
-        version: 7.3.0(svelte@5.57.0)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))
+        version: 7.3.0(svelte@5.57.0)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))
       '@types/leaflet':
         specifier: ^1.9.22
         version: 1.9.22
       '@types/node':
-        specifier: ^26.5.0
-        version: 26.5.0
+        specifier: ^26.5.1
+        version: 26.5.1
       '@vite-pwa/sveltekit':
         specifier: ^1.1.0
-        version: 1.1.0(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0)))(svelte@5.57.0)(typescript@6.0.3)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0)))(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))(workbox-build@7.4.1)(workbox-window@7.4.1)
+        version: 1.1.0(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0)))(svelte@5.57.0)(typescript@6.0.3)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0)))(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))(workbox-build@7.4.1)(workbox-window@7.4.1)
       '@vitest/browser-playwright':
         specifier: ^5.0.0
-        version: 5.0.0(playwright@1.63.0)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))(vitest@5.0.0)
+        version: 5.0.0(playwright@1.63.0)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))(vitest@5.0.0)
       oxfmt:
         specifier: ^0.67.0
         version: 0.67.0(svelte@5.57.0)
@@ -157,19 +157,19 @@ importers:
         version: 5.57.0
       svelte-check:
         specifier: ^4.7.6
-        version: 4.7.6(picomatch@4.0.7)(svelte@5.57.0)(typescript@6.0.3)
+        version: 4.7.6(picomatch@4.0.5)(svelte@5.57.0)(typescript@6.0.3)
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
       vite:
-        specifier: ^8.2.2
-        version: 8.2.2(@types/node@26.5.0)(terser@5.50.0)
+        specifier: ^8.3.0
+        version: 8.3.0(@types/node@26.5.1)(terser@5.50.0)
       vite-plugin-pwa:
         specifier: ^1.3.0
-        version: 1.3.0(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))(workbox-build@7.4.1)(workbox-window@7.4.1)
+        version: 1.3.0(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))(workbox-build@7.4.1)(workbox-window@7.4.1)
       vitest:
         specifier: ^5.0.0
-        version: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.0)(@vitest/browser-playwright@5.0.0)(@vitest/ui@5.0.0)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))
+        version: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(@vitest/browser-playwright@5.0.0)(@vitest/ui@5.0.0)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))
       vitest-browser-svelte:
         specifier: ^3.1.0
         version: 3.1.0(svelte@5.57.0)(vitest@5.0.0)
@@ -686,8 +686,8 @@ packages:
     resolution: {integrity: sha512-Vj1jF3cPfxg7OAfoI7QnVKLoILlm2JF9pnVHrX8qx7AHMiYWT+NDAA7jChlNgRS4WTLc/fD1lXLmPixluj+3Gg==}
     engines: {node: '>=6.9.0'}
 
-  '@better-auth/core@1.7.1':
-    resolution: {integrity: sha512-eZ9lqcnVLMZ3QtUByRo4VZqkB1ESyRddd9NfWjBdDPgh+jcwLScoIUAqhtHLR8zaSUJZah8OLGlkzObyPdUH7A==}
+  '@better-auth/core@1.7.4':
+    resolution: {integrity: sha512-g66dKOMB5PLxoujkxkZeYb6dh5wLhfAx/D+w9XtcO669Dslnyen2naBYqnD1r5ZwnxFKcr6aSrUPaH952V89Lg==}
     peerDependencies:
       '@better-auth/utils': 0.4.2
       '@better-fetch/fetch': 1.3.1
@@ -703,46 +703,46 @@ packages:
       '@opentelemetry/api':
         optional: true
 
-  '@better-auth/drizzle-adapter@1.7.1':
-    resolution: {integrity: sha512-qlqNyg5V9bXHSP68/vtlsiZayhR4hgvEGiS/E3SIj8bCpWWFGmyQkxJbQCqpBmC7vT30wE/kNtJMHIgnV3rkiw==}
+  '@better-auth/drizzle-adapter@1.7.4':
+    resolution: {integrity: sha512-J9JMl0DGYNYwtDj5nq/fzycU9dzPUDEtTNn89KmToUrwPDGfByDgfmiQ9jGK+LN3EnfsG1Pt/dDmRocbnfihlA==}
     peerDependencies:
-      '@better-auth/core': ^1.7.1
+      '@better-auth/core': ^1.7.4
       '@better-auth/utils': 0.4.2
       drizzle-orm: ^0.45.2 || >=1.0.0-rc.1 <2.0.0
     peerDependenciesMeta:
       drizzle-orm:
         optional: true
 
-  '@better-auth/kysely-adapter@1.7.1':
-    resolution: {integrity: sha512-yWCpE1cZpMUj37nD6JFDK+GDR8zS37L5WI73il3qbU9TXtWsxUQKc/5c3IHsHizWQsmcQI8uv2pAFKxsRDa+AQ==}
+  '@better-auth/kysely-adapter@1.7.4':
+    resolution: {integrity: sha512-WHLsTs4ZwTKorifdK6Whol6Zy+0gIzOJEXzWsvzmLtlT1uIZFpd7IPBlDZTrXvIZnxPWJHPIv8/uHqS9QFPZOA==}
     peerDependencies:
-      '@better-auth/core': ^1.7.1
+      '@better-auth/core': ^1.7.4
       '@better-auth/utils': 0.4.2
       kysely: ^0.28.17 || ^0.29.0
     peerDependenciesMeta:
       kysely:
         optional: true
 
-  '@better-auth/memory-adapter@1.7.1':
-    resolution: {integrity: sha512-6NX1yv88DeqdoG7owYFqKwlrDGaIPhsC52JUGrUgeGVKyOq8a/6hHlHsqG1C2FwT23SHQiKVYCEAG9N6aH5OvQ==}
+  '@better-auth/memory-adapter@1.7.4':
+    resolution: {integrity: sha512-xAihOPh4mFjvKLzmu2XNzj7RchDmytA/d/xjrGyps1oHVGCTGDGghlSt/rIT5fagtTn2R9+TBLh5QrZnTvYu9g==}
     peerDependencies:
-      '@better-auth/core': ^1.7.1
+      '@better-auth/core': ^1.7.4
       '@better-auth/utils': 0.4.2
 
-  '@better-auth/mongo-adapter@1.7.1':
-    resolution: {integrity: sha512-9ILTcNqhG37QK//qR4UhYLyKzNqq6w6zVTf5KX6xkiTjNcV7Oh1yS31lkIJEVTqRNcy9AoV6FZMW6Bbsm8IMDA==}
+  '@better-auth/mongo-adapter@1.7.4':
+    resolution: {integrity: sha512-sIdIc8vONXgQxKPfzL4bbk6gO3gdFEDzC5VG8rD18xSFB6j7blBKcuzOofbswbwwbyuspnshoViGRqSoqp2PnA==}
     peerDependencies:
-      '@better-auth/core': ^1.7.1
+      '@better-auth/core': ^1.7.4
       '@better-auth/utils': 0.4.2
       mongodb: ^6.0.0 || ^7.0.0
     peerDependenciesMeta:
       mongodb:
         optional: true
 
-  '@better-auth/prisma-adapter@1.7.1':
-    resolution: {integrity: sha512-ZiUcafQ85InAofcUjyGgCPjKLfQjXr9SvDmMjuFUW8oEbreA6C6GaFAEA77VuV2doZUQlzvQQ4gCoTmS28W92A==}
+  '@better-auth/prisma-adapter@1.7.4':
+    resolution: {integrity: sha512-cvsMNaXLcwQiAIxQCx5Gq2VA1reW4RjkC5oLNXNJR4IhgeiqcvYF6qKF6UEC0vV2x3euKz5V/SDY/hblHWwx+w==}
     peerDependencies:
-      '@better-auth/core': ^1.7.1
+      '@better-auth/core': ^1.7.4
       '@better-auth/utils': 0.4.2
       '@prisma/client': ^5.0.0 || ^6.0.0 || ^7.0.0
       prisma: ^5.0.0 || ^6.0.0 || ^7.0.0
@@ -752,10 +752,10 @@ packages:
       prisma:
         optional: true
 
-  '@better-auth/telemetry@1.7.1':
-    resolution: {integrity: sha512-kLKjMfFlTbyt49DGeI9okHAsn0MtBZcMoQYKaEdgR0H3BHzqqyzePcQz/hxAmRgjB4p/6inise3zJwhX0sgXrQ==}
+  '@better-auth/telemetry@1.7.4':
+    resolution: {integrity: sha512-FycnvWXP1gZ8BlSN1lW9L/YYFVqxi7+n6A9i66gJKdoJqREDdmhxBKOaVCbNhNC2UNDAo9PbBm/6J3gv6WmAEA==}
     peerDependencies:
-      '@better-auth/core': ^1.7.1
+      '@better-auth/core': ^1.7.4
       '@better-auth/utils': 0.4.2
       '@better-fetch/fetch': 1.3.1
 
@@ -817,8 +817,8 @@ packages:
     resolution: {integrity: sha512-eSYWTm620tTk45EKSedaUL8MFYI8hW164hIXsgIHyxu3VobUB3fFCu5t0hQby6OoWRPsG1KkKUG2M5UadiLiVg==}
     engines: {node: '>=14'}
 
-  '@oxc-project/types@0.146.0':
-    resolution: {integrity: sha512-XC0QsnnhVe7sLIWmYmdPw7x5P0h4W8vUU3Nv1ySgWXtvCz8NizoAEpGXA0sOYoJQV2Rl13LgURAHQ5cI5ILCSA==}
+  '@oxc-project/types@0.149.0':
+    resolution: {integrity: sha512-Efcc+iF0j3Bf67YjEqIqWXbX5XddXoK/Mw4K1/JuXwRCZ8N16VR7iT23nlCc9XrveFVh/E5Rqs2StT0V8v9LdA==}
 
   '@oxfmt/binding-android-arm-eabi@0.67.0':
     resolution: {integrity: sha512-2olh3ioEmc4gRzQm7jxyB1b/PFBoFvTq8KdgYySeNpysDtA6DEg2Mvya4/I6flhL7G0eOrE8RD7JCNCIMhE16Q==}
@@ -1072,98 +1072,98 @@ packages:
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
 
-  '@rolldown/binding-android-arm-eabi@1.2.5':
-    resolution: {integrity: sha512-DLe/i+l8ynIBY7XEQ191TeZvCoowIGa18R+dIV30GW7DiOtp74i/xX8hs8GUjW5ARV7VZuie3d6AumSmCwbeRA==}
+  '@rolldown/binding-android-arm-eabi@1.2.8':
+    resolution: {integrity: sha512-tN5aztYkKCte4i5SIrrz5yK/HMjEuCqCSCJa418jOV8tZ1cBY3YF2otxB1ktPxzsLA1BeTqwapK0bfjxNvHJVw==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [arm]
     os: [android]
 
-  '@rolldown/binding-android-arm64@1.2.5':
-    resolution: {integrity: sha512-zXcwKlQApYAOELHd8PwKDFkagYF9Wy4e0RJ+0qnzl9Pjnpj75TEG8ufv40p2J7kCEfwZAsNiuzRIyNNMWT38ig==}
+  '@rolldown/binding-android-arm64@1.2.8':
+    resolution: {integrity: sha512-dIYTWl9XprMUiQFoc55KUyk/oS8SKYH3zFl0LTR7RT0Xj4hgSVyuJcroH8JUu8RcpF8fTB6E0aOwCkZoYPcDSQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [arm64]
     os: [android]
 
-  '@rolldown/binding-darwin-arm64@1.2.5':
-    resolution: {integrity: sha512-dK4QakI42nzWgJT5sm4y4y/O//D4OxM75/cH28RLV+nzIN9AY+YsbuUVrUTjlLjXR6vpyxFbSsbmNuJ6BP9sww==}
+  '@rolldown/binding-darwin-arm64@1.2.8':
+    resolution: {integrity: sha512-PCSDQGXD2IyTEFrcgPyBM8jJuGmrbCMuoIOXdbEGVemruKACXoLQJrb+A45Z0L5t1RQkdfJprAYPkikbh7dzdA==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [arm64]
     os: [darwin]
 
-  '@rolldown/binding-darwin-x64@1.2.5':
-    resolution: {integrity: sha512-fqSALaUu1Wjd1nK2uW2kJDWdLCc8lx1IcY+MTY26Aurfdx19anlzhqXOgCFbBFQnlFDTn4TC1/7Nz4Bl2mLP3A==}
+  '@rolldown/binding-darwin-x64@1.2.8':
+    resolution: {integrity: sha512-Uk7lRsGhPFHVX/sAUC6D5H9Ol30dFHd6iquokll2th3LpdJ3F5CzQB+7DHn0Ri2mG+U7k2zXiPHDrwZenXhwSA==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [x64]
     os: [darwin]
 
-  '@rolldown/binding-freebsd-x64@1.2.5':
-    resolution: {integrity: sha512-/vCnNxlkxs9tKxNDcyWUePpJ/PgTzxIaVhoM5SmG8UV+GR/IcPam4VYxi7GIMo7PSDuNqlJqvprqii9NqqVCMw==}
+  '@rolldown/binding-freebsd-x64@1.2.8':
+    resolution: {integrity: sha512-DjszaTEVogPqA5bYzsEeqDCQxbcp2fexQwKcRspYji2yzR68fCf+e4fx6kBSRDwX5/brZaHw/hWS9+A/+/w9sQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [x64]
     os: [freebsd]
 
-  '@rolldown/binding-linux-arm-gnueabihf@1.2.5':
-    resolution: {integrity: sha512-abk0NLA519LxRCszmbE0jYKuQ9YPocOXTiOXOo6Yr+YAT95VH+PtqYAjOJvGKt3viEd/x4qzabAlwd5bHOOARg==}
+  '@rolldown/binding-linux-arm-gnueabihf@1.2.8':
+    resolution: {integrity: sha512-zmwa7FTmdzB6aaEEuuls18H6Ap5JmJPSoPTuXixeJZV6tG40SyLkApQtz1g8ptZtiEKqj9OM0oNLPh1AgvE31Q==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [arm]
     os: [linux]
 
-  '@rolldown/binding-linux-arm64-gnu@1.2.5':
-    resolution: {integrity: sha512-Y7eALiJ8lr0M2HH103Js+g7V34wf6snlpZLAsHI90uLhr3PVlNsbFVAXJC9d/V6BnPyKtpSwI+NcB/RLxsQxuA==}
+  '@rolldown/binding-linux-arm64-gnu@1.2.8':
+    resolution: {integrity: sha512-KdYQDPHwJVnbFwdTGMgxsI9SqblBlz6STGM+w1We/d5B8OWWidYH0MwkU/uA1wM5fIpO2MkOVxXrNzzuZhw9ew==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [arm64]
     os: [linux]
     libc: [glibc]
 
-  '@rolldown/binding-linux-arm64-musl@1.2.5':
-    resolution: {integrity: sha512-xMvZgnbZg4YVnR/AX2b3oOPDTFYJvUVaJg5FedA/LuvexAtXibZQej4cnTkw3rjsJ/ggUROB64TdtETiim+FYA==}
+  '@rolldown/binding-linux-arm64-musl@1.2.8':
+    resolution: {integrity: sha512-jFJTifHnNPY+yzOoNZQfSIysrVyXzEQPhPnOUjmD1bcQGHH6s7c8cViKWar8YplQImE5N9JRqMCLrM2CdxOrZA==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [arm64]
     os: [linux]
     libc: [musl]
 
-  '@rolldown/binding-linux-ppc64-gnu@1.2.5':
-    resolution: {integrity: sha512-GRjeqTUDHTo5GwntsLaAMcBahG3nlpjftXWZLN73HiYQlhwEowvarFgQnRnQZtIp4keXX7quXFbG38uPZBa2EA==}
+  '@rolldown/binding-linux-ppc64-gnu@1.2.8':
+    resolution: {integrity: sha512-FhiOziBDWPBjbcmRzfLyIJnaP7AVMFXT7YCXPjXxj7wKU3vx24RjrCNN/zjvVa+N2vVoHJwCoUBvsrN/DG3zIA==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [ppc64]
     os: [linux]
     libc: [glibc]
 
-  '@rolldown/binding-linux-s390x-gnu@1.2.5':
-    resolution: {integrity: sha512-vLNTR45F2Uwc8AufkNXPmB4VliaXs+FvcheEogIzOXzO4l+LzieXF5A/TWxLy5HtqpsRCHUfd0lPVrrdgXdLHQ==}
+  '@rolldown/binding-linux-s390x-gnu@1.2.8':
+    resolution: {integrity: sha512-WnHfADMzOV2Y55wlx1hzzQnar/wDt/VdvWSD99r18Mz9ylNieIGOkRx3UV21h7m/eJvjySYJkO26VvGNFkwsIQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [s390x]
     os: [linux]
     libc: [glibc]
 
-  '@rolldown/binding-linux-x64-gnu@1.2.5':
-    resolution: {integrity: sha512-Mgj59/HTuYeK9Gz2MA+mBWKnHsAgkBSec15ZMb1st3oIfFbX7gCjOae7GydHhzcyQi9Z/7M1QuN9bR3oFqF0jQ==}
+  '@rolldown/binding-linux-x64-gnu@1.2.8':
+    resolution: {integrity: sha512-H9tRr5ibfXFVLxbPOseVewewFpl28zcEdjRDt2FTUZU7odxP0gEv1ki4/kGmcGOh78oRwZuuQllGLZ9zTJp84g==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [x64]
     os: [linux]
     libc: [glibc]
 
-  '@rolldown/binding-linux-x64-musl@1.2.5':
-    resolution: {integrity: sha512-mY8AP0/ichsbhAxGnLa3d3+MwV0EfgrPND2bplI3Ym8T6R2pJ0N87bvrKVwNXmdy3jnr6eQBecdqx/HMknBmpA==}
+  '@rolldown/binding-linux-x64-musl@1.2.8':
+    resolution: {integrity: sha512-UefiqfM3D6IVNlZ8tSGs9+Ejjud2T+oxO0IHADU45Y+lyEjD2dVFyZHbkfX0LUb5Zugo/oIv1eCO/KVYhgYJYA==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [x64]
     os: [linux]
     libc: [musl]
 
-  '@rolldown/binding-openharmony-arm64@1.2.5':
-    resolution: {integrity: sha512-8SLssA2oweAxyRgDp789ACfRb/3P+zNRJpzZxSizxF9m8NUDQ4+3xjo8ttjhVGGw6Qxb70oZiEtIjaKikCO7Yw==}
+  '@rolldown/binding-openharmony-arm64@1.2.8':
+    resolution: {integrity: sha512-637Ke4kWSy6rp9cxQ9gMOXlxPgIw/c1beASV4M//3+9I4uwBVOOl74G+e3zyU3u19U7RkRl/HuewixZ/Z6+Rjg==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [arm64]
     os: [openharmony]
 
-  '@rolldown/binding-win32-arm64-msvc@1.2.5':
-    resolution: {integrity: sha512-vGbruD5zquhoc8D9SViXgN2FBJtNdTyQ4DtG+SWiEGlJiAzoKcZ2xp+xuXCffhubVdt0NJlTZqkeRuERy7g8Cw==}
+  '@rolldown/binding-win32-arm64-msvc@1.2.8':
+    resolution: {integrity: sha512-xWBkPOF1Q9k/Gv1nQXnVdLxKu74jXppuOM4Z3mnypVUJJJwLsMl7hNJGRAUJoG8A5MgOI1ACKM+wBFxSJzKy4A==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [arm64]
     os: [win32]
 
-  '@rolldown/binding-win32-x64-msvc@1.2.5':
-    resolution: {integrity: sha512-e/SXpgISz+IoqVcSSI0rx/d/he8zqLex+/rCWpnHpmVfmPIUjag9H6P7zotf0gJHwPUhQxZ/mF8tr6acebT9yw==}
+  '@rolldown/binding-win32-x64-msvc@1.2.8':
+    resolution: {integrity: sha512-uz2ZvfgXbxqNwijjjbxrnvALwpyODDcgc1T1N8N3rf/DXKQmaFwmB4LX4yyjggpwN2obdQLb2rgirX5ffCWYng==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [x64]
     os: [win32]
@@ -1444,8 +1444,8 @@ packages:
   '@types/leaflet@1.9.22':
     resolution: {integrity: sha512-h3lhECYEKDasG7LFHu+GiHqAvsgLuQvlJvVZzJDGONo3sEL+wUOqSFLnwkZlK0qVxnxbuGFW8iBlJNYs5wgndA==}
 
-  '@types/node@26.5.0':
-    resolution: {integrity: sha512-dVSGpriSoCgz8WnDNTuSSuSv1PC/ALXihO4ulRZt7Md8k9mlbdin3lGOcDE8SnWOgf513ByWlXd7BK4azmyg/A==}
+  '@types/node@26.5.1':
+    resolution: {integrity: sha512-CzNm2FezW4VR/LjG6yUdiEgLE/rAQ9Slj5gCu/C2VrdcW7I0ahNZ8DRbHT7zOZ6r3ONgd/bsQIeSaoDGrd1C6g==}
 
   '@types/resolve@1.20.2':
     resolution: {integrity: sha512-60BCwRFOZCQhDncwQdxxeOEEkbc5dIMccYLwbxsS4TUNeVECQ/pBJ0j09mrHOl/JJvpRPGwO9SvE4nR2Nb/a4Q==}
@@ -1569,8 +1569,8 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
-  better-auth@1.7.1:
-    resolution: {integrity: sha512-g8WlTQijxXWJjPVZfFu1+EJg9cwwHrKDmIkcYMzx8CzYA+tDxl6NI7qQbKkbgw5UtHILsT5VH+RMzFzwnVJqAg==}
+  better-auth@1.7.4:
+    resolution: {integrity: sha512-rjL9g8b8UvdwK/ZSdawhqYzOm8YegurB6Fuzqtu/zFJamlFrPa+eEhP8Qj2vFWsMzHOk2mb/L4FRYh9pgaU7OA==}
     peerDependencies:
       '@lynx-js/react': '*'
       '@prisma/client': ^5.0.0 || ^6.0.0 || ^7.0.0
@@ -1589,7 +1589,7 @@ packages:
       react-dom: ^18.0.0 || ^19.0.0
       solid-js: ^1.0.0
       svelte: ^4.0.0 || ^5.0.0
-      vitest: ^2.0.0 || ^3.0.0 || ^4.0.0
+      vitest: ^2.0.0 || ^3.0.0 || ^4.0.0 || ^5.0.0
       vue: ^3.0.0
     peerDependenciesMeta:
       '@lynx-js/react':
@@ -2353,8 +2353,8 @@ packages:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
     engines: {node: '>= 0.4'}
 
-  postcss@8.5.26:
-    resolution: {integrity: sha512-u82N74LFzG8ca+dD8puPnplTXoGH4fTPpVGuIbt36G3qvNlkvfD0lEAZSxaly3KX8TS/L1A1gsCEmvKmBcVbkQ==}
+  postcss@8.5.28:
+    resolution: {integrity: sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==}
     engines: {node: ^10 || ^12 || >=14}
 
   pretty-bytes@5.6.0:
@@ -2404,8 +2404,8 @@ packages:
     engines: {node: '>= 0.4'}
     hasBin: true
 
-  rolldown@1.2.5:
-    resolution: {integrity: sha512-VD2IE5PUG4Oj8zz2VGykiYd5wbnjdIiSsNQb8Qu5B+noEp+A78mu2iVvpp27g8es14Tk9rofNs5Tku9iQCS4fA==}
+  rolldown@1.2.8:
+    resolution: {integrity: sha512-Z67nTmhZe7anqnM/EjI392w5i/ANUinjip7QYsOyN37oayduxt3ksdX0hf5OOamkAd53BiIHfbfSzfUmzKFQqQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
 
@@ -2675,13 +2675,13 @@ packages:
       '@vite-pwa/assets-generator':
         optional: true
 
-  vite@8.2.2:
-    resolution: {integrity: sha512-cFKLV/PRgAUlIRm5WjMjJ86jrftzpqcgH+Us+DS8mI3CDNiH30Whrz8uHL3+MOLPAgqbMBAqWdAHAphOAM+z/Q==}
+  vite@8.3.0:
+    resolution: {integrity: sha512-lhZBVvEHefgE+HQZC9O7EBJgCU/nVzFNl7vkS4RE0APtWLP02/8QVIkQtzBxPquh7lq5/78NHipTj7ODQ6XuyQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
       '@types/node': ^20.19.0 || >=22.12.0
-      '@vitejs/devtools': ^0.4.0 || ^0.5.0
+      '@vitejs/devtools': ^0.7.1
       esbuild: ^0.27.0 || ^0.28.0
       jiti: '>=1.21.0'
       less: ^4.0.0
@@ -3540,7 +3540,7 @@ snapshots:
       '@babel/helper-string-parser': 7.29.7
       '@babel/helper-validator-identifier': 7.29.7
 
-  '@better-auth/core@1.7.1(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1)':
+  '@better-auth/core@1.7.4(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1)':
     dependencies:
       '@better-auth/utils': 0.4.2
       '@better-fetch/fetch': 1.3.1
@@ -3554,36 +3554,36 @@ snapshots:
     optionalDependencies:
       '@opentelemetry/api': 1.9.1
 
-  '@better-auth/drizzle-adapter@1.7.1(@better-auth/core@1.7.1(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1))(@better-auth/utils@0.4.2)':
+  '@better-auth/drizzle-adapter@1.7.4(@better-auth/core@1.7.4(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1))(@better-auth/utils@0.4.2)':
     dependencies:
-      '@better-auth/core': 1.7.1(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1)
+      '@better-auth/core': 1.7.4(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1)
       '@better-auth/utils': 0.4.2
 
-  '@better-auth/kysely-adapter@1.7.1(@better-auth/core@1.7.1(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1))(@better-auth/utils@0.4.2)(kysely@0.29.5)':
+  '@better-auth/kysely-adapter@1.7.4(@better-auth/core@1.7.4(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1))(@better-auth/utils@0.4.2)(kysely@0.29.5)':
     dependencies:
-      '@better-auth/core': 1.7.1(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1)
+      '@better-auth/core': 1.7.4(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1)
       '@better-auth/utils': 0.4.2
     optionalDependencies:
       kysely: 0.29.5
 
-  '@better-auth/memory-adapter@1.7.1(@better-auth/core@1.7.1(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1))(@better-auth/utils@0.4.2)':
+  '@better-auth/memory-adapter@1.7.4(@better-auth/core@1.7.4(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1))(@better-auth/utils@0.4.2)':
     dependencies:
-      '@better-auth/core': 1.7.1(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1)
+      '@better-auth/core': 1.7.4(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1)
       '@better-auth/utils': 0.4.2
 
-  '@better-auth/mongo-adapter@1.7.1(@better-auth/core@1.7.1(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1))(@better-auth/utils@0.4.2)':
+  '@better-auth/mongo-adapter@1.7.4(@better-auth/core@1.7.4(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1))(@better-auth/utils@0.4.2)':
     dependencies:
-      '@better-auth/core': 1.7.1(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1)
+      '@better-auth/core': 1.7.4(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1)
       '@better-auth/utils': 0.4.2
 
-  '@better-auth/prisma-adapter@1.7.1(@better-auth/core@1.7.1(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1))(@better-auth/utils@0.4.2)':
+  '@better-auth/prisma-adapter@1.7.4(@better-auth/core@1.7.4(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1))(@better-auth/utils@0.4.2)':
     dependencies:
-      '@better-auth/core': 1.7.1(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1)
+      '@better-auth/core': 1.7.4(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1)
       '@better-auth/utils': 0.4.2
 
-  '@better-auth/telemetry@1.7.1(@better-auth/core@1.7.1(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1))(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)':
+  '@better-auth/telemetry@1.7.4(@better-auth/core@1.7.4(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1))(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)':
     dependencies:
-      '@better-auth/core': 1.7.1(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1)
+      '@better-auth/core': 1.7.4(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1)
       '@better-auth/utils': 0.4.2
       '@better-fetch/fetch': 1.3.1
 
@@ -3636,7 +3636,7 @@ snapshots:
 
   '@opentelemetry/semantic-conventions@1.43.0': {}
 
-  '@oxc-project/types@0.146.0': {}
+  '@oxc-project/types@0.149.0': {}
 
   '@oxfmt/binding-android-arm-eabi@0.67.0':
     optional: true
@@ -3758,49 +3758,49 @@ snapshots:
 
   '@polka/url@1.0.0-next.29': {}
 
-  '@rolldown/binding-android-arm-eabi@1.2.5':
+  '@rolldown/binding-android-arm-eabi@1.2.8':
     optional: true
 
-  '@rolldown/binding-android-arm64@1.2.5':
+  '@rolldown/binding-android-arm64@1.2.8':
     optional: true
 
-  '@rolldown/binding-darwin-arm64@1.2.5':
+  '@rolldown/binding-darwin-arm64@1.2.8':
     optional: true
 
-  '@rolldown/binding-darwin-x64@1.2.5':
+  '@rolldown/binding-darwin-x64@1.2.8':
     optional: true
 
-  '@rolldown/binding-freebsd-x64@1.2.5':
+  '@rolldown/binding-freebsd-x64@1.2.8':
     optional: true
 
-  '@rolldown/binding-linux-arm-gnueabihf@1.2.5':
+  '@rolldown/binding-linux-arm-gnueabihf@1.2.8':
     optional: true
 
-  '@rolldown/binding-linux-arm64-gnu@1.2.5':
+  '@rolldown/binding-linux-arm64-gnu@1.2.8':
     optional: true
 
-  '@rolldown/binding-linux-arm64-musl@1.2.5':
+  '@rolldown/binding-linux-arm64-musl@1.2.8':
     optional: true
 
-  '@rolldown/binding-linux-ppc64-gnu@1.2.5':
+  '@rolldown/binding-linux-ppc64-gnu@1.2.8':
     optional: true
 
-  '@rolldown/binding-linux-s390x-gnu@1.2.5':
+  '@rolldown/binding-linux-s390x-gnu@1.2.8':
     optional: true
 
-  '@rolldown/binding-linux-x64-gnu@1.2.5':
+  '@rolldown/binding-linux-x64-gnu@1.2.8':
     optional: true
 
-  '@rolldown/binding-linux-x64-musl@1.2.5':
+  '@rolldown/binding-linux-x64-musl@1.2.8':
     optional: true
 
-  '@rolldown/binding-openharmony-arm64@1.2.5':
+  '@rolldown/binding-openharmony-arm64@1.2.8':
     optional: true
 
-  '@rolldown/binding-win32-arm64-msvc@1.2.5':
+  '@rolldown/binding-win32-arm64-msvc@1.2.8':
     optional: true
 
-  '@rolldown/binding-win32-x64-msvc@1.2.5':
+  '@rolldown/binding-win32-x64-msvc@1.2.8':
     optional: true
 
   '@rolldown/pluginutils@1.0.1': {}
@@ -3947,20 +3947,20 @@ snapshots:
     dependencies:
       acorn: 8.18.0
 
-  '@sveltejs/adapter-node@5.5.7(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0)))(svelte@5.57.0)(typescript@6.0.3)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0)))':
+  '@sveltejs/adapter-node@5.5.7(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0)))(svelte@5.57.0)(typescript@6.0.3)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0)))':
     dependencies:
       '@rollup/plugin-commonjs': 29.0.3(rollup@4.62.5)
       '@rollup/plugin-json': 6.1.0(rollup@4.62.5)
       '@rollup/plugin-node-resolve': 16.0.3(rollup@4.62.5)
       '@rollup/plugin-replace': 6.0.3(rollup@4.62.5)
-      '@sveltejs/kit': 2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0)))(svelte@5.57.0)(typescript@6.0.3)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))
+      '@sveltejs/kit': 2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0)))(svelte@5.57.0)(typescript@6.0.3)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))
       rollup: 4.62.5
 
-  '@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0)))(svelte@5.57.0)(typescript@6.0.3)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))':
+  '@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0)))(svelte@5.57.0)(typescript@6.0.3)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))':
     dependencies:
       '@standard-schema/spec': 1.1.0
       '@sveltejs/acorn-typescript': 1.0.13(acorn@8.18.0)
-      '@sveltejs/vite-plugin-svelte': 7.3.0(svelte@5.57.0)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))
+      '@sveltejs/vite-plugin-svelte': 7.3.0(svelte@5.57.0)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))
       '@types/cookie': 0.6.0
       acorn: 8.18.0
       cookie: 0.6.0
@@ -3972,21 +3972,21 @@ snapshots:
       set-cookie-parser: 3.1.2
       sirv: 3.0.2
       svelte: 5.57.0
-      vite: 8.2.2(@types/node@26.5.0)(terser@5.50.0)
+      vite: 8.3.0(@types/node@26.5.1)(terser@5.50.0)
     optionalDependencies:
       '@opentelemetry/api': 1.9.1
       typescript: 6.0.3
 
   '@sveltejs/load-config@0.2.3': {}
 
-  '@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))':
+  '@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))':
     dependencies:
       deepmerge: 4.3.1
       magic-string: 1.2.2
       obug: 2.1.4
       svelte: 5.57.0
-      vite: 8.2.2(@types/node@26.5.0)(terser@5.50.0)
-      vitefu: 1.1.3(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))
+      vite: 8.3.0(@types/node@26.5.1)(terser@5.50.0)
+      vitefu: 1.1.3(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))
 
   '@testing-library/svelte-core@1.1.3(svelte@5.57.0)':
     dependencies:
@@ -4016,7 +4016,7 @@ snapshots:
     dependencies:
       '@types/geojson': 7946.0.16
 
-  '@types/node@26.5.0':
+  '@types/node@26.5.1':
     dependencies:
       undici-types: 8.9.0
 
@@ -4024,42 +4024,42 @@ snapshots:
 
   '@types/trusted-types@2.0.7': {}
 
-  '@vite-pwa/sveltekit@1.1.0(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0)))(svelte@5.57.0)(typescript@6.0.3)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0)))(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))(workbox-build@7.4.1)(workbox-window@7.4.1)':
+  '@vite-pwa/sveltekit@1.1.0(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0)))(svelte@5.57.0)(typescript@6.0.3)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0)))(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))(workbox-build@7.4.1)(workbox-window@7.4.1)':
     dependencies:
-      '@sveltejs/kit': 2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0)))(svelte@5.57.0)(typescript@6.0.3)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))
+      '@sveltejs/kit': 2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0)))(svelte@5.57.0)(typescript@6.0.3)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))
       kolorist: 1.8.0
       tinyglobby: 0.2.17
-      vite-plugin-pwa: 1.3.0(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))(workbox-build@7.4.1)(workbox-window@7.4.1)
+      vite-plugin-pwa: 1.3.0(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))(workbox-build@7.4.1)(workbox-window@7.4.1)
     transitivePeerDependencies:
       - supports-color
       - vite
       - workbox-build
       - workbox-window
 
-  '@vitest/browser-playwright@5.0.0(playwright@1.63.0)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))(vitest@5.0.0)':
+  '@vitest/browser-playwright@5.0.0(playwright@1.63.0)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))(vitest@5.0.0)':
     dependencies:
-      '@vitest/browser': 5.0.0(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))(vitest@5.0.0)
-      '@vitest/mocker': 5.0.0(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))
+      '@vitest/browser': 5.0.0(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))(vitest@5.0.0)
+      '@vitest/mocker': 5.0.0(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))
       playwright: 1.63.0
       tinyrainbow: 3.1.1
-      vitest: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.0)(@vitest/browser-playwright@5.0.0)(@vitest/ui@5.0.0)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))
+      vitest: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(@vitest/browser-playwright@5.0.0)(@vitest/ui@5.0.0)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))
     transitivePeerDependencies:
       - bufferutil
       - msw
       - utf-8-validate
       - vite
 
-  '@vitest/browser@5.0.0(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))(vitest@5.0.0)':
+  '@vitest/browser@5.0.0(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))(vitest@5.0.0)':
     dependencies:
       '@blazediff/core': 1.10.0
-      '@vitest/mocker': 5.0.0(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))
+      '@vitest/mocker': 5.0.0(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))
       '@vitest/ui': 5.0.0(vitest@5.0.0)
       '@vitest/utils': 5.0.0
       magic-string: 1.2.3
       pngjs: 7.0.0
       sirv: 3.0.2
       tinyrainbow: 3.1.1
-      vitest: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.0)(@vitest/browser-playwright@5.0.0)(@vitest/ui@5.0.0)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))
+      vitest: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(@vitest/browser-playwright@5.0.0)(@vitest/ui@5.0.0)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))
       ws: 8.21.3
     transitivePeerDependencies:
       - bufferutil
@@ -4067,14 +4067,14 @@ snapshots:
       - utf-8-validate
       - vite
 
-  '@vitest/mocker@5.0.0(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))':
+  '@vitest/mocker@5.0.0(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       '@vitest/spy': 5.0.0
       estree-walker: 3.0.3
       magic-string: 1.2.3
     optionalDependencies:
-      vite: 8.2.2(@types/node@26.5.0)(terser@5.50.0)
+      vite: 8.3.0(@types/node@26.5.1)(terser@5.50.0)
 
   '@vitest/pretty-format@5.0.0':
     dependencies:
@@ -4090,7 +4090,7 @@ snapshots:
       pathe: 2.0.3
       sirv: 3.0.2
       tinyrainbow: 3.1.1
-      vitest: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.0)(@vitest/browser-playwright@5.0.0)(@vitest/ui@5.0.0)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))
+      vitest: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(@vitest/browser-playwright@5.0.0)(@vitest/ui@5.0.0)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))
 
   '@vitest/utils@5.0.0':
     dependencies:
@@ -4168,15 +4168,15 @@ snapshots:
 
   baseline-browser-mapping@2.11.16: {}
 
-  better-auth@1.7.1(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0)))(svelte@5.57.0)(typescript@6.0.3)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0)))(svelte@5.57.0)(vitest@5.0.0):
+  better-auth@1.7.4(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0)))(svelte@5.57.0)(typescript@6.0.3)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0)))(svelte@5.57.0)(vitest@5.0.0):
     dependencies:
-      '@better-auth/core': 1.7.1(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1)
-      '@better-auth/drizzle-adapter': 1.7.1(@better-auth/core@1.7.1(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1))(@better-auth/utils@0.4.2)
-      '@better-auth/kysely-adapter': 1.7.1(@better-auth/core@1.7.1(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1))(@better-auth/utils@0.4.2)(kysely@0.29.5)
-      '@better-auth/memory-adapter': 1.7.1(@better-auth/core@1.7.1(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1))(@better-auth/utils@0.4.2)
-      '@better-auth/mongo-adapter': 1.7.1(@better-auth/core@1.7.1(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1))(@better-auth/utils@0.4.2)
-      '@better-auth/prisma-adapter': 1.7.1(@better-auth/core@1.7.1(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1))(@better-auth/utils@0.4.2)
-      '@better-auth/telemetry': 1.7.1(@better-auth/core@1.7.1(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1))(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)
+      '@better-auth/core': 1.7.4(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1)
+      '@better-auth/drizzle-adapter': 1.7.4(@better-auth/core@1.7.4(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1))(@better-auth/utils@0.4.2)
+      '@better-auth/kysely-adapter': 1.7.4(@better-auth/core@1.7.4(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1))(@better-auth/utils@0.4.2)(kysely@0.29.5)
+      '@better-auth/memory-adapter': 1.7.4(@better-auth/core@1.7.4(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1))(@better-auth/utils@0.4.2)
+      '@better-auth/mongo-adapter': 1.7.4(@better-auth/core@1.7.4(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1))(@better-auth/utils@0.4.2)
+      '@better-auth/prisma-adapter': 1.7.4(@better-auth/core@1.7.4(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1))(@better-auth/utils@0.4.2)
+      '@better-auth/telemetry': 1.7.4(@better-auth/core@1.7.4(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.5.4))(jose@6.2.9)(kysely@0.29.5)(nanostores@1.5.1))(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)
       '@better-auth/utils': 0.4.2
       '@better-fetch/fetch': 1.3.1
       '@noble/ciphers': 2.3.0
@@ -4188,9 +4188,9 @@ snapshots:
       nanostores: 1.5.1
       zod: 4.5.4
     optionalDependencies:
-      '@sveltejs/kit': 2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0)))(svelte@5.57.0)(typescript@6.0.3)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))
+      '@sveltejs/kit': 2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0)))(svelte@5.57.0)(typescript@6.0.3)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))
       svelte: 5.57.0
-      vitest: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.0)(@vitest/browser-playwright@5.0.0)(@vitest/ui@5.0.0)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))
+      vitest: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(@vitest/browser-playwright@5.0.0)(@vitest/ui@5.0.0)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))
     transitivePeerDependencies:
       - '@cloudflare/workers-types'
       - '@opentelemetry/api'
@@ -4923,7 +4923,7 @@ snapshots:
 
   possible-typed-array-names@1.1.0: {}
 
-  postcss@8.5.26:
+  postcss@8.5.28:
     dependencies:
       nanoid: 3.3.18
       picocolors: 1.1.1
@@ -4985,26 +4985,26 @@ snapshots:
       path-parse: 1.0.7
       supports-preserve-symlinks-flag: 1.0.0
 
-  rolldown@1.2.5:
+  rolldown@1.2.8:
     dependencies:
-      '@oxc-project/types': 0.146.0
+      '@oxc-project/types': 0.149.0
       '@rolldown/pluginutils': 1.0.1
     optionalDependencies:
-      '@rolldown/binding-android-arm-eabi': 1.2.5
-      '@rolldown/binding-android-arm64': 1.2.5
-      '@rolldown/binding-darwin-arm64': 1.2.5
-      '@rolldown/binding-darwin-x64': 1.2.5
-      '@rolldown/binding-freebsd-x64': 1.2.5
-      '@rolldown/binding-linux-arm-gnueabihf': 1.2.5
-      '@rolldown/binding-linux-arm64-gnu': 1.2.5
-      '@rolldown/binding-linux-arm64-musl': 1.2.5
-      '@rolldown/binding-linux-ppc64-gnu': 1.2.5
-      '@rolldown/binding-linux-s390x-gnu': 1.2.5
-      '@rolldown/binding-linux-x64-gnu': 1.2.5
-      '@rolldown/binding-linux-x64-musl': 1.2.5
-      '@rolldown/binding-openharmony-arm64': 1.2.5
-      '@rolldown/binding-win32-arm64-msvc': 1.2.5
-      '@rolldown/binding-win32-x64-msvc': 1.2.5
+      '@rolldown/binding-android-arm-eabi': 1.2.8
+      '@rolldown/binding-android-arm64': 1.2.8
+      '@rolldown/binding-darwin-arm64': 1.2.8
+      '@rolldown/binding-darwin-x64': 1.2.8
+      '@rolldown/binding-freebsd-x64': 1.2.8
+      '@rolldown/binding-linux-arm-gnueabihf': 1.2.8
+      '@rolldown/binding-linux-arm64-gnu': 1.2.8
+      '@rolldown/binding-linux-arm64-musl': 1.2.8
+      '@rolldown/binding-linux-ppc64-gnu': 1.2.8
+      '@rolldown/binding-linux-s390x-gnu': 1.2.8
+      '@rolldown/binding-linux-x64-gnu': 1.2.8
+      '@rolldown/binding-linux-x64-musl': 1.2.8
+      '@rolldown/binding-openharmony-arm64': 1.2.8
+      '@rolldown/binding-win32-arm64-msvc': 1.2.8
+      '@rolldown/binding-win32-x64-msvc': 1.2.8
 
   rollup@4.62.5:
     dependencies:
@@ -5207,12 +5207,12 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
-  svelte-check@4.7.6(picomatch@4.0.7)(svelte@5.57.0)(typescript@6.0.3):
+  svelte-check@4.7.6(picomatch@4.0.5)(svelte@5.57.0)(typescript@6.0.3):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       '@sveltejs/load-config': 0.2.3
       chokidar: 4.0.3
-      fdir: 6.5.0(picomatch@4.0.7)
+      fdir: 6.5.0(picomatch@4.0.5)
       picocolors: 1.1.1
       sade: 1.8.1
       svelte: 5.57.0
@@ -5342,43 +5342,43 @@ snapshots:
       escalade: 3.2.0
       picocolors: 1.1.1
 
-  vite-plugin-pwa@1.3.0(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))(workbox-build@7.4.1)(workbox-window@7.4.1):
+  vite-plugin-pwa@1.3.0(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))(workbox-build@7.4.1)(workbox-window@7.4.1):
     dependencies:
       debug: 4.4.3
       pretty-bytes: 6.1.1
       tinyglobby: 0.2.17
-      vite: 8.2.2(@types/node@26.5.0)(terser@5.50.0)
+      vite: 8.3.0(@types/node@26.5.1)(terser@5.50.0)
       workbox-build: 7.4.1
       workbox-window: 7.4.1
     transitivePeerDependencies:
       - supports-color
 
-  vite@8.2.2(@types/node@26.5.0)(terser@5.50.0):
+  vite@8.3.0(@types/node@26.5.1)(terser@5.50.0):
     dependencies:
       lightningcss: 1.33.0
-      picomatch: 4.0.5
-      postcss: 8.5.26
-      rolldown: 1.2.5
+      picomatch: 4.0.7
+      postcss: 8.5.28
+      rolldown: 1.2.8
       tinyglobby: 0.2.17
     optionalDependencies:
-      '@types/node': 26.5.0
+      '@types/node': 26.5.1
       fsevents: 2.3.3
       terser: 5.50.0
 
-  vitefu@1.1.3(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0)):
+  vitefu@1.1.3(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0)):
     optionalDependencies:
-      vite: 8.2.2(@types/node@26.5.0)(terser@5.50.0)
+      vite: 8.3.0(@types/node@26.5.1)(terser@5.50.0)
 
   vitest-browser-svelte@3.1.0(svelte@5.57.0)(vitest@5.0.0):
     dependencies:
       '@testing-library/svelte-core': 1.1.3(svelte@5.57.0)
       svelte: 5.57.0
-      vitest: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.0)(@vitest/browser-playwright@5.0.0)(@vitest/ui@5.0.0)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))
+      vitest: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(@vitest/browser-playwright@5.0.0)(@vitest/ui@5.0.0)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))
 
-  vitest@5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.0)(@vitest/browser-playwright@5.0.0)(@vitest/ui@5.0.0)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0)):
+  vitest@5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(@vitest/browser-playwright@5.0.0)(@vitest/ui@5.0.0)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0)):
     dependencies:
       '@types/chai': 5.2.3
-      '@vitest/mocker': 5.0.0(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))
+      '@vitest/mocker': 5.0.0(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))
       chai: 6.2.2
       es-module-lexer: 2.3.2
       expect-type: 1.4.0
@@ -5389,12 +5389,12 @@ snapshots:
       tinybench: 6.1.4
       tinyexec: 1.3.0
       tinyglobby: 0.2.17
-      vite: 8.2.2(@types/node@26.5.0)(terser@5.50.0)
+      vite: 8.3.0(@types/node@26.5.1)(terser@5.50.0)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@opentelemetry/api': 1.9.1
-      '@types/node': 26.5.0
-      '@vitest/browser-playwright': 5.0.0(playwright@1.63.0)(vite@8.2.2(@types/node@26.5.0)(terser@5.50.0))(vitest@5.0.0)
+      '@types/node': 26.5.1
+      '@vitest/browser-playwright': 5.0.0(playwright@1.63.0)(vite@8.3.0(@types/node@26.5.1)(terser@5.50.0))(vitest@5.0.0)
       '@vitest/ui': 5.0.0(vitest@5.0.0)
     transitivePeerDependencies:
       - msw
