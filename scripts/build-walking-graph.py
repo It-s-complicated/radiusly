@@ -84,7 +84,9 @@ class Importer(osmium.SimpleHandler):
         self.station_relation_points = {}
         self.incomplete = 0
 
-    def apply_file(self, filename, **kwargs):
+    def apply_file(self, filename, locations=True, idx='flex_mem'):
+        if not locations:
+            raise ValueError('Walking graph import requires node locations')
         # ponytail: two passes avoid retaining every OSM node; use an area handler if I/O becomes the bottleneck.
         relations = StationRelations()
         relations.apply_file(filename)
@@ -93,7 +95,26 @@ class Importer(osmium.SimpleHandler):
             for kind, ref in members:
                 if kind in {'n', 'w'}:
                     self.station_members.setdefault((kind, ref), []).append(relation)
-        return super().apply_file(filename, **kwargs)
+        # Index every node natively; Python only needs access/barrier/station tags.
+        # Other station members are recovered from the same location index.
+        node_locations = osmium.index.create_map(idx)
+        location_handler = osmium.NodeLocationsForWays(node_locations)
+        location_handler.ignore_errors()
+        with osmium.io.Reader(filename) as reader:
+            node_filter = osmium.filter.KeyFilter(
+                'foot:conditional', 'access:conditional', 'opening_hours',
+                'foot', 'access', 'barrier', 'railway').enable_for(osmium.osm.NODE)
+            osmium.apply(reader, location_handler, node_filter, self)
+        for (kind, ref), relations in self.station_members.items():
+            if kind != 'n':
+                continue
+            try:
+                location = node_locations[ref]
+            except KeyError:
+                continue
+            if location.valid():
+                for relation in relations:
+                    self.station_relation_points[relation].append([location.lat, location.lon])
 
     def inside(self, lat, lon):
         west, south, east, north = self.buffered_bounds
@@ -107,8 +128,6 @@ class Importer(osmium.SimpleHandler):
             point = [node.location.lat, node.location.lon]
             if is_station(tags) and self.inside(*point):
                 self.stations.append(point)
-            for relation in self.station_members.get(('n', node.id), []):
-                self.station_relation_points[relation].append(point)
 
     def way(self, way):
         tags = dict(way.tags)
@@ -188,7 +207,7 @@ def main():
     args.output.parent.mkdir(parents=True, exist_ok=True)
     temporary = args.output.with_suffix('.json.tmp')
     with temporary.open('w') as output:
-        json.dump(graph, output, separators=(',',':'), allow_nan=False)
+        output.write(json.dumps(graph, separators=(',',':'), allow_nan=False))
     temporary.replace(args.output)
     print(json.dumps({'nodes':len(graph['nodes']), 'segments':len(graph['edges']),
                       'stations':len(graph['stations']), 'incompleteWaysSkipped':importer.incomplete,
