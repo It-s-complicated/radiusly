@@ -924,14 +924,40 @@ input:focus-visible {
 	border-radius: 16px;
 	background: var(--paper);
 	box-shadow: 0 15px 50px rgb(24 48 42 / 25%);
+	opacity: 0;
+	transform: translateY(6px);
+	transition:
+		opacity 180ms ease,
+		transform 180ms ease,
+		display 180ms allow-discrete,
+		overlay 180ms allow-discrete;
+}
+
+.dialog[open] {
+	opacity: 1;
+	transform: none;
+
+	@starting-style {
+		opacity: 0;
+		transform: translateY(6px);
+	}
 }
 
 .dialog::backdrop {
 	background: rgb(24 48 42 / 25%);
+	opacity: 0;
+	transition:
+		opacity 180ms ease,
+		display 180ms allow-discrete,
+		overlay 180ms allow-discrete;
 }
 
-.dialog-bare::backdrop {
-	background: none;
+.dialog[open]::backdrop {
+	opacity: 1;
+
+	@starting-style {
+		opacity: 0;
+	}
 }
 
 .dialog-close {

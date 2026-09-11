@@ -324,7 +324,6 @@
 		<Dialog
 			show={pinMode !== undefined && pendingPoint !== undefined}
 			label={pointDialogTitle}
-			backdrop={false}
 			onclose={cancelPin}
 		>
 			<form onsubmit={submitPointName}>

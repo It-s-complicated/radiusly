@@ -394,7 +394,6 @@
 		<Dialog
 			show={renaming !== null}
 			label="Rename this place"
-			backdrop={false}
 			onclose={() => (renaming = null)}
 		>
 			<form onsubmit={handleRenameSubmit}>
