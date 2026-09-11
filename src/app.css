@@ -94,6 +94,7 @@ input:focus-visible {
 
 .btn-md {
 	min-height: 42px;
+	font-size: 12px;
 }
 
 .btn-lg {
@@ -913,7 +914,6 @@ input:focus-visible {
 .map-tip .btn {
 	min-height: 28px;
 	padding: 0 10px;
-	font-size: 10px;
 }
 
 .point-form {
@@ -1043,7 +1043,6 @@ input:focus-visible {
 	.topbar-actions .btn {
 		min-height: 34px;
 		padding: 0 12px;
-		font-size: 11px;
 	}
 
 	.app-shell {
