@@ -71,6 +71,11 @@ class Importer(osmium.SimpleHandler):
     def __init__(self, bounds):
         super().__init__()
         self.bounds = bounds
+        west, south, east, north = bounds
+        # 25 km data buffer around supported starts; maximum accepted walk is 37.5 km.
+        dy = 25000 / 110000
+        dx = dy / math.cos(math.radians(max(abs(south), abs(north))))
+        self.buffered_bounds = (west-dx, south-dy, east+dx, north+dy)
         self.blocked = set()
         self.excluded_ways = set()
         self.ways = []
@@ -91,11 +96,8 @@ class Importer(osmium.SimpleHandler):
         return super().apply_file(filename, **kwargs)
 
     def inside(self, lat, lon):
-        west, south, east, north = self.bounds
-        # 25 km data buffer around supported starts; maximum accepted walk is 37.5 km.
-        dy = 25000 / 110000
-        dx = dy / math.cos(math.radians(max(abs(south), abs(north))))
-        return west-dx <= lon <= east+dx and south-dy <= lat <= north+dy
+        west, south, east, north = self.buffered_bounds
+        return west <= lon <= east and south <= lat <= north
 
     def node(self, node):
         tags = dict(node.tags)
@@ -110,23 +112,28 @@ class Importer(osmium.SimpleHandler):
 
     def way(self, way):
         tags = dict(way.tags)
-        points = [[node.lat, node.lon] for node in way.nodes if node.location.valid()]
-        if points:
-            if is_station(tags):
+        direction = flags(tags)
+        station = is_station(tags)
+        relations = self.station_members.get(('w', way.id), [])
+        if not direction and not station and not relations:
+            return
+        refs = [(node.ref, node.lat, node.lon) for node in way.nodes if node.location.valid()]
+        if refs and (station or relations):
+            points = [[lat, lon] for _, lat, lon in refs]
+            if station:
                 point = center(points)
                 if self.inside(*point):
                     self.stations.append(point)
-            for relation in self.station_members.get(('w', way.id), []):
+            for relation in relations:
                 self.station_relation_points[relation].extend(points)
-        direction = flags(tags)
         if not direction:
             return
-        if any(not n.location.valid() for n in way.nodes):
+        if len(refs) != len(way.nodes):
             self.incomplete += 1
             return
-        if not any(self.inside(n.lat, n.lon) for n in way.nodes):
+        if not any(self.inside(lat, lon) for _, lat, lon in refs):
             return
-        self.ways.append((str(way.id), direction, [(n.ref, n.lat, n.lon) for n in way.nodes]))
+        self.ways.append((str(way.id), direction, refs))
 
     def relation(self, relation):
         tags = dict(relation.tags)

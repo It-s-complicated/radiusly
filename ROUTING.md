@@ -70,3 +70,20 @@ pnpm routing:benchmark
 The benchmark loads the real graph once and exercises all five shapes with both searches. It records successful routes and expected quality failures rather than treating every requested loop as guaranteed. `routing.test.ts` checks equal path costs, directionality, disconnected components, partial-edge overlap, required spots and search cancellation. Browser tests check that selecting Dijkstra survives reload and reaches the POST endpoint.
 
 The implementation benchmark accepted 24 of 30 requests across Alexanderplatz, Pankow and Tiergarten (4 km, five shapes, both algorithms). Both searches succeeded for every shape at Alexanderplatz and Tiergarten; Organic, Orbit-near and Spaghetti failed quality limits at Pankow. This is a feasibility sample, not a comprehensive quality or latency evaluation.
+
+### Profile the Python importer locally
+
+Use the `.venv-routing` environment from the data-build instructions above (Python 3.13 matches the graph container). Python's built-in profiler needs no additional dependencies. Write a separate graph so profiling does not replace the server's data:
+
+```bash
+.venv-routing/bin/python scripts/test-walking-import.py
+.venv-routing/bin/python -m cProfile -o data/routing/import.prof \
+  scripts/build-walking-graph.py \
+  data/routing/brandenburg.osm.pbf data/routing/graph-profile.json \
+  --region berlin --bounds 13.08 52.33 13.77 52.68
+.venv-routing/bin/python -c "import pstats; pstats.Stats('data/routing/import.prof').strip_dirs().sort_stats('cumulative').print_stats(25)"
+```
+
+Profiling adds overhead; compare elapsed build times without `cProfile` when measuring speedups. Keep the input, bounds, Python version and machine the same between runs. Importer source changes intentionally change `dataVersion`, even when graph contents are equivalent.
+
+Local measurement on 2026-09-11 with Python 3.13.13, osmium 4.3.1 and source hash `706dc3b68a41c23b`: the optimized build took **244.54 seconds (4m 4.5s)** versus **275.16 seconds (4m 35.2s)** before the changes, about **11% less elapsed time**. These are single sequential runs without profiling, including hashing, import, graph construction and JSON output, excluding download. Peak RSS was approximately 1.35 GiB for both. The graphs matched exactly except for `dataVersion`: 2,008,219 nodes, 2,205,005 segments and 525 stations. Treat these as local measurements, not deployment guarantees.

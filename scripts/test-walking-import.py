@@ -1,6 +1,7 @@
 import importlib.util
 import tempfile
 from pathlib import Path
+from types import SimpleNamespace
 
 spec = importlib.util.spec_from_file_location('walking_import', Path(__file__).with_name('build-walking-graph.py'))
 module = importlib.util.module_from_spec(spec)
@@ -14,6 +15,32 @@ assert module.flags({'highway':'footway','foot:conditional':'yes @ (Mo-Fr)'}) ==
 assert module.flags({'highway':'pedestrian','area':'yes'}) == 0
 assert module.flags({'highway':'footway','foot:backward':'no'}) == 1
 assert module.flags({'highway':'footway','oneway':'yes'}) == 0
+
+# Irrelevant ways must not access coordinates at all.
+importer = module.Importer([13.3,52.4,13.5,52.6])
+importer.way(SimpleNamespace(id=100, tags={'building':'yes'}))
+west, south, east, north = importer.buffered_bounds
+assert importer.inside(south, west) and importer.inside(north, east)
+assert not importer.inside(south - 0.000001, west)
+assert not importer.inside(north, east + 0.000001)
+
+# Missing locations still exclude walking ways but preserve valid station points.
+valid = SimpleNamespace(ref=1, lat=52.5, lon=13.4,
+                        location=SimpleNamespace(valid=lambda: True))
+missing = SimpleNamespace(location=SimpleNamespace(valid=lambda: False))
+importer.station_members[('w', 101)] = ['200']
+importer.station_relation_points['200'] = []
+importer.way(SimpleNamespace(id=101, tags={'highway':'footway', 'railway':'station'},
+                             nodes=[valid, missing]))
+assert importer.incomplete == 1 and not importer.ways
+assert importer.stations == [[52.5,13.4]]
+assert importer.station_relation_points['200'] == [[52.5,13.4]]
+outside = SimpleNamespace(ref=2, lat=0, lon=0,
+                          location=SimpleNamespace(valid=lambda: True))
+importer.way(SimpleNamespace(id=102, tags={'highway':'footway'}, nodes=[outside]))
+assert not importer.ways
+importer.way(SimpleNamespace(id=103, tags={'highway':'footway'}, nodes=[valid, outside]))
+assert importer.ways == [('103', 3, [(1,52.5,13.4), (2,0,0)])]
 
 xml = '''<osm version="0.6">
 <node id="1" lat="52.5" lon="13.4"/>
