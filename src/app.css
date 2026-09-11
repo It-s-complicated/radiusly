@@ -362,10 +362,16 @@ input:focus-visible {
 	border-bottom: 1px solid var(--line);
 }
 
-.route-shape-field legend {
-	margin-bottom: 10px;
+.route-shape-field legend,
+.pace-field legend,
+.target-control label {
 	font-size: 12px;
 	font-weight: 750;
+}
+
+.route-shape-field legend,
+.pace-field legend {
+	margin-bottom: 10px;
 }
 
 .route-shape-grid {
@@ -374,7 +380,8 @@ input:focus-visible {
 	gap: 7px;
 }
 
-.route-shape-grid label {
+.route-shape-grid label,
+.pace-field label {
 	position: relative;
 	cursor: pointer;
 }
@@ -383,14 +390,14 @@ input:focus-visible {
 	grid-column: 1 / -1;
 }
 
-.route-shape-grid input {
+.route-shape-grid input,
+.pace-field input {
 	position: absolute;
 	opacity: 0;
 }
 
-.route-shape-grid span {
-	min-height: 91px;
-	padding: 7px;
+.route-shape-grid span,
+.pace-field span {
 	border: 1px solid var(--line);
 	border-radius: 10px;
 	display: flex;
@@ -400,7 +407,14 @@ input:focus-visible {
 	background: white;
 }
 
-.route-shape-grid input:focus-visible + span {
+.route-shape-grid span {
+	min-height: 91px;
+	padding: 7px;
+}
+
+.route-shape-grid input:focus-visible + span,
+.pace-field input:focus-visible + span,
+.path-search-field input:focus-visible + span {
 	outline: 2px solid var(--forest);
 	outline-offset: 3px;
 }
@@ -426,16 +440,22 @@ input:focus-visible {
 	font-size: 11px;
 }
 
-.route-shape-grid small {
+.route-shape-grid small,
+.pace-field small {
 	margin-top: 2px;
 	color: var(--muted);
 	font-size: 9px;
 }
 
-.route-shape-grid input:checked + span {
+.route-shape-grid input:checked + span,
+.pace-field input:checked + span {
 	border-color: var(--forest);
 	background: #f1f6ef;
 	box-shadow: inset 0 0 0 1px var(--forest);
+}
+
+.pace-field input:checked + span {
+	color: var(--forest);
 }
 
 /* --- Mode switch --- */
@@ -475,6 +495,10 @@ input:focus-visible {
 .pace-field legend {
 	font-size: 12px;
 	font-weight: 750;
+}
+
+.target-control label {
+	display: block;
 }
 
 .target-value {
@@ -566,20 +590,8 @@ input:focus-visible {
 	cursor: pointer;
 }
 
-.pace-field input {
-	position: absolute;
-	opacity: 0;
-}
-
 .pace-field span {
 	min-height: 57px;
-	border: 1px solid var(--line);
-	border-radius: 10px;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	background: white;
 }
 
 .pace-field b {
@@ -587,9 +599,7 @@ input:focus-visible {
 }
 
 .pace-field small {
-	margin-top: 2px;
 	color: var(--muted);
-	font-size: 9px;
 }
 
 .pace-field input:checked + span {
@@ -676,13 +686,17 @@ input:focus-visible {
 	gap: 6px;
 }
 
-.place-search input {
+.place-search input,
+.point-form input {
 	min-width: 0;
-	height: 36px;
-	padding: 0 10px;
 	border: 1px solid var(--line);
 	border-radius: 9px;
 	flex: 1;
+}
+
+.place-search input {
+	height: 36px;
+	padding: 0 10px;
 	font-size: 11px;
 }
 
@@ -936,12 +950,8 @@ input:focus-visible {
 }
 
 .point-form input {
-	min-width: 0;
 	height: 42px;
 	padding: 0 12px;
-	border: 1px solid var(--line);
-	border-radius: 9px;
-	flex: 1;
 }
 
 
@@ -1162,10 +1172,6 @@ input:focus-visible {
 .path-search-field span {
 	padding: 8px;
 	text-align: center;
-}
-.path-search-field input:focus-visible + span {
-	outline: 2px solid var(--forest);
-	outline-offset: 3px;
 }
 .path-search-field input:disabled + span {
 	opacity: 0.6;
