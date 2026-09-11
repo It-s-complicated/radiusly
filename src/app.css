@@ -46,8 +46,163 @@ button {
 
 button:focus-visible,
 input:focus-visible {
-	outline: 3px solid color-mix(in srgb, var(--lime), transparent 15%);
+	outline: 3px solid var(--forest);
 	outline-offset: 2px;
+}
+
+/* --- Buttons --- */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 0 15px;
+	border: 1px solid transparent;
+	border-radius: 9px;
+	color: var(--ink);
+	background: transparent;
+	font-weight: 800;
+	white-space: nowrap;
+	cursor: pointer;
+	transition:
+		background 140ms ease,
+		border-color 140ms ease,
+		color 140ms ease;
+}
+
+.btn:disabled {
+	opacity: 0.7;
+	cursor: wait;
+}
+
+.btn svg {
+	width: 17px;
+	flex: none;
+	fill: none;
+	stroke: currentColor;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	stroke-width: 1.8;
+}
+
+/* sizes */
+.btn-sm {
+	min-height: 34px;
+	padding: 0 12px;
+	font-size: 11px;
+}
+
+.btn-md {
+	min-height: 42px;
+}
+
+.btn-lg {
+	min-height: 54px;
+	padding: 0 19px;
+	font-size: 13px;
+}
+
+.btn-lg svg {
+	width: 20px;
+}
+
+/* variants */
+.btn-primary {
+	color: white;
+	background: var(--forest);
+	box-shadow: 0 8px 20px rgb(23 63 53 / 17%);
+}
+
+.btn-primary:hover {
+	background: #205346;
+}
+
+.btn-secondary {
+	border-color: #bdc9c3;
+	color: var(--forest);
+	background: #f7faf5;
+}
+
+.btn-secondary:hover {
+	border-color: var(--forest);
+	background: #eef5e9;
+}
+
+.btn-ghost {
+	color: var(--muted);
+}
+
+.btn-ghost:hover {
+	color: var(--forest);
+	background: #eef5e9;
+}
+
+.btn-danger:hover {
+	color: #9a3822;
+	background: #faeee8;
+}
+
+.btn-inverse {
+	border-color: rgb(255 255 255 / 25%);
+	color: white;
+	background: rgb(255 255 255 / 8%);
+}
+
+.btn-inverse:hover {
+	background: rgb(255 255 255 / 16%);
+}
+
+.btn-inverse:focus-visible {
+	outline-color: var(--lime);
+}
+
+.btn-card {
+	border-color: rgb(23 63 53 / 15%);
+	color: var(--forest);
+	background: rgb(255 254 251 / 94%);
+	box-shadow: 0 5px 17px rgb(24 48 42 / 13%);
+}
+
+.btn-card:hover {
+	border-color: var(--forest);
+	background: white;
+}
+
+.btn-lime {
+	color: var(--forest);
+	background: var(--lime);
+}
+
+.btn-lime:hover {
+	background: #b9e85b;
+}
+
+.btn-link {
+	min-height: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	color: var(--forest-2);
+	background: transparent;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+
+.btn-link:hover {
+	color: var(--forest);
+}
+
+.btn-pill {
+	border-radius: 99px;
+}
+
+.btn-icon {
+	width: 28px;
+	min-height: 28px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	line-height: 1;
 }
 
 .sr-only {
@@ -130,33 +285,6 @@ input:focus-visible {
 	gap: 8px;
 }
 
-.install-button {
-	min-height: 38px;
-	padding: 0 15px;
-	border: 1px solid rgb(255 255 255 / 25%);
-	border-radius: 99px;
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	color: white;
-	background: rgb(255 255 255 / 8%);
-	cursor: pointer;
-}
-
-.install-button:disabled {
-	opacity: 0.65;
-	cursor: wait;
-}
-
-.install-button svg {
-	width: 17px;
-	fill: none;
-	stroke: currentColor;
-	stroke-linecap: round;
-	stroke-linejoin: round;
-	stroke-width: 1.8;
-}
-
 /* --- App shell --- */
 .app-shell {
 	min-height: calc(100dvh - 72px);
@@ -224,28 +352,6 @@ input:focus-visible {
 	margin-top: 11px;
 	display: flex;
 	gap: 7px;
-}
-
-.secondary-button {
-	min-height: 34px;
-	padding: 0 11px;
-	border: 1px solid #bdc9c3;
-	border-radius: 9px;
-	color: var(--forest);
-	background: #f7faf5;
-	font-size: 10px;
-	font-weight: 800;
-	cursor: pointer;
-}
-
-.secondary-button:hover {
-	border-color: var(--forest);
-	background: #eef5e9;
-}
-
-.secondary-button.compact {
-	min-height: 31px;
-	white-space: nowrap;
 }
 
 /* --- Route shape grid --- */
@@ -563,26 +669,6 @@ input:focus-visible {
 	display: flex;
 }
 
-.point-row button {
-	width: 28px;
-	height: 28px;
-	border: 0;
-	border-radius: 50%;
-	color: #98a19d;
-	background: transparent;
-	cursor: pointer;
-}
-
-.point-row button:hover {
-	color: #9a3822;
-	background: #faeee8;
-}
-
-.point-row button.rename:hover {
-	color: var(--forest);
-	background: #eef5e9;
-}
-
 /* --- Place search --- */
 .place-search {
 	margin-top: 12px;
@@ -598,22 +684,6 @@ input:focus-visible {
 	border-radius: 9px;
 	flex: 1;
 	font-size: 11px;
-}
-
-.place-search button {
-	padding: 0 12px;
-	border: 1px solid #bdc9c3;
-	border-radius: 9px;
-	color: var(--forest);
-	background: #f7faf5;
-	font-size: 10px;
-	font-weight: 800;
-	cursor: pointer;
-}
-
-.place-search button:hover {
-	border-color: var(--forest);
-	background: #eef5e9;
 }
 
 .place-results {
@@ -639,26 +709,6 @@ input:focus-visible {
 }
 
 /* --- Route output --- */
-.primary-button {
-	width: 100%;
-	min-height: 54px;
-	padding: 0 19px;
-	border: 0;
-	border-radius: 12px;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	color: white;
-	background: var(--forest);
-	font-size: 13px;
-	font-weight: 800;
-	box-shadow: 0 8px 20px rgb(23 63 53 / 17%);
-	cursor: pointer;
-	transition:
-		transform 160ms ease,
-		background 160ms ease;
-}
-
 .route-output {
 	position: sticky;
 	z-index: 5;
@@ -668,24 +718,18 @@ input:focus-visible {
 	box-shadow: 0 -12px 18px var(--paper);
 }
 
-.primary-button:hover {
-	background: #205346;
+#make-route {
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
+}
+
+#make-route:hover {
 	transform: translateY(-1px);
 }
 
-.primary-button:disabled {
-	opacity: 0.7;
-	cursor: wait;
+#make-route:disabled {
 	transform: none;
-}
-
-.primary-button svg {
-	width: 20px;
-	fill: none;
-	stroke: currentColor;
-	stroke-linecap: round;
-	stroke-linejoin: round;
-	stroke-width: 1.8;
 }
 
 .route-summary {
@@ -711,11 +755,11 @@ input:focus-visible {
 }
 
 .route-summary-top button {
-	border: 0;
-	background: transparent;
-	color: var(--muted);
 	font-size: 20px;
-	cursor: pointer;
+}
+
+.route-summary > .btn-link {
+	margin-top: 11px;
 }
 
 .route-metrics {
@@ -745,19 +789,6 @@ input:focus-visible {
 	margin: 6px 0 0;
 	color: var(--muted);
 	font-size: 10px;
-}
-
-.debug-button {
-	margin-top: 11px;
-	padding: 0;
-	border: 0;
-	color: var(--forest-2);
-	background: transparent;
-	font-size: 10px;
-	font-weight: 800;
-	text-decoration: underline;
-	text-underline-offset: 2px;
-	cursor: pointer;
 }
 
 /* --- Map panel --- */
@@ -801,29 +832,7 @@ input:focus-visible {
 	right: 20px;
 }
 
-.map-actions button {
-	min-height: 42px;
-	padding: 0 15px;
-	border: 1px solid rgb(23 63 53 / 15%);
-	border-radius: 99px;
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	color: var(--forest);
-	background: rgb(255 254 251 / 94%);
-	font-size: 11px;
-	font-weight: 800;
-	box-shadow: 0 5px 17px rgb(24 48 42 / 13%);
-	cursor: pointer;
-}
 
-.map-actions svg {
-	width: 17px;
-	fill: none;
-	stroke: currentColor;
-	stroke-linecap: round;
-	stroke-width: 1.8;
-}
 
 .map-caption {
 	position: absolute;
@@ -887,15 +896,10 @@ input:focus-visible {
 	transform: translateX(-50%);
 }
 
-.map-tip button {
-	padding: 5px 9px;
-	border: 0;
-	border-radius: 99px;
-	color: var(--forest);
-	background: var(--lime);
-	font-size: 9px;
-	font-weight: 800;
-	cursor: pointer;
+.map-tip .btn {
+	min-height: 28px;
+	padding: 0 10px;
+	font-size: 10px;
 }
 
 .point-form {
@@ -916,11 +920,7 @@ input:focus-visible {
 	position: absolute;
 	top: 7px;
 	right: 9px;
-	border: 0;
-	background: transparent;
-	color: var(--muted);
 	font-size: 20px;
-	cursor: pointer;
 }
 
 .point-form label {
@@ -944,16 +944,7 @@ input:focus-visible {
 	flex: 1;
 }
 
-.point-form div button {
-	padding: 0 15px;
-	border: 0;
-	border-radius: 9px;
-	color: white;
-	background: var(--forest);
-	font-size: 11px;
-	font-weight: 800;
-	cursor: pointer;
-}
+
 
 /* --- Toast --- */
 .toast {
@@ -1039,8 +1030,9 @@ input:focus-visible {
 		height: 34px;
 	}
 
-	.install-button {
+	.topbar-actions .btn {
 		min-height: 34px;
+		padding: 0 12px;
 		font-size: 11px;
 	}
 
@@ -1134,7 +1126,7 @@ input:focus-visible {
 		right: 13px;
 	}
 
-	.map-actions button {
+	.map-actions .btn {
 		min-height: 38px;
 		padding: 0 12px;
 	}

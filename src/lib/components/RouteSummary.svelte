@@ -34,7 +34,7 @@
 	<article class="route-summary" aria-live="polite">
 		<div class="route-summary-top">
 			<span class="route-badge">Your loop</span>
-			<button type="button" aria-label="Clear route" onclick={() => currentRoute.set(null)}
+			<button class="btn btn-icon btn-ghost btn-danger" type="button" aria-label="Clear route" onclick={() => currentRoute.set(null)}
 				>×</button
 			>
 		</div>
@@ -51,7 +51,7 @@
 		</div>
 		<p>{routeNote()}</p>
 		{#if $routeDebug}
-			<button class="debug-button" type="button" onclick={copyDebug}>
+			<button class="btn btn-sm btn-link" type="button" onclick={copyDebug}>
 				Copy debugging information
 			</button>
 		{/if}

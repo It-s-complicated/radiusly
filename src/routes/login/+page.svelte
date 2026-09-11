@@ -28,7 +28,7 @@
 		{#if error || page.url.searchParams.has('error')}
 			<p class="login-error" role="alert">GitHub sign-in was not authorized.</p>
 		{/if}
-		<button type="button" onclick={signIn} disabled={signingIn}>
+		<button class="btn btn-lg btn-primary" type="button" onclick={signIn} disabled={signingIn}>
 			{signingIn ? 'Connecting…' : 'Continue with GitHub'}
 		</button>
 	</section>
@@ -63,19 +63,7 @@
 
 	button {
 		width: 100%;
-		min-height: 50px;
 		margin-top: 18px;
-		border: 0;
-		border-radius: 12px;
-		color: white;
-		background: var(--forest);
-		font-weight: 750;
-		cursor: pointer;
-	}
-
-	button:disabled {
-		opacity: 0.65;
-		cursor: wait;
 	}
 
 	.login-error {

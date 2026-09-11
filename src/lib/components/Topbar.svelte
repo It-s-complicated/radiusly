@@ -44,7 +44,7 @@
 
 	<div class="topbar-actions">
 		{#if installPrompt}
-			<button class="install-button" type="button" onclick={onInstallClick}>
+			<button class="btn btn-md btn-pill btn-inverse" type="button" onclick={onInstallClick}>
 				<svg viewBox="0 0 24 24" aria-hidden="true">
 					<path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14" />
 				</svg>
@@ -52,7 +52,7 @@
 			</button>
 		{/if}
 		{#if user}
-			<button class="install-button" type="button" onclick={signOut} disabled={signingOut}>
+			<button class="btn btn-md btn-pill btn-inverse" type="button" onclick={signOut} disabled={signingOut}>
 				{signingOut ? 'Signing out…' : 'Sign out'}
 			</button>
 		{/if}

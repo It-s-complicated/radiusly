@@ -96,14 +96,14 @@
 				</div>
 				<div class="point-actions">
 					<button
-						class="secondary-button"
+						class="btn btn-sm btn-secondary"
 						type="button"
 						id="add-current-start"
 						onclick={() => onAddCurrent?.()}
 					>
 						◎ Add current
 					</button>
-					<button class="secondary-button" type="button" onclick={() => onPinStart?.()}>
+					<button class="btn btn-sm btn-secondary" type="button" onclick={() => onPinStart?.()}>
 						＋ Pin on map
 					</button>
 				</div>
@@ -124,13 +124,13 @@
 							</label>
 							<div class="row-actions">
 								<button
-									class="rename"
+									class="btn btn-icon btn-ghost"
 									type="button"
 									aria-label="Rename {point.name}"
 									onclick={() => renamePoint($starts, (p) => starts.set(p), point)}>✎</button
 								>
 								<button
-									class="delete"
+									class="btn btn-icon btn-ghost btn-danger"
 									type="button"
 									aria-label="Delete {point.name}"
 									onclick={() => deletePoint($starts, (p) => starts.set(p), point)}>×</button
@@ -315,7 +315,7 @@
 						<h2 id="favorites-title">Walk-by spots</h2>
 						<p>Include a favorite place in your loop.</p>
 					</div>
-					<button class="secondary-button compact" type="button" onclick={() => onPinSpot?.()}>
+					<button class="btn btn-sm btn-secondary" type="button" onclick={() => onPinSpot?.()}>
 						<span aria-hidden="true">＋</span> Pin on map
 					</button>
 				</div>
@@ -327,7 +327,7 @@
 						placeholder="Search café, park, address…"
 						required
 					/>
-					<button type="submit">Search</button>
+					<button class="btn btn-sm btn-secondary" type="submit">Search</button>
 				</form>
 				{#if searchResults.length > 0}
 					<div class="place-results" aria-live="polite">
@@ -354,13 +354,13 @@
 							</label>
 							<div class="row-actions">
 								<button
-									class="rename"
+									class="btn btn-icon btn-ghost"
 									type="button"
 									aria-label="Rename {fav.name}"
 									onclick={() => renamePoint($favorites, (p) => favorites.set(p), fav)}>✎</button
 								>
 								<button
-									class="delete"
+									class="btn btn-icon btn-ghost btn-danger"
 									type="button"
 									aria-label="Delete {fav.name}"
 									onclick={() => deletePoint($favorites, (p) => favorites.set(p), fav)}>×</button
@@ -373,7 +373,10 @@
 		</details>
 
 		<div class="route-output">
-			<button class="primary-button" type="button" disabled={$isLoading} onclick={onMakeRoute}>
+			<button
+				class="btn btn-lg btn-primary"
+				id="make-route"
+				type="button" disabled={$isLoading} onclick={onMakeRoute}>
 				<span
 					>{$isLoading
 						? 'Comparing route options…'

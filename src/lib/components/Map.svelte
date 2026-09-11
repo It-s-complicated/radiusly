@@ -191,11 +191,11 @@
 
 <div class="map-tip" hidden={!pinMode}>
 	<span>Click the map, or use its center</span>
-	<button type="button" onclick={useCenter}>Use center</button>
+	<button class="btn btn-sm btn-pill btn-lime" type="button" onclick={useCenter}>Use center</button>
 </div>
 
 <div class="map-actions">
-	<button type="button" id="locate" onclick={() => onlocate?.()}>
+	<button class="btn btn-md btn-pill btn-card" type="button" id="locate" onclick={() => onlocate?.()}>
 		<svg viewBox="0 0 24 24" aria-hidden="true">
 			<circle cx="12" cy="12" r="3" />
 			<circle cx="12" cy="12" r="8" />
