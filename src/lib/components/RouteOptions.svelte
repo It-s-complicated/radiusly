@@ -36,6 +36,7 @@
 	let currentSearchQuery = $state('');
 	let renaming = $state<SavedPoint | null>(null);
 	let renameName = $state('');
+	let renameDialog: ReturnType<typeof Dialog>;
 	const renameId = $props.id();
 
 	function handleSearchSubmit(e: Event) {
@@ -47,6 +48,7 @@
 	function renamePoint(point: SavedPoint) {
 		renaming = point;
 		renameName = point.name;
+		renameDialog.shell.showModal();
 	}
 
 	function handleRenameSubmit(e: SubmitEvent) {
@@ -55,6 +57,7 @@
 		const point = renaming;
 		renaming = null;
 		renameName = '';
+		renameDialog.shell.close();
 		if (!point || !name) return;
 		if ($starts.some((p) => p.id === point.id)) {
 			starts.set($starts.map((p) => (p.id === point.id ? { ...p, name } : p)));
@@ -386,7 +389,7 @@
 			</section>
 		</details>
 
-		<Dialog show={renaming !== null} label="Rename this place" onclose={() => (renaming = null)}>
+		<Dialog bind:this={renameDialog} label="Rename this place" onclose={() => (renaming = null)}>
 			<form onsubmit={handleRenameSubmit}>
 				<label for={renameId}>Rename this place</label>
 				<div>

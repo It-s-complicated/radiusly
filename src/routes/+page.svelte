@@ -156,9 +156,8 @@
 		navigator.geolocation.getCurrentPosition(
 			({ coords }) => {
 				if (btn) btn.disabled = false;
-				pendingPoint = [coords.latitude, coords.longitude];
 				beginPin('start');
-				pointFormKind = 'start';
+				handleMapClick([coords.latitude, coords.longitude]);
 			},
 			(error) => {
 				if (btn) btn.disabled = false;
@@ -179,14 +178,10 @@
 		if (!pinMode) return;
 		pendingPoint = latlng;
 		pointFormKind = pinMode;
+		pointDialog.shell.showModal();
 	}
 
-	function handleCenterClick(latlng: LatLng) {
-		if (!pinMode) return;
-		pendingPoint = latlng;
-		pointFormKind = pinMode;
-	}
-
+	let pointDialog: ReturnType<typeof Dialog>;
 	let pointName = $state('');
 	const pointNameId = $props.id();
 	const pointDialogTitle = $derived(
@@ -221,8 +216,8 @@
 			favorites.update((f) => [...f, { ...point, selected: true }]);
 		}
 		showToast(pointFormKind === 'start' ? 'Starting point saved.' : 'Walk-by spot saved.');
-		pinMode = undefined;
-		pendingPoint = undefined;
+		cancelPin();
+		pointDialog.shell.close();
 	}
 
 	function cancelPin() {
@@ -295,14 +290,10 @@
 			dashed={false}
 			pinMode={pinMode !== undefined}
 			onMapClick={handleMapClick}
-			onCenterClick={handleCenterClick}
+			onCenterClick={handleMapClick}
 			onlocate={locate}
 		/>
-		<Dialog
-			show={pinMode !== undefined && pendingPoint !== undefined}
-			label={pointDialogTitle}
-			onclose={cancelPin}
-		>
+		<Dialog bind:this={pointDialog} label={pointDialogTitle} onclose={cancelPin}>
 			<form onsubmit={submitPointName}>
 				<label for={pointNameId}>{pointDialogTitle}</label>
 				<div>

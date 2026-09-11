@@ -101,6 +101,33 @@ describe('RouteOptions component', () => {
 		await expect.poll(() => preview()).not.toBeNull();
 	});
 
+	it('opens, cancels, reopens and saves the point dialog from parent actions', async () => {
+		const screen = await render(Planner);
+		await expect.poll(() => document.querySelector('.leaflet-pane')).not.toBeNull();
+		const pinStart = screen.getByRole('button', { name: /Pin on map/ }).nth(0);
+		await pinStart.click();
+		await screen.getByRole('button', { name: 'Use center' }).click();
+		await expect
+			.element(screen.getByRole('dialog', { name: 'Name this starting point' }))
+			.toBeVisible();
+		await screen.getByRole('textbox', { name: 'Name this starting point' }).fill('Discard me');
+		await screen.getByRole('button', { name: 'Close', exact: true }).click();
+		await expect.poll(() => document.querySelector('dialog[open]')).toBeNull();
+		expect(get(starts)).toHaveLength(0);
+
+		await pinStart.click();
+		await screen.getByRole('button', { name: 'Use center' }).click();
+		await expect
+			.element(screen.getByRole('textbox', { name: 'Name this starting point' }))
+			.toHaveValue('');
+		await screen.getByRole('textbox', { name: 'Name this starting point' }).fill('Home');
+		await screen.getByRole('button', { name: 'Save', exact: true }).click();
+		await expect.poll(() => document.querySelector('dialog[open]')).toBeNull();
+		expect(get(starts)).toHaveLength(1);
+		expect(get(starts)[0]?.name).toBe('Home');
+		expect(get(selectedStartId)).toBe(get(starts)[0]?.id);
+	});
+
 	it('switches between distance and time modes', async () => {
 		const screen = await render(RouteOptions, { onSelectStart: vi.fn() });
 		await expect.element(screen.getByText('How far?')).toBeInTheDocument();
