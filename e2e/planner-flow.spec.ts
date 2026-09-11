@@ -1,6 +1,31 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Planner critical flow', () => {
+	test('desktop scrolling stays inside the planner', async ({ page }) => {
+		await page.setViewportSize({ width: 1095, height: 800 });
+		await page.goto('/');
+		const planner = page.locator('.planner');
+		await expect(planner).toBeVisible();
+		const dimensions = await page.evaluate(() => ({
+			viewport: innerHeight,
+			document: document.documentElement.scrollHeight,
+			bottom: document.querySelector('.app-shell')!.getBoundingClientRect().bottom,
+		}));
+		expect(dimensions.document).toBe(dimensions.viewport);
+		expect(dimensions.bottom).toBe(dimensions.viewport);
+		await planner.evaluate((element) => {
+			element.scrollTop = element.scrollHeight;
+		});
+		expect(await planner.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+		await page.evaluate(() => window.scrollTo(0, 500));
+		expect(await page.evaluate(() => scrollY)).toBe(0);
+
+		await page.setViewportSize({ width: 390, height: 844 });
+		await page.evaluate(() => window.scrollTo(0, 500));
+		expect(await page.evaluate(() => scrollY)).toBeGreaterThan(0);
+		await expect(page.getByRole('button', { name: 'Make my route' })).toBeVisible();
+	});
+
 	test('page loads with title', async ({ page }) => {
 		await page.goto('/');
 		await expect(page).toHaveTitle(/Radiusly/);

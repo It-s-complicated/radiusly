@@ -295,6 +295,7 @@ input:focus-visible {
 
 /* --- Planner --- */
 .planner {
+	position: relative;
 	z-index: 2;
 	overflow-y: auto;
 	max-height: calc(100dvh - 72px);
