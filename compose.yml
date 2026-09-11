@@ -15,6 +15,8 @@ services:
     depends_on:
       graph:
         condition: service_completed_successfully
+    expose:
+      - 3000
     environment:
       - BETTER_AUTH_SECRET=${SERVICE_BASE64_64_APP}
       - BETTER_AUTH_URL=${SERVICE_URL_APP}
