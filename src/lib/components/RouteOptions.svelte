@@ -152,6 +152,7 @@
 								name="route-algorithm"
 								value={algo.value}
 								checked={$algorithm === algo.value}
+								disabled={$isLoading}
 								onchange={() => {
 									algorithm.set(algo.value);
 									currentRoute.set(null);

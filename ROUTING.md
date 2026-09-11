@@ -46,7 +46,7 @@ A* and Dijkstra share costs, snapping, connectivity and path reconstruction. A* 
 
 User starts/spots snap within 40 m. Movable shape anchors may snap farther, but must stay in the starting component. Spatial and connected-component indexes avoid whole-region scans. Shapes propose anchors, the router connects them, and up to twelve calibrated/rotated candidates are evaluated. Required spots are included as snapped endpoints. Repetition uses exact segment-fraction overlap, not rounded polyline vertices.
 
-Same-return Orbit explicitly reverses its outbound stem. Only that return leg is exempt from accidental-repetition limits; the stem is bounded to 500 routed meters. Near stations, proposals use a shorter stem to retain the 100 m station-repetition limit. Debug output includes inputs, candidates, graph version, snapping and explored-node/time statistics.
+Same-return Orbit loops around the start and explicitly reverses its outbound stem. Only that return leg is exempt from repetition limits, including the station limit; the stem is bounded to 500 routed meters or a fifth of the route, whichever is larger. Debug output includes inputs, candidates, graph version, snapping and explored-node/time statistics.
 
 ## Deliberate first-version limits
 

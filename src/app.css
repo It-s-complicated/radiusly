@@ -294,6 +294,10 @@ input:focus-visible {
 	background: white;
 }
 
+.route-shape-grid input:focus-visible + span {
+	outline: 2px solid var(--forest);
+	outline-offset: 3px;
+}
 .route-shape-grid svg {
 	width: 72px;
 	height: 42px;

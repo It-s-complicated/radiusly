@@ -81,19 +81,20 @@ export function repetition(graph: WalkingGraph, path: Traversal[], intentionalRe
 					accidental += length;
 					accidentalRun += length;
 					longestAccidental = Math.max(longestAccidental, accidentalRun);
+					let coverage = stationCoverage.get(step.edge);
+					if (!coverage) {
+						coverage = stationIntervals(graph, step.edge);
+						stationCoverage.set(step.edge, coverage);
+					}
+					const lower = Math.min(a, b),
+						upper = Math.max(a, b);
+					stationRepeat +=
+						coverage.reduce(
+							(sum, [from, to]) =>
+								sum + Math.max(0, Math.min(upper, to) - Math.max(lower, from)),
+							0,
+						) * graph.lengths[step.edge]!;
 				}
-				let coverage = stationCoverage.get(step.edge);
-				if (!coverage) {
-					coverage = stationIntervals(graph, step.edge);
-					stationCoverage.set(step.edge, coverage);
-				}
-				const lower = Math.min(a, b),
-					upper = Math.max(a, b);
-				stationRepeat +=
-					coverage.reduce(
-						(sum, [from, to]) => sum + Math.max(0, Math.min(upper, to) - Math.max(lower, from)),
-						0,
-					) * graph.lengths[step.edge]!;
 			} else {
 				run = 0;
 				accidentalRun = 0;
@@ -134,9 +135,6 @@ export function generateLoop(
 	const target = targetKilometers(request.target.mode, request.target.value, request.pace) * 1000;
 	const start = graph.snap(request.start, 40);
 	const component = graph.component(start);
-	const maxStemKm = graph.data.stations.some((station) => meters(start.point, station) <= 250)
-		? 0.05
-		: 0.25;
 	const spots = request.spots.map((point) => graph.snap(point, 40, component));
 	for (const spot of spots) graph.search(start, spot, request.search, budget);
 	const candidates: Record<string, unknown>[] = [];
@@ -152,7 +150,6 @@ export function generateLoop(
 			request.spots,
 			scale,
 			request.shape,
-			maxStemKm,
 		);
 		try {
 			const snaps = points.map((point, index) => {
@@ -201,7 +198,7 @@ export function generateLoop(
 				repeat.accidental / distance <= 0.05 &&
 				repeat.longestAccidental <= 210 &&
 				repeat.stationRepeat <= 100 &&
-				(request.shape !== 'orbit-same' || stemLength <= 500);
+				(request.shape !== 'orbit-same' || stemLength <= Math.max(500, distance * 0.2));
 			const score =
 				Math.abs(distance - target) +
 				repeat.accidental +

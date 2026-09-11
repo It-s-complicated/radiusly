@@ -91,6 +91,15 @@ describe('loopPoints', () => {
 		expect(orbitSame[1]).toEqual(orbitSame.at(-2));
 	});
 
+	it('orbit-same encircles the start like orbit-near', () => {
+		const radiusOf = ([lat, lng]: [number, number]) =>
+			Math.hypot(lat - start[0], (lng - start[1]) * Math.cos((start[0] * Math.PI) / 180));
+		const orbitSame = loopPoints(start, 4, 25, [], 1, 'orbit-same');
+		const radius = radiusOf(orbitSame[1]!);
+		expect(radius).toBeGreaterThan(0);
+		for (const point of orbitSame.slice(2, -2)) expect(radiusOf(point)).toBeCloseTo(radius, 4);
+	});
+
 	it('orbit-near outbound differs from inbound', () => {
 		const orbitNear = loopPoints(start, 4, 25, [], 1, 'orbit-near');
 		expect(orbitNear[1]).not.toEqual(orbitNear.at(-2));
