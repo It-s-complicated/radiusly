@@ -11,6 +11,7 @@
 	} from '$lib/stores/preferences';
 	import { currentRoute, routeDebug, isLoading, showToast } from '$lib/stores/route';
 	import RouteSummary from './RouteSummary.svelte';
+	import Dialog from './Dialog.svelte';
 
 	let {
 		onAddCurrent,
@@ -31,6 +32,13 @@
 	} = $props();
 
 	let currentSearchQuery = $state('');
+	let renaming = $state<SavedPoint | null>(null);
+	let renameName = $state('');
+	const renameId = $props.id();
+
+	$effect(() => {
+		if (renaming) renameName = renaming.name;
+	});
 
 	function handleSearchSubmit(e: Event) {
 		e.preventDefault();
@@ -38,11 +46,22 @@
 		if (q) onSearchPlaces?.(q);
 	}
 
-	function renamePoint(points: SavedPoint[], save: (p: SavedPoint[]) => void, point: SavedPoint) {
-		const name = prompt('Rename this place', point.name)?.trim();
-		if (!name) return;
-		const updated = points.map((p) => (p.id === point.id ? { ...p, name } : p));
-		save(updated);
+	function renamePoint(point: SavedPoint) {
+		renaming = point;
+	}
+
+	function handleRenameSubmit(e: SubmitEvent) {
+		e.preventDefault();
+		const name = renameName.trim();
+		const point = renaming;
+		renaming = null;
+		renameName = '';
+		if (!point || !name) return;
+		if ($starts.some((p) => p.id === point.id)) {
+			starts.set($starts.map((p) => (p.id === point.id ? { ...p, name } : p)));
+		} else {
+			favorites.set($favorites.map((p) => (p.id === point.id ? { ...p, name } : p)));
+		}
 	}
 
 	function deletePoint(points: SavedPoint[], save: (p: SavedPoint[]) => void, point: SavedPoint) {
@@ -127,7 +146,7 @@
 									class="btn btn-icon btn-ghost"
 									type="button"
 									aria-label="Rename {point.name}"
-									onclick={() => renamePoint($starts, (p) => starts.set(p), point)}>✎</button
+									onclick={() => renamePoint(point)}>✎</button
 								>
 								<button
 									class="btn btn-icon btn-ghost btn-danger"
@@ -357,7 +376,7 @@
 									class="btn btn-icon btn-ghost"
 									type="button"
 									aria-label="Rename {fav.name}"
-									onclick={() => renamePoint($favorites, (p) => favorites.set(p), fav)}>✎</button
+									onclick={() => renamePoint(fav)}>✎</button
 								>
 								<button
 									class="btn btn-icon btn-ghost btn-danger"
@@ -371,6 +390,21 @@
 				</div>
 			</section>
 		</details>
+
+		<Dialog
+			show={renaming !== null}
+			label="Rename this place"
+			backdrop={false}
+			onclose={() => (renaming = null)}
+		>
+			<form onsubmit={handleRenameSubmit}>
+				<label for={renameId}>Rename this place</label>
+				<div>
+					<input id={renameId} type="text" maxlength="40" bind:value={renameName} required />
+					<button class="btn btn-md btn-primary" type="submit">Save</button>
+				</div>
+			</form>
+		</Dialog>
 
 		<div class="route-output">
 			<button

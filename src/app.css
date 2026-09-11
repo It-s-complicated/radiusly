@@ -689,7 +689,7 @@ input:focus-visible {
 }
 
 .place-search input,
-.point-form input {
+.dialog input {
 	min-width: 0;
 	border: 1px solid var(--line);
 	border-radius: 9px;
@@ -917,40 +917,43 @@ input:focus-visible {
 	padding: 0 10px;
 }
 
-.point-form {
-	position: absolute;
-	z-index: 650;
-	top: 50%;
-	left: 50%;
+.dialog {
 	width: min(360px, calc(100% - 32px));
 	padding: 21px;
 	border: 0;
 	border-radius: 16px;
 	background: var(--paper);
 	box-shadow: 0 15px 50px rgb(24 48 42 / 25%);
-	transform: translate(-50%, -50%);
 }
 
-.point-form-close {
+.dialog::backdrop {
+	background: rgb(24 48 42 / 25%);
+}
+
+.dialog-bare::backdrop {
+	background: none;
+}
+
+.dialog-close {
 	position: absolute;
 	top: 7px;
 	right: 9px;
 	font-size: 20px;
 }
 
-.point-form label {
+.dialog label {
 	display: block;
 	margin-bottom: 9px;
 	font-family: Georgia, 'Times New Roman', serif;
 	font-size: 20px;
 }
 
-.point-form form div {
+.dialog form div {
 	display: flex;
 	gap: 7px;
 }
 
-.point-form input {
+.dialog input {
 	height: 42px;
 	padding: 0 12px;
 }

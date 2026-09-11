@@ -2,7 +2,7 @@
 	import { browser } from '$app/env';
 	import Map from '$lib/components/Map.svelte';
 	import RouteOptions from '$lib/components/RouteOptions.svelte';
-	import PointForm from '$lib/components/PointForm.svelte';
+	import Dialog from '$lib/components/Dialog.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import { starts, selectedStartId, favorites } from '$lib/stores/points';
 	import {
@@ -209,6 +209,24 @@
 		pointFormKind = pinMode;
 	}
 
+	let pointName = $state('');
+	const pointNameId = $props.id();
+	const pointDialogTitle = $derived(
+		pointFormKind === 'start' ? 'Name this starting point' : 'Name this walk-by spot'
+	);
+
+	$effect(() => {
+		if (pinMode !== undefined) pointName = '';
+	});
+
+	function submitPointName(e: SubmitEvent) {
+		e.preventDefault();
+		const name = pointName.trim();
+		if (!name) return;
+		handlePointFormSubmit(name);
+		pointName = '';
+	}
+
 	function handlePointFormSubmit(name: string) {
 		if (!pendingPoint) return;
 		const point: SavedPoint = {
@@ -303,12 +321,27 @@
 			onCenterClick={handleCenterClick}
 			onlocate={locate}
 		/>
-		<PointForm
+		<Dialog
 			show={pinMode !== undefined && pendingPoint !== undefined}
-			kind={pointFormKind}
-			onsubmit={handlePointFormSubmit}
+			label={pointDialogTitle}
+			backdrop={false}
 			onclose={cancelPin}
-		/>
+		>
+			<form onsubmit={submitPointName}>
+				<label for={pointNameId}>{pointDialogTitle}</label>
+				<div>
+					<input
+						id={pointNameId}
+						type="text"
+						maxlength="40"
+						placeholder={pointFormKind === 'start' ? 'e.g. Home' : 'e.g. Favorite café'}
+						bind:value={pointName}
+						required
+					/>
+					<button class="btn btn-md btn-primary" type="submit">Save</button>
+				</div>
+			</form>
+		</Dialog>
 		<Toast />
 	</section>
 </main>
