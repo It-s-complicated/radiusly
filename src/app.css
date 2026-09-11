@@ -944,7 +944,7 @@ input:focus-visible {
 	font-size: 20px;
 }
 
-.point-form > div {
+.point-form form div {
 	display: flex;
 	gap: 7px;
 }
