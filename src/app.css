@@ -665,6 +665,7 @@ input:focus-visible {
 }
 
 .point-row input {
+	margin: 0;
 	accent-color: var(--forest);
 }
 
