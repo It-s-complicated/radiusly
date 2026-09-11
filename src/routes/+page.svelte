@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/env';
+	import { get } from 'svelte/store';
 	import Map from '$lib/components/Map.svelte';
 	import RouteOptions from '$lib/components/RouteOptions.svelte';
 	import Dialog from '$lib/components/Dialog.svelte';
@@ -21,60 +22,38 @@
 
 	const DEFAULT_LOCATION: LatLng = [52.5208, 13.4095];
 
-	let mapStart = $state<LatLng>(DEFAULT_LOCATION);
-	let previewPoints = $state<LatLng[]>([]);
-	let routePoints = $state<LatLng[]>([]);
-	let syntheticPoints = $state<LatLng[]>([]);
+	const initialStart = get(starts).find((point) => point.id === get(selectedStartId));
+	let mapStart = $state<LatLng>(
+		initialStart ? [initialStart.lat, initialStart.lng] : DEFAULT_LOCATION,
+	);
+	let routedSyntheticPoints = $state<LatLng[]>([]);
+	const routePoints = $derived<LatLng[]>(
+		$currentRoute?.geometry.coordinates.map(([lng, lat]) => [lat, lng] as LatLng) ?? [],
+	);
+	const selectedSpots = $derived(
+		$favorites.filter((f) => f.selected).map((f) => [f.lat, f.lng] as LatLng),
+	);
+	const previewPoints = $derived.by((): LatLng[] => {
+		if ($currentRoute || !Number.isFinite($targetKm) || $targetKm < 0.5) return [];
+		try {
+			return loopPoints(mapStart, $targetKm, bearing, selectedSpots, 1, $algorithm);
+		} catch {
+			return [];
+		}
+	});
+	const syntheticPoints = $derived(
+		$currentRoute ? routedSyntheticPoints : generatedPoints(previewPoints, selectedSpots),
+	);
 	let bearing = $state(25);
 	let pinMode = $state<'start' | 'favorite' | undefined>(undefined);
 	let pendingPoint = $state<LatLng | undefined>(undefined);
 	let pointFormKind = $state<'start' | 'favorite'>('start');
 	let searchResults = $state<SavedPoint[]>([]);
 
-	// Follow the saved start selection; keep an ephemeral location when none
-	// is selected (e.g. after "Use my location").
-	$effect(() => {
-		if (!$selectedStartId) return;
-		const s = $starts.find((p) => p.id === $selectedStartId);
-		if (!s) return;
-		mapStart = [s.lat, s.lng];
-		currentRoute.set(null);
-	});
-
-	// Draw preview when stores change and no route displayed
-	$effect(() => {
-		const _ = [$targetKm, $algorithm, $mode, $pace, $distanceTarget, $timeTarget];
-		if ($currentRoute) return;
-		drawPreview();
-	});
-
-	// Clear the routed geometry when the result is cleared.
-	$effect(() => {
-		if (!$currentRoute) {
-			routePoints = [];
-			drawPreview();
-		}
-	});
-
-	function drawPreview() {
-		if ($currentRoute) return;
-		const km = $targetKm;
-		if (!Number.isFinite(km) || km < 0.5) {
-			previewPoints = [];
-			syntheticPoints = [];
-			return;
-		}
-		try {
-			const selectedFavs = $favorites
-				.filter((f) => f.selected)
-				.map((f) => [f.lat, f.lng] as LatLng);
-			const points = loopPoints(mapStart, km, bearing, selectedFavs, 1, $algorithm);
-			previewPoints = points;
-			syntheticPoints = generatedPoints(points, selectedFavs);
-		} catch {
-			previewPoints = [];
-			syntheticPoints = [];
-		}
+	function selectStart(point: SavedPoint) {
+		selectedStartId.set(point.id);
+		mapStart = [point.lat, point.lng];
+		clearRoute();
 	}
 
 	function generatedPoints(points: LatLng[], selectedSpots: LatLng[]): LatLng[] {
@@ -106,8 +85,7 @@
 		};
 		try {
 			const { route, debug } = await walkingLoop(request);
-			routePoints = route.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
-			syntheticPoints = generatedPoints(route.candidate?.points ?? [], request.spots);
+			routedSyntheticPoints = generatedPoints(route.candidate?.points ?? [], request.spots);
 			currentRoute.set(route);
 			routeDebug.set(debug);
 		} catch (error) {
@@ -179,7 +157,7 @@
 			({ coords }) => {
 				if (btn) btn.disabled = false;
 				pendingPoint = [coords.latitude, coords.longitude];
-				pinMode = 'start';
+				beginPin('start');
 				pointFormKind = 'start';
 			},
 			(error) => {
@@ -212,12 +190,13 @@
 	let pointName = $state('');
 	const pointNameId = $props.id();
 	const pointDialogTitle = $derived(
-		pointFormKind === 'start' ? 'Name this starting point' : 'Name this walk-by spot'
+		pointFormKind === 'start' ? 'Name this starting point' : 'Name this walk-by spot',
 	);
 
-	$effect(() => {
-		if (pinMode !== undefined) pointName = '';
-	});
+	function beginPin(kind: 'start' | 'favorite') {
+		pinMode = kind;
+		pointName = '';
+	}
 
 	function submitPointName(e: SubmitEvent) {
 		e.preventDefault();
@@ -237,8 +216,7 @@
 		};
 		if (pointFormKind === 'start') {
 			starts.update((s) => [...s, point]);
-			selectedStartId.set(point.id);
-			mapStart = [point.lat, point.lng];
+			selectStart(point);
 		} else {
 			favorites.update((f) => [...f, { ...point, selected: true }]);
 		}
@@ -292,8 +270,6 @@
 	function clearRoute() {
 		currentRoute.set(null);
 		routeDebug.set(null);
-		routePoints = [];
-		drawPreview();
 	}
 </script>
 
@@ -302,8 +278,9 @@
 		{searchResults}
 		onAddCurrent={addCurrentStart}
 		onMakeRoute={makeRoute}
-		onPinStart={() => (pinMode = 'start')}
-		onPinSpot={() => (pinMode = 'favorite')}
+		onPinStart={() => beginPin('start')}
+		onPinSpot={() => beginPin('favorite')}
+		onSelectStart={selectStart}
 		onSearchPlaces={searchPlaces}
 		onSearchResult={handleSearchResult}
 	/>

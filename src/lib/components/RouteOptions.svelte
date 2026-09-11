@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { SavedPoint, Mode, Pace, Algorithm } from '$lib/types';
+	import type { SavedPoint, Algorithm } from '$lib/types';
 	import { starts, selectedStartId, favorites } from '$lib/stores/points';
 	import {
 		mode,
@@ -9,7 +9,7 @@
 		algorithm,
 		searchAlgorithm,
 	} from '$lib/stores/preferences';
-	import { currentRoute, routeDebug, isLoading, showToast } from '$lib/stores/route';
+	import { currentRoute, isLoading, showToast } from '$lib/stores/route';
 	import RouteSummary from './RouteSummary.svelte';
 	import Dialog from './Dialog.svelte';
 
@@ -21,6 +21,7 @@
 		searchResults = [] as SavedPoint[],
 		onSearchResult,
 		onMakeRoute,
+		onSelectStart,
 	}: {
 		onAddCurrent?: () => void;
 		onPinStart?: () => void;
@@ -29,16 +30,13 @@
 		searchResults?: SavedPoint[];
 		onSearchResult?: (result: SavedPoint) => void;
 		onMakeRoute?: () => void;
+		onSelectStart: (point: SavedPoint) => void;
 	} = $props();
 
 	let currentSearchQuery = $state('');
 	let renaming = $state<SavedPoint | null>(null);
 	let renameName = $state('');
 	const renameId = $props.id();
-
-	$effect(() => {
-		if (renaming) renameName = renaming.name;
-	});
 
 	function handleSearchSubmit(e: Event) {
 		e.preventDefault();
@@ -48,6 +46,7 @@
 
 	function renamePoint(point: SavedPoint) {
 		renaming = point;
+		renameName = point.name;
 	}
 
 	function handleRenameSubmit(e: SubmitEvent) {
@@ -67,10 +66,6 @@
 	function deletePoint(points: SavedPoint[], save: (p: SavedPoint[]) => void, point: SavedPoint) {
 		const updated = points.filter((p) => p.id !== point.id);
 		save(updated);
-	}
-
-	function setStart(point: SavedPoint) {
-		selectedStartId.set(point.id);
 	}
 
 	function toggleFavorite(fav: SavedPoint) {
@@ -137,7 +132,7 @@
 									type="radio"
 									name="starting-point"
 									checked={point.id === $selectedStartId}
-									onchange={() => setStart(point)}
+									onchange={() => onSelectStart(point)}
 								/>
 								<span>{point.name}</span>
 							</label>
@@ -391,11 +386,7 @@
 			</section>
 		</details>
 
-		<Dialog
-			show={renaming !== null}
-			label="Rename this place"
-			onclose={() => (renaming = null)}
-		>
+		<Dialog show={renaming !== null} label="Rename this place" onclose={() => (renaming = null)}>
 			<form onsubmit={handleRenameSubmit}>
 				<label for={renameId}>Rename this place</label>
 				<div>
@@ -409,7 +400,10 @@
 			<button
 				class="btn btn-lg btn-primary"
 				id="make-route"
-				type="button" disabled={$isLoading} onclick={onMakeRoute}>
+				type="button"
+				disabled={$isLoading}
+				onclick={onMakeRoute}
+			>
 				<span
 					>{$isLoading
 						? 'Comparing route options…'

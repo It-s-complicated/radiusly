@@ -32,8 +32,6 @@
 	let L: any;
 	let startMarker: any;
 	let favoriteLayer: any;
-	let previewLine: any;
-	let routeLine: any;
 	let syntheticLayer: any;
 
 	// Track internal state to avoid re-initialization
@@ -119,32 +117,25 @@
 	// Update preview line
 	$effect(() => {
 		if (!mapInitialized || !L) return;
-		if (routeLine) return; // Don't show preview when route is displayed
-		if (previewLine) map.removeLayer(previewLine);
-		if (previewPoints.length < 2) {
-			previewLine = undefined;
-			return;
-		}
-		previewLine = L.polyline(previewPoints, {
+		if (routePoints.length >= 2) return;
+		if (previewPoints.length < 2) return;
+		const previewLine = L.polyline(previewPoints, {
 			color: '#476f64',
 			weight: 3,
 			opacity: 0.48,
 			dashArray: '3 10',
 			lineCap: 'round',
 		}).addTo(map);
+		return () => {
+			map.removeLayer(previewLine);
+		};
 	});
 
 	// Update route line
 	$effect(() => {
 		if (!mapInitialized || !L) return;
-		if (routeLine) map.removeLayer(routeLine);
-		routeLine = undefined;
-		if (previewLine) {
-			map.removeLayer(previewLine);
-			previewLine = undefined;
-		}
 		if (routePoints.length < 2) return;
-		routeLine = L.polyline(routePoints, {
+		const routeLine = L.polyline(routePoints, {
 			color: '#ec6b38',
 			weight: dashed ? 5 : 6,
 			opacity: dashed ? 0.8 : 0.96,
@@ -154,6 +145,9 @@
 			className: 'route-pulse',
 		}).addTo(map);
 		map.fitBounds(routeLine.getBounds(), { padding: [54, 54] });
+		return () => {
+			map.removeLayer(routeLine);
+		};
 	});
 
 	// Update generated waypoint markers
@@ -174,12 +168,6 @@
 		});
 	});
 
-	// Pin mode cursor
-	$effect(() => {
-		if (!mapContainer) return;
-		mapContainer.style.cursor = pinMode ? 'crosshair' : '';
-	});
-
 	function useCenter() {
 		if (!map) return;
 		const center = map.getCenter();
@@ -187,7 +175,7 @@
 	}
 </script>
 
-<div bind:this={mapContainer} id="map"></div>
+<div bind:this={mapContainer} id="map" style:cursor={pinMode ? 'crosshair' : ''}></div>
 
 <div class="map-tip" hidden={!pinMode}>
 	<span>Click the map, or use its center</span>
@@ -195,7 +183,12 @@
 </div>
 
 <div class="map-actions">
-	<button class="btn btn-md btn-pill btn-card" type="button" id="locate" onclick={() => onlocate?.()}>
+	<button
+		class="btn btn-md btn-pill btn-card"
+		type="button"
+		id="locate"
+		onclick={() => onlocate?.()}
+	>
 		<svg viewBox="0 0 24 24" aria-hidden="true">
 			<circle cx="12" cy="12" r="3" />
 			<circle cx="12" cy="12" r="8" />
