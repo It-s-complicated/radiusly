@@ -79,9 +79,11 @@ See [TECH_STACK.md](TECH_STACK.md) for the stack reference.
 
 ## Route algorithms
 
-See [ROUTE_ALGORITHMS.md](ROUTE_ALGORITHMS.md) for shape behavior and tuning, and [PLAN.md](PLAN.md) for validation and product decisions.
+See [ROUTE_ALGORITHMS.md](ROUTE_ALGORITHMS.md) for shape behavior and tuning.
 
 ## Manual regression routes
 
 - A Pankow–Blankenburg ponds loop must not use the southeastern dead-end spur. At the ponds, prefer continuing to the path end and taking the left-hand arc instead of turning back.
 - The same loop must reject a long southbound spur through the S-Bahn station area that returns along the same path.
+- Orbit with the same return should use the shortest practical shared stem before beginning the orbit.
+- Near-zero-backtracking settings must reject long dead ends even when the total distance is close to the target.
