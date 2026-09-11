@@ -75,12 +75,6 @@ Routing runs in a worker thread inside the SvelteKit Node server using a local w
 - **Better Auth** with GitHub OAuth and database-less JWE cookie sessions
 - localStorage for client-side persistence
 
-See [TECH_STACK.md](TECH_STACK.md) for the stack reference.
-
-## Route algorithms
-
-See [ROUTE_ALGORITHMS.md](ROUTE_ALGORITHMS.md) for shape behavior and tuning.
-
 ## Manual regression routes
 
 - A Pankow–Blankenburg ponds loop must not use the southeastern dead-end spur. At the ponds, prefer continuing to the path end and taking the left-hand arc instead of turning back.
