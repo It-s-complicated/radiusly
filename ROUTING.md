@@ -20,6 +20,10 @@ The Geofabrik Brandenburg extract includes Berlin. Bounds are **west, south, eas
 
 The graph contains coordinates, physical OSM segments, allowed directions, stations and source/policy hashes. The build replaces the output atomically. Restart the server after replacing a graph. Keep the prior file for rollback. PBF and compiled graph files are ignored by git. Source data: © OpenStreetMap contributors, [ODbL](https://www.openstreetmap.org/copyright); [Geofabrik source](https://download.geofabrik.de/europe/germany/brandenburg.html).
 
+Building the graph is a one-time CPU/memory-heavy job, not part of `pnpm build` or route requests. The importer skips tag conversion for unrelated OSM ways while retaining untagged station-relation members. To measure the build on the deployment host without replacing the live graph, run `.venv-routing/bin/python scripts/benchmark-import.py data/routing/brandenburg.osm.pbf /tmp/graph-benchmark.json` with enough free disk and memory; remove the temporary output afterward. A Rust migration would introduce another OSM library and build toolchain; measure this path on the J4105 before considering one.
+
+On a Ryzen 7 7800X3D with the Brandenburg PBF, profiled importer runs fell from 87.7 s to 59.7 s after the way-tag fast path, with identical graph content apart from the policy hash. Peak RSS remained about 1.5 GiB. These are development-host measurements, not J4105 estimates.
+
 ## Run and deploy
 
 ```bash

@@ -130,10 +130,15 @@ class Importer(osmium.SimpleHandler):
                 self.stations.append(point)
 
     def way(self, way):
-        tags = dict(way.tags)
+        # Most OSM ways are buildings or land use. Avoid materializing their
+        # tags; untagged station-relation members must still be collected.
+        relations = self.station_members.get(('w', way.id), [])
+        tags = way.tags
+        if not relations and tags.get('highway') not in HIGHWAYS and tags.get('railway') not in STATIONS:
+            return
+        tags = dict(tags)
         direction = flags(tags)
         station = is_station(tags)
-        relations = self.station_members.get(('w', way.id), [])
         if not direction and not station and not relations:
             return
         refs = [(node.ref, node.lat, node.lon) for node in way.nodes if node.location.valid()]
