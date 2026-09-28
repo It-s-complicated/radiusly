@@ -3,7 +3,7 @@ import tempfile
 from pathlib import Path
 from types import SimpleNamespace
 
-spec = importlib.util.spec_from_file_location('walking_import', Path(__file__).with_name('build-walking-graph.py'))
+spec = importlib.util.spec_from_file_location('walking_import', Path(__file__).with_name('build-walking-graph-python.py'))
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 

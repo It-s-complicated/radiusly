@@ -1,17 +1,23 @@
-FROM python:3.13-slim AS graph
+FROM rust:1.98-slim-bookworm AS graph-builder
 
-ARG OSM_DATE=260909
+WORKDIR /src
+COPY routing-graph-rs/Cargo.toml routing-graph-rs/Cargo.lock ./
+RUN mkdir src && printf 'fn main() {}\n' > src/main.rs && cargo build --locked --release
+COPY routing-graph-rs/src ./src
+RUN touch src/main.rs && cargo build --locked --release
+
+FROM debian:bookworm-slim AS graph
+
+ARG OSM_DATE=260901
 ENV OSM_DATE=$OSM_DATE
 
 WORKDIR /src
 RUN apt-get update \
-	&& apt-get install --yes --no-install-recommends libexpat1 \
+	&& apt-get install --yes --no-install-recommends ca-certificates curl \
 	&& rm -rf /var/lib/apt/lists/*
 
-COPY scripts/requirements-routing.txt .
-RUN pip install --no-cache-dir -r requirements-routing.txt
-
-COPY scripts/build-walking-graph.py scripts/build-graph.sh ./
+COPY --from=graph-builder /src/target/release/routing-graph /usr/local/bin/routing-graph
+COPY scripts/build-graph.sh ./
 ENTRYPOINT ["./build-graph.sh"]
 
 FROM node:24-bookworm-slim AS build

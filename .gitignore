@@ -16,3 +16,4 @@ data/routing/
 __pycache__/
 
 .venv-routing/
+routing-graph-rs/target/

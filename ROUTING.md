@@ -4,14 +4,13 @@ Radiusly routes inside its SvelteKit Node process. A worker thread owns the grap
 
 ## Build regional data
 
-Use Node 24+ and Python 3 with the offline OSM parser:
+Use Node 24+ and Rust for the local PBF graph builder (the Docker graph image builds its own Rust toolchain):
 
 ```bash
-python -m venv .venv-routing
-.venv-routing/bin/pip install -r scripts/requirements-routing.txt
 mkdir -p data/routing
 curl -fL https://download.geofabrik.de/europe/germany/brandenburg-latest.osm.pbf -o data/routing/brandenburg.osm.pbf
-.venv-routing/bin/python scripts/build-walking-graph.py \
+cargo build --locked --release --manifest-path routing-graph-rs/Cargo.toml
+routing-graph-rs/target/release/routing-graph \
   data/routing/brandenburg.osm.pbf data/routing/graph.json \
   --region berlin --bounds 13.08 52.33 13.77 52.68
 ```
@@ -20,9 +19,24 @@ The Geofabrik Brandenburg extract includes Berlin. Bounds are **west, south, eas
 
 The graph contains coordinates, physical OSM segments, allowed directions, stations and source/policy hashes. The build replaces the output atomically. Restart the server after replacing a graph. Keep the prior file for rollback. PBF and compiled graph files are ignored by git. Source data: © OpenStreetMap contributors, [ODbL](https://www.openstreetmap.org/copyright); [Geofabrik source](https://download.geofabrik.de/europe/germany/brandenburg.html).
 
-Building the graph is a one-time CPU/memory-heavy job, not part of `pnpm build` or route requests. The importer skips tag conversion for unrelated OSM ways while retaining untagged station-relation members. To measure the build on the deployment host without replacing the live graph, run `.venv-routing/bin/python scripts/benchmark-import.py data/routing/brandenburg.osm.pbf /tmp/graph-benchmark.json` with enough free disk and memory; remove the temporary output afterward. A Rust migration would introduce another OSM library and build toolchain; measure this path on the J4105 before considering one.
+Building the graph is a one-time job, not part of `pnpm build` or route requests. The production graph container now uses the Rust PBF importer, which makes three streaming scans (relations, ways, then nodes) and retains coordinates only for referenced nodes. The Python PBF/XML importer remains available for comparison or XML fixtures:
 
-On a Ryzen 7 7800X3D with the Brandenburg PBF, profiled importer runs fell from 87.7 s to 59.7 s after the way-tag fast path, with identical graph content apart from the policy hash. Peak RSS remained about 1.5 GiB. These are development-host measurements, not J4105 estimates.
+```bash
+python -m venv .venv-routing
+.venv-routing/bin/pip install -r scripts/requirements-routing.txt
+.venv-routing/bin/python scripts/build-walking-graph-python.py \
+  data/routing/brandenburg.osm.pbf data/routing/graph-python.json \
+  --region berlin --bounds 13.08 52.33 13.77 52.68
+```
+
+On this machine (Ryzen 7 7800X3D), two sequential runs of each importer against the same local Brandenburg PBF, with a warm filesystem cache, measured graph preparation **excluding** Rust compilation and the PBF download:
+
+| Importer | Wall time (runs) | Mean wall time | Peak RSS (runs) |
+| --- | --- | --- | --- |
+| Python 3.13 + osmium 4.3.1 | 36.630 s, 36.679 s | 36.655 s | 1533, 1535 MiB |
+| Rust release + osmpbf 0.3.8 | 14.267 s, 14.200 s | 14.234 s | 502, 502 MiB |
+
+The Rust importer was **2.58× faster** and used about **one-third the peak memory** here. The complete 115,982,337-byte JSON outputs matched byte-for-byte except for `dataVersion`'s importer-source hash. Rust compilation, Docker image build and network download were not part of this comparison; the J4105 may differ.
 
 ## Run and deploy
 
@@ -38,7 +52,7 @@ pnpm start
 
 `pnpm dev` and `pnpm build` compile the worker into `.routing/`. Restart development after changing worker code. Run commands from the project root. Deploy `build/`, `.routing/`, `package.json`, production dependencies and the regional graph together. Set `ROUTING_GRAPH_PATH` for a graph outside `data/routing/graph.json`. `pnpm start` loads `.env` if present. Set `ORIGIN` to the public HTTPS origin when deploying adapter-node behind a reverse proxy.
 
-For Coolify, use the repository `compose.yml` with the Docker Compose build pack and expose port 3000 on the `app` service. The one-shot `graph` service compiles a dated Geofabrik snapshot into a shared named volume; it skips the build when the volume already holds the requested `OSM_DATE`, so compilation runs only on the first deploy or a date change and survives Docker cache pruning. To refresh the map data, change `OSM_DATE` (env or compose arg) to a dated snapshot available in Geofabrik's raw archive. Deleting the volume or restoring to a new server triggers one rebuild.
+For Coolify, use the repository `compose.yml` with the Docker Compose build pack and expose port 3000 on the `app` service. The one-shot `graph` service compiles a dated Geofabrik snapshot into a shared named volume. It skips the build only when the volume holds both the requested `OSM_DATE` and the current Rust builder binary's hash; the first Rust deployment rebuilds an existing Python graph even with the same date. The graph volume survives Docker cache pruning. The default `OSM_DATE=260901` is an archived monthly snapshot; if you previously set `OSM_DATE=260909`, replace it with an available date (`260909` returns 404). Change `OSM_DATE` (env or compose arg) to a dated snapshot available in Geofabrik's raw archive to refresh data. A cold Docker image build also compiles the Rust binary; cached dependency layers avoid recompiling dependencies when only importer source changes.
 
 The first request loads the graph; missing or invalid graph data returns a structured 503 error. One worker admits at most four requests, including requests waiting for graph initialization. Requests have a 2,000,000-node search budget and a 10-second compute deadline. A shared cancellation flag stops work when a request is cancelled; its slot stays occupied until the worker acknowledges completion. The queue deadline is 30 seconds. This is an initial single-worker capacity policy, not autoscaling.
 
@@ -68,6 +82,7 @@ pnpm check
 pnpm test
 pnpm test:e2e
 .venv-routing/bin/python scripts/test-walking-import.py
+cargo test --locked --release --manifest-path routing-graph-rs/Cargo.toml
 pnpm routing:benchmark
 ```
 

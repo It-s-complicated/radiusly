@@ -12,7 +12,7 @@ from pathlib import Path
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('input', type=Path)
 parser.add_argument('output', type=Path)
-parser.add_argument('--importer', type=Path, default=Path(__file__).with_name('build-walking-graph.py'))
+parser.add_argument('--importer', type=Path, default=Path(__file__).with_name('build-walking-graph-python.py'))
 parser.add_argument('--bounds', nargs=4, type=float, default=[13.08, 52.33, 13.77, 52.68])
 parser.add_argument('--region', default='berlin')
 parser.add_argument('--json', choices=['dump', 'dumps'], default='dumps')
