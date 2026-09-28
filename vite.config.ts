@@ -27,6 +27,8 @@ export default defineConfig({
 				],
 			},
 			workbox: {
+				// Routes are server-rendered and session-dependent; "/" is not a precached app shell.
+				navigateFallback: null,
 				globPatterns: ['client/**/*.{js,css,html,svg,webmanifest}'],
 				modifyURLPrefix: { 'client/': '' },
 			},

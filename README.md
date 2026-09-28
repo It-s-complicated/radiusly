@@ -71,7 +71,7 @@ Routing runs in a worker thread inside the SvelteKit Node server using a local w
 - **Leaflet** for maps (client-side)
 - **Vitest** with Playwright-backed browser mode for component tests
 - **Playwright** for critical browser flows
-- **@vite-pwa/sveltekit** for PWA manifest and service worker (shell-only precaching)
+- **@vite-pwa/sveltekit** for the PWA manifest and static asset precaching; navigations remain server-rendered and require a network connection (there is no offline app shell).
 - **Better Auth** with GitHub OAuth and database-less JWE cookie sessions
 - localStorage for client-side persistence
 
