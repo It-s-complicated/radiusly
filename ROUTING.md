@@ -17,7 +17,7 @@ routing-graph-rs/target/release/routing-graph \
 
 The Geofabrik Brandenburg extract includes Berlin. Bounds are **west, south, east, north** and specify allowed starting points. The importer retains ways in a further 25 km buffer, including their complete node sequences. Use an input extract large enough to contain that buffer. The server supports targets of 0.5–30 km and accepts up to 25% length error, so the buffer covers a closed walk of up to 37.5 km.
 
-The graph contains coordinates, physical OSM segments, allowed directions, stations and source/policy hashes. The build replaces the output atomically. Restart the server after replacing a graph. Keep the prior file for rollback. PBF and compiled graph files are ignored by git. Source data: © OpenStreetMap contributors, [ODbL](https://www.openstreetmap.org/copyright); [Geofabrik source](https://download.geofabrik.de/europe/germany/brandenburg.html).
+The graph contains coordinates, physical OSM segments, allowed directions, stations and source/policy hashes. The builder rejects input/output aliases and empty region names. Before publication it checks the router's coordinate and segment limits (latitude within ±85°, segments at most 20 km); invalid data fails the build without replacing the prior graph. Each build uses an exclusively created sibling temporary file, so concurrent builds safely publish complete files; the last rename wins. Failed writes or renames clean up their temporary file. The build replaces the output atomically. Restart the server after replacing a graph. Keep the prior file for rollback. PBF and compiled graph files are ignored by git. Source data: © OpenStreetMap contributors, [ODbL](https://www.openstreetmap.org/copyright); [Geofabrik source](https://download.geofabrik.de/europe/germany/brandenburg.html).
 
 Building the graph is a one-time job, not part of `pnpm build` or route requests. The production graph container now uses the Rust PBF importer, which makes three streaming scans (relations, ways, then nodes) and retains coordinates only for referenced nodes. The Python PBF/XML importer remains available for comparison or XML fixtures:
 
@@ -37,6 +37,18 @@ On this machine (Ryzen 7 7800X3D), two sequential runs of each importer against 
 | Rust release + osmpbf 0.3.8 | 14.267 s, 14.200 s | 14.234 s | 502, 502 MiB |
 
 The Rust importer was **2.58× faster** and used about **one-third the peak memory** here. The complete 115,982,337-byte JSON outputs matched byte-for-byte except for `dataVersion`'s importer-source hash. Rust compilation, Docker image build and network download were not part of this comparison; the J4105 may differ.
+
+### Safety-fix performance regression check
+
+Compared the pre-fix and fixed release binaries on the same Brandenburg PBF and Berlin bounds above, using Rust 1.98.1 on the Ryzen 7 7800X3D. Each binary received a warm-up followed by five measured runs, alternating which ran first in each pair. Measurements include source hashing, import, graph validation and JSON publication, but exclude compilation and download. Both wrote separate artifacts to `/tmp` (tmpfs); the deployed graph was not replaced. Peak RSS comes from `wait4`.
+
+| Metric (median of 5 runs) | Before fixes | After fixes | Change |
+| --- | --- | --- | --- |
+| Wall time | 14.724 s | 14.657 s | −0.46% |
+| CPU time | 14.667 s | 14.601 s | −0.45% |
+| Peak RSS | 501.090 MiB | 501.246 MiB | +0.156 MiB |
+
+Wall-time runs were **14.732, 14.696, 15.211, 14.709, 14.724 s** before and **14.590, 14.710, 14.814, 14.657, 14.487 s** after. No measurable performance regression was observed; the small timing difference is within run-to-run variation, not evidence of a speedup. Outputs matched byte-for-byte after normalizing `dataVersion`: 2,008,219 nodes, 2,205,005 segments, 525 stations and 115,982,337 bytes.
 
 ## Run and deploy
 
@@ -83,7 +95,11 @@ pnpm test
 pnpm test:e2e
 .venv-routing/bin/python scripts/test-walking-import.py
 cargo test --locked --release --manifest-path routing-graph-rs/Cargo.toml
+cargo build --locked --release --manifest-path routing-graph-rs/Cargo.toml
+.venv-routing/bin/python scripts/test-rust-import.py
 pnpm routing:benchmark
 ```
+
+`test-rust-import.py` reuses the Python fixture through PBF ingestion and checks graph parity, same-file/symlink/hard-link rejection, empty regions, coordinate and segment limits, preservation of the prior graph on failure, temporary-file cleanup and concurrent CLI publication.
 
 The benchmark loads the real graph once and exercises all five shapes with both searches. It records successful routes and expected quality failures rather than treating every requested loop as guaranteed. `routing.test.ts` checks equal path costs, directionality, disconnected components, partial-edge overlap, required spots and search cancellation. Browser tests check that selecting Dijkstra survives reload and reaches the POST endpoint.

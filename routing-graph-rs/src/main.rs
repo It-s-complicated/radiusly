@@ -5,7 +5,7 @@ use sha2::{Digest, Sha256};
 use std::collections::{HashMap, HashSet, hash_map::Entry};
 use std::error::Error;
 use std::fs::{self, File};
-use std::io::{BufReader, BufWriter, Read, Write};
+use std::io::{BufReader, BufWriter, ErrorKind, Read, Write};
 use std::path::{Path, PathBuf};
 
 type Point = [f64; 2];
@@ -246,6 +246,40 @@ struct Graph<'a> {
     stations: Vec<Point>,
 }
 
+impl Graph<'_> {
+    // Keep these limits aligned with WalkingGraph in src/lib/server/routing/graph.ts.
+    // Validate before publication so unsupported data cannot replace a working graph.
+    fn validate(&self) -> Result<(), Box<dyn Error>> {
+        if self.edges.is_empty() {
+            return Err("No walkable edges found in this region".into());
+        }
+        for &point in self.nodes.iter().chain(&self.stations) {
+            if !valid(point) || point[0].abs() > 85.0 {
+                return Err(
+                    "Invalid graph coordinate (latitude must be within ±85 degrees)".into(),
+                );
+            }
+        }
+        for Edge(from, to, way, _) in &self.edges {
+            let [lat1, lon1] = self.nodes[*from as usize];
+            let [lat2, lon2] = self.nodes[*to as usize];
+            let a = ((lat2 - lat1).to_radians() / 2.0).sin().powi(2)
+                + lat1.to_radians().cos()
+                    * lat2.to_radians().cos()
+                    * ((lon2 - lon1).to_radians() / 2.0).sin().powi(2);
+            let meters = 12_742_000.0 * a.sqrt().asin();
+            if !(meters > 0.0 && meters <= 20_000.0) {
+                return Err(format!(
+                    "Invalid graph segment length on OSM way {}: {meters} meters",
+                    way.0
+                )
+                .into());
+            }
+        }
+        Ok(())
+    }
+}
+
 struct Import {
     graph_nodes: HashMap<i64, Point>,
     blocked: HashSet<i64>,
@@ -438,10 +472,10 @@ impl Import {
             }
         }
         for points in relation_points {
-            if let Some(point) = center(points) {
-                if bounds.contains(point) {
-                    stations.push(point);
-                }
+            if let Some(point) = center(points)
+                && bounds.contains(point)
+            {
+                stations.push(point);
             }
         }
         (
@@ -488,7 +522,9 @@ fn args() -> Result<Args, Box<dyn Error>> {
     Ok(Args {
         input,
         output,
-        region: region.ok_or("Missing --region")?,
+        region: region
+            .filter(|value| !value.is_empty())
+            .ok_or("Missing or empty --region")?,
         bounds: bounds.ok_or("Missing --bounds")?,
     })
 }
@@ -507,6 +543,63 @@ fn digest(input: &Path) -> Result<String, Box<dyn Error>> {
     Ok(format!("{:x}", hash.finalize()))
 }
 
+fn validate_paths(input: &Path, output: &Path) -> Result<(), Box<dyn Error>> {
+    let input = fs::canonicalize(input)?;
+    let output = match fs::canonicalize(output) {
+        Ok(path) => path,
+        Err(error) if error.kind() == ErrorKind::NotFound => return Ok(()),
+        Err(error) => return Err(error.into()),
+    };
+    if input == output {
+        return Err("Input and output must be different files".into());
+    }
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::MetadataExt;
+        let input = fs::metadata(input)?;
+        let output = fs::metadata(output)?;
+        if input.dev() == output.dev() && input.ino() == output.ino() {
+            return Err("Input and output must be different files".into());
+        }
+    }
+    Ok(())
+}
+
+fn write_graph(path: &Path, graph: &Graph<'_>) -> Result<u64, Box<dyn Error>> {
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    let filename = path.file_name().ok_or("Expected an output filename")?;
+    let mut attempt = 0u64;
+    let (temporary, file) = loop {
+        let mut name = filename.to_os_string();
+        name.push(format!(".{}.{attempt}.tmp", std::process::id()));
+        let temporary = path.with_file_name(name);
+        match File::options()
+            .write(true)
+            .create_new(true)
+            .open(&temporary)
+        {
+            Ok(file) => break (temporary, file),
+            Err(error) if error.kind() == ErrorKind::AlreadyExists => attempt += 1,
+            Err(error) => return Err(error.into()),
+        }
+    };
+    let result = (|| {
+        let mut output = BufWriter::new(file);
+        serde_json::to_writer(&mut output, graph)?;
+        output.flush()?;
+        let bytes = output.get_ref().metadata()?.len();
+        drop(output);
+        fs::rename(&temporary, path)?;
+        Ok(bytes)
+    })();
+    if result.is_err() {
+        let _ = fs::remove_file(temporary);
+    }
+    result
+}
+
 fn run() -> Result<(), Box<dyn Error>> {
     let args = args()?;
     if args
@@ -516,23 +609,14 @@ fn run() -> Result<(), Box<dyn Error>> {
     {
         return Err("Rust graph builder accepts OSM PBF input only".into());
     }
+    validate_paths(&args.input, &args.output)?;
     let source_hash = digest(&args.input)?;
     let policy_hash = format!("{:x}", Sha256::digest(include_bytes!("main.rs")));
     let version = format!("{}-{}", &source_hash[..16], &policy_hash[..12]);
     let imported = Import::read(&args.input, args.bounds)?;
     let (graph, incomplete) = imported.graph(args.bounds, &args.region, &version);
-    if graph.edges.is_empty() {
-        return Err("No walkable edges found in this region".into());
-    }
-    if let Some(parent) = args.output.parent() {
-        fs::create_dir_all(parent)?;
-    }
-    let temporary = args.output.with_extension("json.tmp");
-    let mut output = BufWriter::new(File::create(&temporary)?);
-    serde_json::to_writer(&mut output, &graph)?;
-    output.flush()?;
-    drop(output);
-    fs::rename(temporary, &args.output)?;
+    graph.validate()?;
+    let bytes = write_graph(&args.output, &graph)?;
     println!(
         "{}",
         serde_json::json!({
@@ -541,7 +625,7 @@ fn run() -> Result<(), Box<dyn Error>> {
             "stations": graph.stations.len(),
             "incompleteWaysSkipped": incomplete,
             "dataVersion": version,
-            "bytes": fs::metadata(args.output)?.len(),
+            "bytes": bytes,
         })
     );
     Ok(())
