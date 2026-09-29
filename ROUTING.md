@@ -19,7 +19,7 @@ The Geofabrik Brandenburg extract includes Berlin. Bounds are **west, south, eas
 
 The graph contains coordinates, physical OSM segments, allowed directions, stations and source/policy hashes. The builder rejects input/output aliases and empty region names. Before publication it checks the router's coordinate and segment limits (latitude within ±85°, segments at most 20 km); invalid data fails the build without replacing the prior graph. Each build uses an exclusively created sibling temporary file, so concurrent builds safely publish complete files; the last rename wins. Failed writes or renames clean up their temporary file. The build replaces the output atomically. Restart the server after replacing a graph. Keep the prior file for rollback. PBF and compiled graph files are ignored by git. Source data: © OpenStreetMap contributors, [ODbL](https://www.openstreetmap.org/copyright); [Geofabrik source](https://download.geofabrik.de/europe/germany/brandenburg.html).
 
-Building the graph is a one-time job, not part of `pnpm build` or route requests. The production graph container now uses the Rust PBF importer, which makes three streaming scans (relations, ways, then nodes) and retains coordinates only for referenced nodes. The Python PBF/XML importer remains available for comparison or XML fixtures:
+Building the graph is a one-time job, not part of `pnpm build` or route requests. The production graph container uses the Rust PBF importer. One full scan collects relations and indexes way/node block offsets; subsequent scans seek only to the relevant blocks and iterate only the required element types. Blocks are decoded in parallel batches of at most eight and consumed in file order, preserving graph ordering and routing tie-breaks. Mixed-type blocks remain supported, and every node block is scanned so standalone stations are retained. Coordinates are stored only for referenced nodes, plus station positions. Decoding defaults to the available CPU count capped at eight; set `RAYON_NUM_THREADS` to a positive count to override it. More than eight threads cannot increase a batch's concurrency. The Python PBF/XML importer remains available for comparison or XML fixtures:
 
 ```bash
 python -m venv .venv-routing
@@ -36,7 +36,7 @@ On this machine (Ryzen 7 7800X3D), two sequential runs of each importer against 
 | Python 3.13 + osmium 4.3.1 | 36.630 s, 36.679 s | 36.655 s | 1533, 1535 MiB |
 | Rust release + osmpbf 0.3.8 | 14.267 s, 14.200 s | 14.234 s | 502, 502 MiB |
 
-The Rust importer was **2.58× faster** and used about **one-third the peak memory** here. The complete 115,982,337-byte JSON outputs matched byte-for-byte except for `dataVersion`'s importer-source hash. Rust compilation, Docker image build and network download were not part of this comparison; the J4105 may differ.
+The initial sequential Rust importer was **2.58× faster** and used about **one-third the peak memory** here. The complete 115,982,337-byte JSON outputs matched byte-for-byte except for `dataVersion`'s importer-source hash. Rust compilation, Docker image build and network download were not part of this comparison; the J4105 may differ.
 
 ### Safety-fix performance regression check
 
@@ -49,6 +49,22 @@ Compared the pre-fix and fixed release binaries on the same Brandenburg PBF and 
 | Peak RSS | 501.090 MiB | 501.246 MiB | +0.156 MiB |
 
 Wall-time runs were **14.732, 14.696, 15.211, 14.709, 14.724 s** before and **14.590, 14.710, 14.814, 14.657, 14.487 s** after. No measurable performance regression was observed; the small timing difference is within run-to-run variation, not evidence of a speedup. Outputs matched byte-for-byte after normalizing `dataVersion`: 2,008,219 nodes, 2,205,005 segments, 525 stations and 115,982,337 bytes.
+
+### Indexed parallel importer performance
+
+Compared the safety-hardened sequential binary with the indexed parallel importer using the same hardware, input, bounds and warm-cache/tmpfs methodology as above. Each received a warm-up and five measured runs in alternating order; the optimized binary used its default eight decoding threads. These are importer-only measurements, not route-request timings or a production disk benchmark.
+
+| Metric (median of 5 runs) | Sequential baseline | Indexed parallel | Change |
+| --- | --- | --- | --- |
+| Wall time | 14.540 s | 5.786 s | −60.21% (**2.51× speedup**) |
+| CPU time | 14.485 s | 12.327 s | −14.90% |
+| Peak RSS | 501.281 MiB | 544.285 MiB | +43.004 MiB (**+8.58%**) |
+
+Wall-time runs were **14.540, 14.711, 14.790, 14.407, 14.491 s** before and **5.786, 5.827, 5.827, 5.756, 5.600 s** after. Optimized peak RSS ranged from **544.180 to 559.297 MiB**. The speedup comes with a measured memory regression from batching/parallel allocation; budget for it rather than assuming unchanged memory use. Eight blobs bound the number of decoded blocks in flight, not their total byte size.
+
+With `RAYON_NUM_THREADS=1`, the indexed importer took **11.443 s median over three runs**, showing that typed iteration and block filtering also help without multicore decoding. A prior three-run typed-iteration-only prototype measured **13.708 s**, versus **14.489 s** for its instrumented sequential reference; these exploratory measurements were separate from the paired comparison above.
+
+The full Brandenburg artifacts matched byte-for-byte after normalizing `dataVersion`, including runs with 1, 4, 8 and 16 decoding threads: 2,008,219 nodes, 2,205,005 segments, 525 stations, no incomplete ways and 115,982,337 bytes. The generated graph was also accepted by the TypeScript loader. No deployed graph was replaced.
 
 ## Run and deploy
 
@@ -100,6 +116,6 @@ cargo build --locked --release --manifest-path routing-graph-rs/Cargo.toml
 pnpm routing:benchmark
 ```
 
-`test-rust-import.py` reuses the Python fixture through PBF ingestion and checks graph parity, same-file/symlink/hard-link rejection, empty regions, coordinate and segment limits, preservation of the prior graph on failure, temporary-file cleanup and concurrent CLI publication.
+`test-rust-import.py` reuses the Python fixture through PBF ingestion and checks graph parity, same-file/symlink/hard-link rejection, empty regions, coordinate and segment limits, preservation of the prior graph on failure, temporary-file cleanup and concurrent CLI publication. A controlled multi-blob PBF additionally checks mixed-type blocks, regular and dense nodes, standalone stations, missing references, unknown blob types, corrupt input and identical output with 1, 2, 8 and 16 decoding threads, including non-sorted way IDs across batch boundaries.
 
 The benchmark loads the real graph once and exercises all five shapes with both searches. It records successful routes and expected quality failures rather than treating every requested loop as guaranteed. `routing.test.ts` checks equal path costs, directionality, disconnected components, partial-edge overlap, required spots and search cancellation. Browser tests check that selecting Dijkstra survives reload and reaches the POST endpoint.

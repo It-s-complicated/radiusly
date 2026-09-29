@@ -1,5 +1,6 @@
 use osmpbf::elements::RelMemberType;
-use osmpbf::{Element, ElementReader};
+use osmpbf::{Blob, BlobDecode, BlobReader, ByteOffset, Element, PrimitiveBlock};
+use rayon::prelude::*;
 use serde::{Serialize, Serializer};
 use sha2::{Digest, Sha256};
 use std::collections::{HashMap, HashSet, hash_map::Entry};
@@ -280,6 +281,37 @@ impl Graph<'_> {
     }
 }
 
+// ponytail: eight blobs per batch bound memory; use a byte budget if large blobs cause pressure.
+// Indexed parallel collection and serial visits preserve PBF order and routing tie-breaks.
+fn read_blocks(
+    mut blobs: impl Iterator<Item = osmpbf::Result<Blob>>,
+    pool: &rayon::ThreadPool,
+    mut visit: impl FnMut(ByteOffset, PrimitiveBlock) -> Result<(), Box<dyn Error>>,
+) -> Result<(), Box<dyn Error>> {
+    loop {
+        let batch = blobs.by_ref().take(8).collect::<osmpbf::Result<Vec<_>>>()?;
+        if batch.is_empty() {
+            return Ok(());
+        }
+        let decoded: Vec<osmpbf::Result<Option<PrimitiveBlock>>> = pool.install(|| {
+            batch
+                .par_iter()
+                .map(|blob| {
+                    Ok(match blob.decode()? {
+                        BlobDecode::OsmData(block) => Some(block),
+                        _ => None,
+                    })
+                })
+                .collect()
+        });
+        for (blob, block) in batch.into_iter().zip(decoded) {
+            if let Some(block) = block? {
+                visit(blob.offset().ok_or("Missing PBF block offset")?, block)?;
+            }
+        }
+    }
+}
+
 struct Import {
     graph_nodes: HashMap<i64, Point>,
     blocked: HashSet<i64>,
@@ -304,100 +336,151 @@ impl Import {
             excluded_ways: HashSet::new(),
         };
 
-        // Relations come after ways in PBFs. Read them first so untagged
-        // station-member ways are retained on the second pass.
-        ElementReader::from_path(input)?.for_each(|element| {
-            let Element::Relation(relation) = element else {
-                return;
-            };
-            let tags = Tags::read(relation.tags());
-            if station(&tags) {
-                let index = result.relation_points.len();
-                result.relation_points.push(Vec::new());
-                for member in relation.members() {
-                    match member.member_type {
-                        RelMemberType::Node => result
-                            .node_members
-                            .entry(member.member_id)
-                            .or_default()
-                            .push(index),
-                        RelMemberType::Way => result
-                            .way_members
-                            .entry(member.member_id)
-                            .or_default()
-                            .push(index),
-                        RelMemberType::Relation => {}
+        // Eight concurrent blobs is also the batch limit. Respect Rayon's standard
+        // override for smaller machines and single-thread regression measurements.
+        let threads = std::env::var("RAYON_NUM_THREADS")
+            .ok()
+            .and_then(|value| value.parse().ok())
+            .unwrap_or_else(|| std::thread::available_parallelism().map_or(1, |n| n.get().min(8)));
+        let pool = rayon::ThreadPoolBuilder::new()
+            .num_threads(threads)
+            .build()?;
+        let mut reader = BlobReader::from_path(input)?;
+        let mut way_offsets = Vec::new();
+        let mut node_offsets = Vec::new();
+
+        // Relations precede way selection so untagged station members survive.
+        // Index all element types in each block, including mixed-type blocks.
+        read_blocks(reader.by_ref(), &pool, |offset, block| {
+            let mut has_ways = false;
+            let mut has_nodes = false;
+            for group in block.groups() {
+                has_ways |= group.ways().next().is_some();
+                has_nodes |= group.nodes().next().is_some() || group.dense_nodes().next().is_some();
+                for relation in group.relations() {
+                    let tags = Tags::read(relation.tags());
+                    if station(&tags) {
+                        let index = result.relation_points.len();
+                        result.relation_points.push(Vec::new());
+                        for member in relation.members() {
+                            match member.member_type {
+                                RelMemberType::Node => result
+                                    .node_members
+                                    .entry(member.member_id)
+                                    .or_default()
+                                    .push(index),
+                                RelMemberType::Way => result
+                                    .way_members
+                                    .entry(member.member_id)
+                                    .or_default()
+                                    .push(index),
+                                RelMemberType::Relation => {}
+                            }
+                        }
+                    }
+                    if tags.relation_type == Some("restriction:foot")
+                        || present(tags.restriction_foot)
+                        || present(tags.restriction_foot_conditional)
+                    {
+                        for member in relation.members() {
+                            if member.member_type == RelMemberType::Way {
+                                result.excluded_ways.insert(member.member_id);
+                            }
+                        }
                     }
                 }
             }
-            if tags.relation_type == Some("restriction:foot")
-                || present(tags.restriction_foot)
-                || present(tags.restriction_foot_conditional)
-            {
-                for member in relation.members() {
-                    if member.member_type == RelMemberType::Way {
-                        result.excluded_ways.insert(member.member_id);
-                    }
-                }
+            if has_ways {
+                way_offsets.push(offset);
             }
+            if has_nodes {
+                node_offsets.push(offset);
+            }
+            Ok(())
         })?;
 
         let mut needed = HashSet::new();
         needed.extend(result.node_members.keys().copied());
-        ElementReader::from_path(input)?.for_each(|element| {
-            let Element::Way(way) = element else {
-                return;
-            };
-            let tags = Tags::read(way.tags());
-            let direction = flags(&tags);
-            let is_station = station(&tags);
-            if direction == 0 && !is_station && !result.way_members.contains_key(&way.id()) {
-                return;
-            }
-            let refs: Vec<_> = way.refs().collect();
-            needed.extend(refs.iter().copied());
-            result.ways.push(Way {
-                id: way.id(),
-                direction,
-                station: is_station,
-                refs,
-            });
-        })?;
+        read_blocks(
+            way_offsets
+                .into_iter()
+                .map(|offset| reader.blob_from_offset(offset)),
+            &pool,
+            |_, block| {
+                for group in block.groups() {
+                    for way in group.ways() {
+                        let tags = Tags::read(way.tags());
+                        let direction = flags(&tags);
+                        let is_station = station(&tags);
+                        if direction == 0
+                            && !is_station
+                            && !result.way_members.contains_key(&way.id())
+                        {
+                            continue;
+                        }
+                        let refs: Vec<_> = way.refs().collect();
+                        needed.extend(refs.iter().copied());
+                        result.ways.push(Way {
+                            id: way.id(),
+                            direction,
+                            station: is_station,
+                            refs,
+                        });
+                    }
+                }
+                Ok(())
+            },
+        )?;
 
-        // Only locations of referenced nodes are retained. Process every node's
-        // railway tags: standalone station nodes need not belong to any way.
-        ElementReader::from_path(input)?.for_each(|element| {
-            let (id, point, tags) = match element {
-                Element::Node(node) => (
-                    node.id(),
-                    [
-                        node.decimicro_lat() as f64 / 1e7,
-                        node.decimicro_lon() as f64 / 1e7,
-                    ],
-                    Tags::read(node.tags()),
-                ),
-                Element::DenseNode(node) => (
-                    node.id(),
-                    [
-                        node.decimicro_lat() as f64 / 1e7,
-                        node.decimicro_lon() as f64 / 1e7,
-                    ],
-                    Tags::read(node.tags()),
-                ),
-                _ => return,
-            };
-            if blocked(&tags) && needed.contains(&id) {
-                result.blocked.insert(id);
-            }
-            if valid(point) {
-                if needed.contains(&id) {
-                    result.graph_nodes.insert(id, point);
+        // Scan every node block, not just way dependencies: standalone stations
+        // also contribute to scoring. Preserve regular-then-dense order per group.
+        read_blocks(
+            node_offsets
+                .into_iter()
+                .map(|offset| reader.blob_from_offset(offset)),
+            &pool,
+            |_, block| {
+                for group in block.groups() {
+                    for element in group
+                        .nodes()
+                        .map(Element::Node)
+                        .chain(group.dense_nodes().map(Element::DenseNode))
+                    {
+                        let (id, point, tags) = match element {
+                            Element::Node(node) => (
+                                node.id(),
+                                [
+                                    node.decimicro_lat() as f64 / 1e7,
+                                    node.decimicro_lon() as f64 / 1e7,
+                                ],
+                                Tags::read(node.tags()),
+                            ),
+                            Element::DenseNode(node) => (
+                                node.id(),
+                                [
+                                    node.decimicro_lat() as f64 / 1e7,
+                                    node.decimicro_lon() as f64 / 1e7,
+                                ],
+                                Tags::read(node.tags()),
+                            ),
+                            _ => unreachable!(),
+                        };
+                        if blocked(&tags) && needed.contains(&id) {
+                            result.blocked.insert(id);
+                        }
+                        if valid(point) {
+                            if needed.contains(&id) {
+                                result.graph_nodes.insert(id, point);
+                            }
+                            if station(&tags) && bounds.contains(point) {
+                                result.station_nodes.push(point);
+                            }
+                        }
+                    }
                 }
-                if station(&tags) && bounds.contains(point) {
-                    result.station_nodes.push(point);
-                }
-            }
-        })?;
+                Ok(())
+            },
+        )?;
         Ok(result)
     }
 
