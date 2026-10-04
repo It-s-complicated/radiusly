@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/env';
-import type { SavedPoint } from '$lib/types';
+import type { SavedPoint } from '#lib/types.js';
 
 const STARTS_KEY = 'radiusly:starts';
 const SELECTED_START_KEY = 'radiusly:selected-start';

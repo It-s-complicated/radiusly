@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { walkingLoop } from '../api';
-import type { WalkingRequest } from '$lib/types';
+import type { WalkingRequest } from '#lib/types.js';
 
 const input: WalkingRequest = {
 	start: [52.52, 13.4],

@@ -39,6 +39,8 @@ pnpm dev
 
 Configure the GitHub OAuth callback as `http://localhost:5173/api/auth/callback/github` (or `${BETTER_AUTH_URL}/api/auth/callback/github` in production). Open `http://localhost:5173`. Use HTTPS when hosting it so authentication, installation, and geolocation work securely.
 
+Private runtime variables are declared in `src/env.ts`. `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, and `GITHUB_PROVIDER_ID` must be non-empty when starting the app; builds can run without these credentials. An unset or empty `ROUTING_GRAPH_PATH` uses `data/routing/graph.json`.
+
 ### Production build
 
 ```bash
@@ -51,6 +53,9 @@ The Node adapter produces a persistent application server. Deploy the compiled w
 ### Tests
 
 ```bash
+# Type check the app and service worker
+pnpm check
+
 # Unit and integration tests
 pnpm test
 
@@ -66,12 +71,12 @@ Routing runs in a worker thread inside the SvelteKit Node server using a local w
 
 ## Stack
 
-- **SvelteKit** with strict TypeScript and the Node adapter
+- **SvelteKit 3** with strict TypeScript and the Node adapter
 - Custom TypeScript routing in a server worker; server proxies for place search and optional map-data queries
 - **Leaflet** for maps (client-side)
 - **Vitest** with Playwright-backed browser mode for component tests
 - **Playwright** for critical browser flows
-- **@vite-pwa/sveltekit** for the PWA manifest and static asset precaching; navigations remain server-rendered and require a network connection (there is no offline app shell).
+- A static web manifest and SvelteKit's native service worker (`src/service-worker/index.ts`) for asset precaching and automatic deployment updates; pages and APIs remain network-only (there is no offline app shell).
 - **Better Auth** with GitHub OAuth and database-less JWE cookie sessions
 - localStorage for client-side persistence
 

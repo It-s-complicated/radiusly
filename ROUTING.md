@@ -31,10 +31,10 @@ python -m venv .venv-routing
 
 On this machine (Ryzen 7 7800X3D), two sequential runs of each importer against the same local Brandenburg PBF, with a warm filesystem cache, measured graph preparation **excluding** Rust compilation and the PBF download:
 
-| Importer | Wall time (runs) | Mean wall time | Peak RSS (runs) |
-| --- | --- | --- | --- |
-| Python 3.13 + osmium 4.3.1 | 36.630 s, 36.679 s | 36.655 s | 1533, 1535 MiB |
-| Rust release + osmpbf 0.3.8 | 14.267 s, 14.200 s | 14.234 s | 502, 502 MiB |
+| Importer                    | Wall time (runs)   | Mean wall time | Peak RSS (runs) |
+| --------------------------- | ------------------ | -------------- | --------------- |
+| Python 3.13 + osmium 4.3.1  | 36.630 s, 36.679 s | 36.655 s       | 1533, 1535 MiB  |
+| Rust release + osmpbf 0.3.8 | 14.267 s, 14.200 s | 14.234 s       | 502, 502 MiB    |
 
 The initial sequential Rust importer was **2.58× faster** and used about **one-third the peak memory** here. The complete 115,982,337-byte JSON outputs matched byte-for-byte except for `dataVersion`'s importer-source hash. Rust compilation, Docker image build and network download were not part of this comparison; the J4105 may differ.
 
@@ -42,11 +42,11 @@ The initial sequential Rust importer was **2.58× faster** and used about **one-
 
 Compared the pre-fix and fixed release binaries on the same Brandenburg PBF and Berlin bounds above, using Rust 1.98.1 on the Ryzen 7 7800X3D. Each binary received a warm-up followed by five measured runs, alternating which ran first in each pair. Measurements include source hashing, import, graph validation and JSON publication, but exclude compilation and download. Both wrote separate artifacts to `/tmp` (tmpfs); the deployed graph was not replaced. Peak RSS comes from `wait4`.
 
-| Metric (median of 5 runs) | Before fixes | After fixes | Change |
-| --- | --- | --- | --- |
-| Wall time | 14.724 s | 14.657 s | −0.46% |
-| CPU time | 14.667 s | 14.601 s | −0.45% |
-| Peak RSS | 501.090 MiB | 501.246 MiB | +0.156 MiB |
+| Metric (median of 5 runs) | Before fixes | After fixes | Change     |
+| ------------------------- | ------------ | ----------- | ---------- |
+| Wall time                 | 14.724 s     | 14.657 s    | −0.46%     |
+| CPU time                  | 14.667 s     | 14.601 s    | −0.45%     |
+| Peak RSS                  | 501.090 MiB  | 501.246 MiB | +0.156 MiB |
 
 Wall-time runs were **14.732, 14.696, 15.211, 14.709, 14.724 s** before and **14.590, 14.710, 14.814, 14.657, 14.487 s** after. No measurable performance regression was observed; the small timing difference is within run-to-run variation, not evidence of a speedup. Outputs matched byte-for-byte after normalizing `dataVersion`: 2,008,219 nodes, 2,205,005 segments, 525 stations and 115,982,337 bytes.
 
@@ -54,11 +54,11 @@ Wall-time runs were **14.732, 14.696, 15.211, 14.709, 14.724 s** before and **14
 
 Compared the safety-hardened sequential binary with the indexed parallel importer using the same hardware, input, bounds and warm-cache/tmpfs methodology as above. Each received a warm-up and five measured runs in alternating order; the optimized binary used its default eight decoding threads. These are importer-only measurements, not route-request timings or a production disk benchmark.
 
-| Metric (median of 5 runs) | Sequential baseline | Indexed parallel | Change |
-| --- | --- | --- | --- |
-| Wall time | 14.540 s | 5.786 s | −60.21% (**2.51× speedup**) |
-| CPU time | 14.485 s | 12.327 s | −14.90% |
-| Peak RSS | 501.281 MiB | 544.285 MiB | +43.004 MiB (**+8.58%**) |
+| Metric (median of 5 runs) | Sequential baseline | Indexed parallel | Change                      |
+| ------------------------- | ------------------- | ---------------- | --------------------------- |
+| Wall time                 | 14.540 s            | 5.786 s          | −60.21% (**2.51× speedup**) |
+| CPU time                  | 14.485 s            | 12.327 s         | −14.90%                     |
+| Peak RSS                  | 501.281 MiB         | 544.285 MiB      | +43.004 MiB (**+8.58%**)    |
 
 Wall-time runs were **14.540, 14.711, 14.790, 14.407, 14.491 s** before and **5.786, 5.827, 5.827, 5.756, 5.600 s** after. Optimized peak RSS ranged from **544.180 to 559.297 MiB**. The speedup comes with a measured memory regression from batching/parallel allocation; budget for it rather than assuming unchanged memory use. Eight blobs bound the number of decoded blocks in flight, not their total byte size.
 

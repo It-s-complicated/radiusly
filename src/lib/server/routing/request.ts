@@ -1,4 +1,4 @@
-import type { WalkingRequest } from '$lib/types';
+import type { WalkingRequest } from '#lib/types.js';
 import { RoutingError } from './graph';
 
 export function parseWalkingRequest(value: unknown): WalkingRequest {

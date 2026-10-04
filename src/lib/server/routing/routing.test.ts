@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { WalkingGraph, type GraphData, type SearchBudget } from './graph';
 import { generateLoop, repetition } from './generate';
 import { parseWalkingRequest } from './request';
-import type { WalkingRequest } from '$lib/types';
+import type { WalkingRequest } from '#lib/types.js';
 
 const budget = (): SearchBudget => ({
 	remaining: 1_000_000,

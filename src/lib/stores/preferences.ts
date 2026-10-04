@@ -1,6 +1,6 @@
 import { writable, derived, get } from 'svelte/store';
 import { browser } from '$app/env';
-import type { Mode, Pace, Algorithm, SearchAlgorithm } from '$lib/types';
+import type { Mode, Pace, Algorithm, SearchAlgorithm } from '#lib/types.js';
 
 const PREFERENCES_KEY = 'radiusly:preferences';
 

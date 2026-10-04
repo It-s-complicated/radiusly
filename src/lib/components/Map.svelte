@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import type { LatLng, SavedPoint } from '$lib/types';
+	import type { LatLng, SavedPoint } from '#lib/types.js';
 	import 'leaflet/dist/leaflet.css';
 
 	let {

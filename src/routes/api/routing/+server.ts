@@ -1,15 +1,14 @@
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { parseWalkingRequest } from '$lib/server/routing/request';
-import { routeOnServer } from '$lib/server/routing/service';
-import { RoutingError } from '$lib/server/routing/graph';
+import { parseWalkingRequest } from '#lib/server/routing/request.js';
+import { routeOnServer } from '#lib/server/routing/service.js';
+import { RoutingError } from '#lib/server/routing/graph.js';
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
 		// Bound actual bytes, including chunked requests, before parsing untrusted input.
 		const reader = request.body?.getReader();
 		if (!reader)
-			return json(
+			return Response.json(
 				{ code: 'INVALID_INPUT', message: 'A route request is required.' },
 				{ status: 400 },
 			);
@@ -20,8 +19,9 @@ export const POST: RequestHandler = async ({ request }) => {
 			if (done) break;
 			size += value.byteLength;
 			if (size > 8192) {
-				await reader.cancel();
-				return json(
+				// Cancelling destroys the Node socket before the 413 can be sent; the adapter drains it.
+				reader.releaseLock();
+				return Response.json(
 					{ code: 'INVALID_INPUT', message: 'Route request is too large.' },
 					{ status: 413 },
 				);
@@ -29,12 +29,12 @@ export const POST: RequestHandler = async ({ request }) => {
 			chunks.push(value);
 		}
 		const input = parseWalkingRequest(JSON.parse(Buffer.concat(chunks).toString('utf8')));
-		return json(await routeOnServer(input, request.signal), {
+		return Response.json(await routeOnServer(input, request.signal), {
 			headers: { 'cache-control': 'no-store' },
 		});
 	} catch (error) {
 		if (error instanceof SyntaxError)
-			return json({ code: 'INVALID_INPUT', message: 'Invalid JSON.' }, { status: 400 });
+			return Response.json({ code: 'INVALID_INPUT', message: 'Invalid JSON.' }, { status: 400 });
 		if (error instanceof RoutingError) {
 			const statuses: Record<string, number> = {
 				INVALID_INPUT: 400,
@@ -43,12 +43,15 @@ export const POST: RequestHandler = async ({ request }) => {
 				CANCELLED: 408,
 				ROUTING_FAILED: 500,
 			};
-			return json(
+			return Response.json(
 				{ code: error.code, message: error.message, details: error.details },
 				{ status: statuses[error.code] ?? 422 },
 			);
 		}
 		console.error('Routing request failed:', error);
-		return json({ code: 'ROUTING_FAILED', message: 'Route generation failed.' }, { status: 500 });
+		return Response.json(
+			{ code: 'ROUTING_FAILED', message: 'Route generation failed.' },
+			{ status: 500 },
+		);
 	}
 };

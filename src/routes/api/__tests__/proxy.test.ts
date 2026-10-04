@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { POST } from '../routing/+server';
-import { routeOnServer } from '$lib/server/routing/service';
-import { RoutingError } from '$lib/server/routing/graph';
+import { routeOnServer } from '#lib/server/routing/service.js';
+import { RoutingError } from '#lib/server/routing/graph.js';
 
-vi.mock('$lib/server/routing/service', () => ({ routeOnServer: vi.fn() }));
+vi.mock('#lib/server/routing/service.js', () => ({ routeOnServer: vi.fn() }));
 const input = {
 	start: [52.52, 13.4],
 	target: { mode: 'distance', value: 4 },

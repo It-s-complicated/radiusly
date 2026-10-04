@@ -1,28 +1,24 @@
-import { building } from '$app/env';
-import { env } from '$env/dynamic/private';
+import {
+	BETTER_AUTH_URL,
+	BETTER_AUTH_SECRET,
+	GITHUB_CLIENT_ID,
+	GITHUB_CLIENT_SECRET,
+	GITHUB_PROVIDER_ID,
+} from '$app/env/private';
 import { betterAuth } from 'better-auth';
 import { assertAllowedGithubUser } from './github-access';
 import { AUTH_CLIENT_IP_HEADER } from './trusted-auth-headers';
 
-function requiredEnv(name: string): string {
-	const value = env[name];
-	if (value) return value;
-	if (building) return `${name.toLowerCase()}-build-placeholder`;
-	throw new Error(`${name} is required`);
-}
-
-const allowedGithubId = requiredEnv('GITHUB_PROVIDER_ID');
-
 export const auth = betterAuth({
 	appName: 'Radiusly',
-	baseURL: requiredEnv('BETTER_AUTH_URL'),
-	secret: requiredEnv('BETTER_AUTH_SECRET'),
+	baseURL: BETTER_AUTH_URL,
+	secret: BETTER_AUTH_SECRET,
 	socialProviders: {
 		github: {
-			clientId: requiredEnv('GITHUB_CLIENT_ID'),
-			clientSecret: requiredEnv('GITHUB_CLIENT_SECRET'),
+			clientId: GITHUB_CLIENT_ID,
+			clientSecret: GITHUB_CLIENT_SECRET,
 			mapProfileToUser(profile) {
-				assertAllowedGithubUser(profile.id, allowedGithubId);
+				assertAllowedGithubUser(profile.id, GITHUB_PROVIDER_ID);
 				return {};
 			},
 		},

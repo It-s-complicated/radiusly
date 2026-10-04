@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { SavedPoint, Algorithm } from '$lib/types';
-	import { starts, selectedStartId, favorites } from '$lib/stores/points';
+	import type { SavedPoint, Algorithm } from '#lib/types.js';
+	import { starts, selectedStartId, favorites } from '#lib/stores/points.js';
 	import {
 		mode,
 		distanceTarget,
@@ -8,8 +8,8 @@
 		pace,
 		algorithm,
 		searchAlgorithm,
-	} from '$lib/stores/preferences';
-	import { currentRoute, isLoading, showToast } from '$lib/stores/route';
+	} from '#lib/stores/preferences.js';
+	import { currentRoute, isLoading, showToast } from '#lib/stores/route.js';
 	import RouteSummary from './RouteSummary.svelte';
 	import Dialog from './Dialog.svelte';
 

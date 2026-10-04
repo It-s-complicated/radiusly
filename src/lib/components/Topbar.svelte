@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { authClient } from '$lib/auth-client';
+	import { authClient } from '#lib/auth-client.js';
 
 	let { user }: { user: { name: string } | null } = $props();
 	let installPrompt: BeforeInstallPromptEvent | undefined = $state();
@@ -20,7 +20,7 @@
 	async function signOut() {
 		signingOut = true;
 		await authClient.signOut();
-		await goto('/login', { invalidateAll: true });
+		await goto('/login', { refreshAll: true });
 	}
 
 	if (typeof window !== 'undefined') {
@@ -52,7 +52,12 @@
 			</button>
 		{/if}
 		{#if user}
-			<button class="btn btn-md btn-pill btn-inverse" type="button" onclick={signOut} disabled={signingOut}>
+			<button
+				class="btn btn-md btn-pill btn-inverse"
+				type="button"
+				onclick={signOut}
+				disabled={signingOut}
+			>
 				{signingOut ? 'Signing out…' : 'Sign out'}
 			</button>
 		{/if}

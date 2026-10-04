@@ -4,8 +4,8 @@ services:
       context: .
       target: graph
       args:
-        OSM_DATE: "${OSM_DATE:-260901}"
-    restart: "no"
+        OSM_DATE: '${OSM_DATE:-260901}'
+    restart: 'no'
     volumes:
       - graph:/graph
 

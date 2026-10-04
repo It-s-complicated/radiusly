@@ -90,8 +90,7 @@ export function repetition(graph: WalkingGraph, path: Traversal[], intentionalRe
 						upper = Math.max(a, b);
 					stationRepeat +=
 						coverage.reduce(
-							(sum, [from, to]) =>
-								sum + Math.max(0, Math.min(upper, to) - Math.max(lower, from)),
+							(sum, [from, to]) => sum + Math.max(0, Math.min(upper, to) - Math.max(lower, from)),
 							0,
 						) * graph.lengths[step.edge]!;
 				}

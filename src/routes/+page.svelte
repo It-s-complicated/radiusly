@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { browser } from '$app/env';
 	import { get } from 'svelte/store';
-	import Map from '$lib/components/Map.svelte';
-	import RouteOptions from '$lib/components/RouteOptions.svelte';
-	import Dialog from '$lib/components/Dialog.svelte';
-	import Toast from '$lib/components/Toast.svelte';
-	import { starts, selectedStartId, favorites } from '$lib/stores/points';
+	import Map from '#lib/components/Map.svelte';
+	import RouteOptions from '#lib/components/RouteOptions.svelte';
+	import Dialog from '#lib/components/Dialog.svelte';
+	import Toast from '#lib/components/Toast.svelte';
+	import { starts, selectedStartId, favorites } from '#lib/stores/points.js';
 	import {
 		mode,
 		distanceTarget,
@@ -14,11 +14,11 @@
 		algorithm,
 		searchAlgorithm,
 		targetKm,
-	} from '$lib/stores/preferences';
-	import { currentRoute, routeDebug, isLoading, showToast } from '$lib/stores/route';
-	import { walkingLoop } from '$lib/route/api';
-	import { loopPoints } from '$lib/route/shapes';
-	import type { LatLng, SavedPoint } from '$lib/types';
+	} from '#lib/stores/preferences.js';
+	import { currentRoute, routeDebug, isLoading, showToast } from '#lib/stores/route.js';
+	import { walkingLoop } from '#lib/route/api.js';
+	import { loopPoints } from '#lib/route/shapes.js';
+	import type { LatLng, SavedPoint } from '#lib/types.js';
 
 	const DEFAULT_LOCATION: LatLng = [52.5208, 13.4095];
 

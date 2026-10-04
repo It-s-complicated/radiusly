@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { toast } from '$lib/stores/route';
+	import { toast } from '#lib/stores/route.js';
 </script>
 
 {#if $toast}

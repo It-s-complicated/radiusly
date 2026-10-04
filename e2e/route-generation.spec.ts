@@ -36,6 +36,24 @@ async function mockApis(page: import('@playwright/test').Page) {
 }
 
 test.describe('Local server route generation', () => {
+	test('returns JSON for oversized requests without dropping the connection', async ({
+		request,
+	}) => {
+		const response = await request.post('/api/routing', {
+			headers: { 'content-type': 'application/json' },
+			data: Buffer.from(' '.repeat(8193)),
+		});
+		expect(response.status()).toBe(413);
+		expect(await response.json()).toMatchObject({ code: 'INVALID_INPUT' });
+
+		const next = await request.post('/api/routing', {
+			headers: { 'content-type': 'application/json' },
+			data: Buffer.from('{'),
+		});
+		expect(next.status()).toBe(400);
+		expect(await next.json()).toMatchObject({ code: 'INVALID_INPUT' });
+	});
+
 	test('submits the selected search and shows the server result', async ({ page }) => {
 		await mockApis(page);
 		await page.goto('/');

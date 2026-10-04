@@ -1,7 +1,7 @@
 import { Worker } from 'node:worker_threads';
 import { resolve } from 'node:path';
-import { env } from '$env/dynamic/private';
-import type { RouteDebug, RouteResult, WalkingRequest } from '$lib/types';
+import { ROUTING_GRAPH_PATH } from '$app/env/private';
+import type { RouteDebug, RouteResult, WalkingRequest } from '#lib/types.js';
 import { RoutingError } from './graph';
 
 type Result = { route: RouteResult; debug: RouteDebug };
@@ -18,7 +18,9 @@ function startWorker(): Promise<void> {
 	if (ready) return ready;
 	ready = new Promise<void>((resolveReady, rejectReady) => {
 		const instance = new Worker(resolve('.routing/lib/server/routing/worker.js'), {
-			workerData: { graphPath: resolve(env.ROUTING_GRAPH_PATH || 'data/routing/graph.json') },
+			workerData: {
+				graphPath: resolve(ROUTING_GRAPH_PATH),
+			},
 		});
 		worker = instance;
 		const fail = () => {

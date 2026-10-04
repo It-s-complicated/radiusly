@@ -10,10 +10,10 @@ import {
 	pace,
 	algorithm,
 	searchAlgorithm,
-} from '$lib/stores/preferences';
-import { currentRoute } from '$lib/stores/route';
-import { resetStores, starts, selectedStartId } from '$lib/stores/points';
-import type { RouteResult } from '$lib/types';
+} from '#lib/stores/preferences.js';
+import { currentRoute } from '#lib/stores/route.js';
+import { resetStores, starts, selectedStartId } from '#lib/stores/points.js';
+import type { RouteResult } from '#lib/types.js';
 
 function sampleRoute(): RouteResult {
 	return {

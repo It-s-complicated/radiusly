@@ -1,4 +1,4 @@
-import type { WalkingRequest, RouteResult, RouteDebug } from '$lib/types';
+import type { WalkingRequest, RouteResult, RouteDebug } from '#lib/types.js';
 
 /** One request; all graph searches, candidate generation and scoring run on the server. */
 export async function walkingLoop(

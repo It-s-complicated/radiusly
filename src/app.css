@@ -849,8 +849,6 @@ input:focus-visible {
 	right: 20px;
 }
 
-
-
 .map-caption {
 	position: absolute;
 	z-index: 500;
@@ -984,8 +982,6 @@ input:focus-visible {
 	height: 42px;
 	padding: 0 12px;
 }
-
-
 
 /* --- Toast --- */
 .toast {
