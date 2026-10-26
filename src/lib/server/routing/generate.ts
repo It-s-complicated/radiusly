@@ -1,4 +1,4 @@
-import { loopPoints, targetKilometers } from '../../route/shapes.js';
+import { loopWaypoints, targetKilometers } from '../../route/shapes.js';
 import type { RouteDebug, RouteResult, WalkingRequest } from '../../types.js';
 import {
 	checkBudget,
@@ -6,6 +6,7 @@ import {
 	RoutingError,
 	WalkingGraph,
 	type SearchBudget,
+	type Snap,
 	type Traversal,
 } from './graph.js';
 
@@ -142,7 +143,7 @@ export function generateLoop(
 	for (let attempt = 0; attempt < 12; attempt++) {
 		checkBudget(budget);
 		const bearing = (request.bearing + Math.floor(attempt / 3) * 89) % 360;
-		const points = loopPoints(
+		const waypoints = loopWaypoints(
 			start.point,
 			target / 1000,
 			bearing,
@@ -151,12 +152,19 @@ export function generateLoop(
 			request.shape,
 		);
 		try {
-			const snaps = points.map((point, index) => {
-				if (index === 0 || index === points.length - 1) return start;
-				const spot = request.spots.findIndex((p) => p[0] === point[0] && p[1] === point[1]);
-				return spot >= 0
-					? spots[spot]!
-					: graph.snap(point, Math.min(1000, Math.max(150, target / 8)), component);
+			const snaps = waypoints.map((waypoint) => {
+				let snap: Snap;
+				switch (waypoint.role) {
+					case 'start':
+						snap = start;
+						break;
+					case 'required-spot':
+						snap = spots[waypoint.spotIndex]!;
+						break;
+					case 'generated-anchor':
+						snap = graph.snap(waypoint.point, Math.min(1000, Math.max(150, target / 8)), component);
+				}
+				return { waypoint: { ...waypoint, point: snap.point }, snap };
 			});
 			const used = new Set<number>();
 			const path: Traversal[] = [];
@@ -175,7 +183,7 @@ export function generateLoop(
 						.reverse()
 						.map((step) => ({ edge: step.edge, from: step.to, to: step.from }));
 					intentionalReturn = leg.length;
-				} else leg = graph.search(snaps[i - 1]!, snaps[i]!, request.search, budget, used);
+				} else leg = graph.search(snaps[i - 1]!.snap, snaps[i]!.snap, request.search, budget, used);
 				if (i === 1) stem = leg;
 				path.push(...leg);
 				for (const step of leg) used.add(step.edge);
@@ -228,7 +236,7 @@ export function generateLoop(
 						algorithm: request.shape,
 						bearing,
 						scale,
-						points: snaps.map((s) => s.point),
+						waypoints: snaps.map(({ waypoint }) => waypoint),
 					},
 					distanceError,
 					distanceErrorDistance: Math.abs(distance - target),

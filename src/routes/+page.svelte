@@ -9,8 +9,8 @@
 	import { preferences, targetKm } from '#lib/stores/preferences.js';
 	import { currentRoute, routeDebug, isLoading, showToast } from '#lib/stores/route.js';
 	import { walkingLoop } from '#lib/route/api.js';
-	import { loopPoints } from '#lib/route/shapes.js';
-	import type { LatLng, SavedPoint } from '#lib/types.js';
+	import { loopWaypoints } from '#lib/route/shapes.js';
+	import type { LatLng, SavedPoint, Waypoint } from '#lib/types.js';
 
 	const DEFAULT_LOCATION: LatLng = [52.5208, 13.4095];
 
@@ -18,23 +18,25 @@
 	let mapStart = $state<LatLng>(
 		initialStart ? [initialStart.lat, initialStart.lng] : DEFAULT_LOCATION,
 	);
-	let routedSyntheticPoints = $state<LatLng[]>([]);
 	const routePoints = $derived<LatLng[]>(
 		$currentRoute?.geometry.coordinates.map(([lng, lat]) => [lat, lng] as LatLng) ?? [],
 	);
 	const selectedSpots = $derived(
 		$favorites.filter((f) => f.selected).map((f) => [f.lat, f.lng] as LatLng),
 	);
-	const previewPoints = $derived.by((): LatLng[] => {
+	const previewWaypoints = $derived.by((): Waypoint[] => {
 		if ($currentRoute || !Number.isFinite($targetKm) || $targetKm < 0.5) return [];
 		try {
-			return loopPoints(mapStart, $targetKm, bearing, selectedSpots, 1, $preferences.algorithm);
+			return loopWaypoints(mapStart, $targetKm, bearing, selectedSpots, 1, $preferences.algorithm);
 		} catch {
 			return [];
 		}
 	});
+	const previewPoints = $derived(previewWaypoints.map((waypoint) => waypoint.point));
 	const syntheticPoints = $derived(
-		$currentRoute ? routedSyntheticPoints : generatedPoints(previewPoints, selectedSpots),
+		($currentRoute ? ($currentRoute.candidate?.waypoints ?? []) : previewWaypoints)
+			.filter((waypoint) => waypoint.role === 'generated-anchor')
+			.map((waypoint) => waypoint.point),
 	);
 	let bearing = $state(25);
 	let pinMode = $state<'start' | 'favorite' | undefined>(undefined);
@@ -46,15 +48,6 @@
 		selectedStartId.set(point.id);
 		mapStart = [point.lat, point.lng];
 		clearRoute();
-	}
-
-	function generatedPoints(points: LatLng[], selectedSpots: LatLng[]): LatLng[] {
-		return points
-			.slice(1, -1)
-			.filter(
-				([lat, lng]) =>
-					!selectedSpots.some(([spotLat, spotLng]) => lat === spotLat && lng === spotLng),
-			);
 	}
 
 	async function makeRoute() {
@@ -80,7 +73,6 @@
 		};
 		try {
 			const { route, debug } = await walkingLoop(request);
-			routedSyntheticPoints = generatedPoints(route.candidate?.points ?? [], request.spots);
 			currentRoute.set(route);
 			routeDebug.set(debug);
 		} catch (error) {

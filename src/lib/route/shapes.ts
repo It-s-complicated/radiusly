@@ -1,4 +1,4 @@
-import type { Algorithm, LatLng } from '../types.js';
+import type { Algorithm, LatLng, Waypoint } from '../types.js';
 
 /**
  * Convert a mode + value into target kilometers.
@@ -47,12 +47,16 @@ function angleFrom(center: LatLng, [lat, lng]: LatLng): number {
 	return (degrees + 360) % 360;
 }
 
-function orderAround(center: LatLng, points: LatLng[], startBearing: number): LatLng[] {
-	return points.sort(
+function orderAround(center: LatLng, waypoints: Waypoint[], startBearing: number): Waypoint[] {
+	return waypoints.sort(
 		(a, b) =>
-			((angleFrom(center, a) - startBearing + 360) % 360) -
-			((angleFrom(center, b) - startBearing + 360) % 360),
+			((angleFrom(center, a.point) - startBearing + 360) % 360) -
+			((angleFrom(center, b.point) - startBearing + 360) % 360),
 	);
+}
+
+function generatedAnchor(point: LatLng): Waypoint {
+	return { role: 'generated-anchor', point };
 }
 
 function perimeterOffsets(targetKm: number, minimum: number, skipFirst = false): number[] {
@@ -64,22 +68,32 @@ function perimeterOffsets(targetKm: number, minimum: number, skipFirst = false):
 /**
  * Generate waypoints for a walking loop using the specified algorithm.
  */
-export function loopPoints(
+export function loopWaypoints(
 	start: LatLng,
 	targetKm: number,
 	bearing = 25,
 	favorites: LatLng[] = [],
 	scale = 1,
 	algorithm: Algorithm = 'organic',
-): LatLng[] {
+): Waypoint[] {
+	const startWaypoint: Waypoint = { role: 'start', point: start };
+	const spots: Waypoint[] = favorites.map((point, spotIndex) => ({
+		role: 'required-spot',
+		point,
+		spotIndex,
+	}));
 	if (algorithm === 'tangent') {
 		const radius = Math.max(0.18, (targetKm / (2 * Math.PI)) * 0.9 * scale);
 		const center = pointAt(start, radius, bearing);
 		const startBearing = (bearing + 180) % 360;
 		const perimeter = perimeterOffsets(targetKm, 4, true).map((offset) =>
-			pointAt(center, radius, startBearing + offset),
+			generatedAnchor(pointAt(center, radius, startBearing + offset)),
 		);
-		return [start, ...orderAround(center, [...favorites, ...perimeter], startBearing), start];
+		return [
+			startWaypoint,
+			...orderAround(center, [...spots, ...perimeter], startBearing),
+			startWaypoint,
+		];
 	}
 
 	if (algorithm === 'orbit-same' || algorithm === 'orbit-near') {
@@ -88,17 +102,17 @@ export function loopPoints(
 		const gap = algorithm === 'orbit-near' ? 9 : 0;
 		const outboundBearing = bearing - gap;
 		const inboundBearing = bearing + gap;
-		const outbound = pointAt(start, radius, outboundBearing);
-		const inbound = pointAt(start, radius, inboundBearing);
+		const outbound = generatedAnchor(pointAt(start, radius, outboundBearing));
+		const inbound = generatedAnchor(pointAt(start, radius, inboundBearing));
 		const perimeter = perimeterOffsets(targetKm, 4, true).map((offset) =>
-			pointAt(start, radius, bearing + offset),
+			generatedAnchor(pointAt(start, radius, bearing + offset)),
 		);
 		return [
-			start,
+			startWaypoint,
 			outbound,
-			...orderAround(start, [...favorites, ...perimeter], outboundBearing),
+			...orderAround(start, [...spots, ...perimeter], outboundBearing),
 			inbound,
-			start,
+			startWaypoint,
 		];
 	}
 
@@ -116,16 +130,16 @@ export function loopPoints(
 		const center = pointAt(start, centerDistance, centerBearing);
 		const startBearing = centerBearing + 180;
 		const detours = pattern.map((offset, index) =>
-			irregularPoint(center, radius, startBearing + offset, bearing + index * 31),
+			generatedAnchor(irregularPoint(center, radius, startBearing + offset, bearing + index * 31)),
 		);
-		return [start, detours[0]!, ...favorites, ...detours.slice(1), start];
+		return [startWaypoint, detours[0]!, ...spots, ...detours.slice(1), startWaypoint];
 	}
 
 	// Organic (default)
 	const radius = Math.max(0.18, (targetKm / (2 * Math.PI)) * 0.87 * scale);
 	const detours = perimeterOffsets(targetKm, 3).map((offset, index) =>
-		irregularPoint(start, radius, bearing + offset, bearing + index * 31),
+		generatedAnchor(irregularPoint(start, radius, bearing + offset, bearing + index * 31)),
 	);
-	const points = orderAround(start, [...favorites, ...detours], 180);
-	return [start, ...points, start];
+	const waypoints = orderAround(start, [...spots, ...detours], 180);
+	return [startWaypoint, ...waypoints, startWaypoint];
 }

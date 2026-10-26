@@ -7,6 +7,11 @@ export type Mode = 'distance' | 'time';
 export type Pace = 4 | 5 | 6;
 export type SearchAlgorithm = 'astar' | 'dijkstra';
 
+export type Waypoint =
+	| { role: 'start'; point: LatLng }
+	| { role: 'required-spot'; point: LatLng; spotIndex: number }
+	| { role: 'generated-anchor'; point: LatLng };
+
 export interface WalkingRequest {
 	start: LatLng;
 	target: { mode: Mode; value: number };
@@ -29,7 +34,7 @@ export interface RouteCandidate {
 	algorithm: Algorithm;
 	bearing: number;
 	scale: number;
-	points: LatLng[];
+	waypoints: Waypoint[];
 }
 
 export interface RouteResult {

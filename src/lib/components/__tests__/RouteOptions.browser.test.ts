@@ -1,11 +1,11 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-svelte';
 import { get } from 'svelte/store';
 import RouteOptions from '../RouteOptions.svelte';
 import Planner from '../../../routes/+page.svelte';
 import { preferences } from '#lib/stores/preferences.js';
 import { currentRoute } from '#lib/stores/route.js';
-import { resetStores, starts, selectedStartId } from '#lib/stores/points.js';
+import { resetStores, starts, selectedStartId, favorites } from '#lib/stores/points.js';
 import type { RouteResult } from '#lib/types.js';
 
 function sampleRoute(): RouteResult {
@@ -37,6 +37,38 @@ describe('RouteOptions component', () => {
 			search: 'astar',
 		});
 		currentRoute.set(null);
+	});
+	afterEach(() => vi.restoreAllMocks());
+
+	it('keeps snapped required spots out of generated waypoint markers', async () => {
+		favorites.set([{ id: 'park', name: 'Park', lat: 52.5232, lng: 13.4005, selected: true }]);
+		const route = sampleRoute();
+		route.geometry.coordinates = [
+			[13.4095, 52.5208],
+			[13.4005, 52.523],
+			[13.4095, 52.5208],
+		];
+		route.candidate = {
+			algorithm: 'organic',
+			bearing: 25,
+			scale: 1,
+			waypoints: [
+				{ role: 'start', point: [52.5208, 13.4095] },
+				{ role: 'required-spot', spotIndex: 0, point: [52.523, 13.4005] },
+				{ role: 'generated-anchor', point: [52.524, 13.405] },
+				{ role: 'generated-anchor', point: [52.525, 13.41] },
+				{ role: 'generated-anchor', point: [52.521, 13.415] },
+				{ role: 'start', point: [52.5208, 13.4095] },
+			],
+		};
+		vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+			Response.json({ route, debug: { schemaVersion: 14 } }),
+		);
+		const screen = await render(Planner);
+		await expect.poll(() => document.querySelectorAll('.synthetic-waypoint').length).toBe(3);
+		await screen.getByRole('button', { name: 'Make my route' }).click();
+		await expect.element(screen.getByText('Your loop', { exact: true })).toBeVisible();
+		await expect.poll(() => document.querySelectorAll('.synthetic-waypoint').length).toBe(3);
 	});
 
 	it('renders the planner controls', async () => {

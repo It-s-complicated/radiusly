@@ -236,11 +236,26 @@ describe('local walking router', () => {
 		}
 		expect.fail('Expected the router to reject the excessive orbit stem');
 	});
-	it('generates closed loops with both algorithms and visits a required segment midpoint', () => {
+	it('preserves waypoint roles while snapping and visiting a required segment midpoint', () => {
 		const graph = grid();
 		for (const search of ['astar', 'dijkstra'] as const) {
-			const input = { ...request, search, spots: [[52.523, 13.4005] as [number, number]] };
+			const spot: [number, number] = [52.5232, 13.4005];
+			const input = { ...request, search, spots: [spot, spot] };
 			const { route, debug } = generateLoop(graph, input, budget());
+			const waypoints = route.candidate!.waypoints;
+			const snappedSpot = graph.snap(spot, 40).point;
+			expect(snappedSpot).not.toEqual(spot);
+			expect(waypoints[0]).toEqual({ role: 'start', point: graph.snap(input.start, 40).point });
+			expect(waypoints.at(-1)).toEqual(waypoints[0]);
+			expect(
+				waypoints
+					.filter((waypoint) => waypoint.role === 'required-spot')
+					.sort((a, b) => a.spotIndex - b.spotIndex),
+			).toEqual([
+				{ role: 'required-spot', spotIndex: 0, point: snappedSpot },
+				{ role: 'required-spot', spotIndex: 1, point: snappedSpot },
+			]);
+			expect(waypoints.filter((waypoint) => waypoint.role === 'generated-anchor')).toHaveLength(3);
 			expect(route.geometry.coordinates[0]).toEqual(route.geometry.coordinates.at(-1));
 			expect(route.distanceError).toBeLessThanOrEqual(0.25);
 			expect(
