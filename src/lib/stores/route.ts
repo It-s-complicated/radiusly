@@ -6,6 +6,11 @@ export const routeDebug = writable<RouteDebug | null>(null);
 export const isLoading = writable<boolean>(false);
 export const toast = writable<string | null>(null);
 
+export function clearRoute(): void {
+	currentRoute.set(null);
+	routeDebug.set(null);
+}
+
 let toastTimer: ReturnType<typeof setTimeout> | undefined;
 
 /**

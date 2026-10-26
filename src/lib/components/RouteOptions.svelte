@@ -2,12 +2,13 @@
 	import type { SavedPoint, Algorithm } from '#lib/types.js';
 	import { starts, selectedStartId, favorites } from '#lib/stores/points.js';
 	import { preferences } from '#lib/stores/preferences.js';
-	import { currentRoute, isLoading, showToast } from '#lib/stores/route.js';
+	import { currentRoute, clearRoute, isLoading, showToast } from '#lib/stores/route.js';
 	import RouteSummary from './RouteSummary.svelte';
 	import Dialog from './Dialog.svelte';
 
 	let {
 		onAddCurrent,
+		addingCurrentStart = false,
 		onPinStart,
 		onPinSpot,
 		onSearchPlaces,
@@ -17,6 +18,7 @@
 		onSelectStart,
 	}: {
 		onAddCurrent?: () => void;
+		addingCurrentStart?: boolean;
 		onPinStart?: () => void;
 		onPinSpot?: () => void;
 		onSearchPlaces?: (query: string) => void;
@@ -111,9 +113,11 @@
 						class="btn btn-sm btn-secondary"
 						type="button"
 						id="add-current-start"
+						disabled={addingCurrentStart}
+						aria-busy={addingCurrentStart}
 						onclick={() => onAddCurrent?.()}
 					>
-						◎ Add current
+						◎ {addingCurrentStart ? 'Locating…' : 'Add current'}
 					</button>
 					<button class="btn btn-sm btn-secondary" type="button" onclick={() => onPinStart?.()}>
 						＋ Pin on map
@@ -167,7 +171,7 @@
 								disabled={$isLoading}
 								onchange={() => {
 									$preferences.algorithm = algo.value;
-									currentRoute.set(null);
+									clearRoute();
 								}}
 							/>
 							<span>
@@ -220,7 +224,7 @@
 						disabled={$isLoading}
 						onchange={() => {
 							$preferences.search = 'astar';
-							currentRoute.set(null);
+							clearRoute();
 						}}
 					/>
 					<span><b>A*</b><small>Search toward the destination</small></span>
@@ -234,7 +238,7 @@
 						disabled={$isLoading}
 						onchange={() => {
 							$preferences.search = 'dijkstra';
-							currentRoute.set(null);
+							clearRoute();
 						}}
 					/>
 					<span><b>Dijkstra</b><small>Explore outward by distance</small></span>

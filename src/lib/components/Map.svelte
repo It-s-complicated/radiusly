@@ -11,6 +11,7 @@
 		syntheticPoints = [] as LatLng[],
 		dashed = false,
 		pinMode = false,
+		locating = false,
 		onMapClick,
 		onCenterClick,
 		onlocate,
@@ -22,6 +23,7 @@
 		syntheticPoints?: LatLng[];
 		dashed?: boolean;
 		pinMode?: boolean;
+		locating?: boolean;
 		onMapClick?: (latlng: LatLng) => void;
 		onCenterClick?: (latlng: LatLng) => void;
 		onlocate?: () => void;
@@ -187,6 +189,8 @@
 		class="btn btn-md btn-pill btn-card"
 		type="button"
 		id="locate"
+		disabled={locating}
+		aria-busy={locating}
 		onclick={() => onlocate?.()}
 	>
 		<svg viewBox="0 0 24 24" aria-hidden="true">
@@ -194,7 +198,7 @@
 			<circle cx="12" cy="12" r="8" />
 			<path d="M12 2V5M12 19v3M2 12h3M19 12h3" />
 		</svg>
-		<span>Use my location</span>
+		<span>{locating ? 'Locating…' : 'Use my location'}</span>
 	</button>
 </div>
 

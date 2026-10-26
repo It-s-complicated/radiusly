@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { currentRoute, routeDebug, showToast } from '#lib/stores/route.js';
+	import { currentRoute, routeDebug, clearRoute, showToast } from '#lib/stores/route.js';
 	import { preferences } from '#lib/stores/preferences.js';
 	import { starts, selectedStartId, favorites } from '#lib/stores/points.js';
 
@@ -38,7 +38,7 @@
 				class="btn btn-icon btn-ghost btn-danger"
 				type="button"
 				aria-label="Clear route"
-				onclick={() => currentRoute.set(null)}>×</button
+				onclick={clearRoute}>×</button
 			>
 		</div>
 		<div class="route-metrics">

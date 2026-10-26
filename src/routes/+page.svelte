@@ -7,7 +7,7 @@
 	import Toast from '#lib/components/Toast.svelte';
 	import { starts, selectedStartId, favorites } from '#lib/stores/points.js';
 	import { preferences, targetKm } from '#lib/stores/preferences.js';
-	import { currentRoute, routeDebug, isLoading, showToast } from '#lib/stores/route.js';
+	import { currentRoute, routeDebug, clearRoute, isLoading, showToast } from '#lib/stores/route.js';
 	import { walkingLoop } from '#lib/route/api.js';
 	import { loopWaypoints } from '#lib/route/shapes.js';
 	import type { LatLng, SavedPoint, Waypoint } from '#lib/types.js';
@@ -43,6 +43,8 @@
 	let pendingPoint = $state<LatLng | undefined>(undefined);
 	let pointFormKind = $state<'start' | 'favorite'>('start');
 	let searchResults = $state<SavedPoint[]>([]);
+	let locating = $state(false);
+	let addingCurrentStart = $state(false);
 
 	function selectStart(point: SavedPoint) {
 		selectedStartId.set(point.id);
@@ -57,8 +59,7 @@
 			return;
 		}
 		isLoading.set(true);
-		routeDebug.set(null);
-		currentRoute.set(null);
+		clearRoute();
 		const request = {
 			start: mapStart,
 			target: {
@@ -94,7 +95,7 @@
 		}
 	}
 
-	function locate() {
+	async function currentLocation(): Promise<LatLng | undefined> {
 		if (!browser) return;
 		if (!navigator.geolocation) {
 			showToast('Geolocation is not available in this browser.');
@@ -104,54 +105,43 @@
 			showToast('Location needs HTTPS (or localhost) to work.');
 			return;
 		}
-		const locateBtn = document.getElementById('locate') as HTMLButtonElement | null;
-		const locateLabel = locateBtn?.querySelector('span');
-		if (locateBtn) locateBtn.disabled = true;
-		if (locateLabel) locateLabel.textContent = 'Locating…';
-
-		navigator.geolocation.getCurrentPosition(
-			({ coords }) => {
-				if (locateBtn) locateBtn.disabled = false;
-				if (locateLabel) locateLabel.textContent = 'Use my location';
-				selectedStartId.set(undefined);
-				mapStart = [coords.latitude, coords.longitude];
-				clearRoute();
-				showToast('Starting point updated to your location.');
-			},
-			(error) => {
-				if (locateBtn) locateBtn.disabled = false;
-				if (locateLabel) locateLabel.textContent = 'Use my location';
-				showToast(geolocationMessage(error));
-			},
-			{ enableHighAccuracy: true, timeout: 10000 },
-		);
+		try {
+			return await new Promise<LatLng>((resolve, reject) => {
+				navigator.geolocation.getCurrentPosition(
+					({ coords }) => resolve([coords.latitude, coords.longitude]),
+					reject,
+					{ enableHighAccuracy: true, timeout: 10000 },
+				);
+			});
+		} catch (error) {
+			showToast(geolocationMessage(error as GeolocationPositionError));
+		}
 	}
 
-	function addCurrentStart() {
-		if (!browser) return;
-		if (!navigator.geolocation) {
-			showToast('Geolocation is not available in this browser.');
-			return;
+	async function locate(): Promise<void> {
+		locating = true;
+		try {
+			const point = await currentLocation();
+			if (!point) return;
+			selectedStartId.set(undefined);
+			mapStart = point;
+			clearRoute();
+			showToast('Starting point updated to your location.');
+		} finally {
+			locating = false;
 		}
-		if (!window.isSecureContext) {
-			showToast('Location needs HTTPS (or localhost) to work.');
-			return;
-		}
-		const btn = document.getElementById('add-current-start') as HTMLButtonElement | null;
-		if (btn) btn.disabled = true;
+	}
 
-		navigator.geolocation.getCurrentPosition(
-			({ coords }) => {
-				if (btn) btn.disabled = false;
-				beginPin('start');
-				handleMapClick([coords.latitude, coords.longitude]);
-			},
-			(error) => {
-				if (btn) btn.disabled = false;
-				showToast(geolocationMessage(error));
-			},
-			{ enableHighAccuracy: true, timeout: 10000 },
-		);
+	async function addCurrentStart(): Promise<void> {
+		addingCurrentStart = true;
+		try {
+			const point = await currentLocation();
+			if (!point) return;
+			beginPin('start');
+			handleMapClick(point);
+		} finally {
+			addingCurrentStart = false;
+		}
 	}
 
 	function geolocationMessage(error?: GeolocationPositionError): string {
@@ -248,16 +238,12 @@
 		searchResults = [];
 		showToast('Walk-by spot saved.');
 	}
-
-	function clearRoute() {
-		currentRoute.set(null);
-		routeDebug.set(null);
-	}
 </script>
 
 <main class="app-shell">
 	<RouteOptions
 		{searchResults}
+		{addingCurrentStart}
 		onAddCurrent={addCurrentStart}
 		onMakeRoute={makeRoute}
 		onPinStart={() => beginPin('start')}
@@ -274,6 +260,7 @@
 			{previewPoints}
 			{routePoints}
 			{syntheticPoints}
+			{locating}
 			dashed={false}
 			pinMode={pinMode !== undefined}
 			onMapClick={handleMapClick}
