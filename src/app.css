@@ -9,13 +9,7 @@
 	--line: #dedfd8;
 	--lime: #c9f26b;
 	--orange: #ec6b38;
-	font-family:
-		Inter,
-		ui-sans-serif,
-		-apple-system,
-		BlinkMacSystemFont,
-		'Segoe UI',
-		sans-serif;
+	font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 	font-synthesis: none;
 }
 
