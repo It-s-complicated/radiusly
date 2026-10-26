@@ -3,14 +3,7 @@ import { render } from 'vitest-browser-svelte';
 import { get } from 'svelte/store';
 import RouteOptions from '../RouteOptions.svelte';
 import Planner from '../../../routes/+page.svelte';
-import {
-	mode,
-	distanceTarget,
-	timeTarget,
-	pace,
-	algorithm,
-	searchAlgorithm,
-} from '#lib/stores/preferences.js';
+import { preferences } from '#lib/stores/preferences.js';
 import { currentRoute } from '#lib/stores/route.js';
 import { resetStores, starts, selectedStartId } from '#lib/stores/points.js';
 import type { RouteResult } from '#lib/types.js';
@@ -35,12 +28,14 @@ function sampleRoute(): RouteResult {
 describe('RouteOptions component', () => {
 	beforeEach(() => {
 		resetStores();
-		mode.set('distance');
-		distanceTarget.set(4);
-		timeTarget.set(45);
-		pace.set(5);
-		algorithm.set('organic');
-		searchAlgorithm.set('astar');
+		preferences.set({
+			mode: 'distance',
+			distance: 4,
+			time: 45,
+			pace: 5,
+			algorithm: 'organic',
+			search: 'astar',
+		});
 		currentRoute.set(null);
 	});
 
@@ -153,11 +148,11 @@ describe('RouteOptions component', () => {
 	it('selects Dijkstra independently of the route shape and remembers it', async () => {
 		const screen = await render(RouteOptions, { onSelectStart: vi.fn() });
 		await screen.getByRole('radio', { name: /Dijkstra/ }).click();
-		expect(get(searchAlgorithm)).toBe('dijkstra');
-		expect(get(algorithm)).toBe('organic');
+		expect(get(preferences).search).toBe('dijkstra');
+		expect(get(preferences).algorithm).toBe('organic');
 		expect(JSON.parse(localStorage.getItem('radiusly:preferences')!).search).toBe('dijkstra');
 		await screen.getByRole('radio', { name: /A\*/ }).click();
-		expect(get(searchAlgorithm)).toBe('astar');
+		expect(get(preferences).search).toBe('astar');
 	});
 
 	it('updates the target from the number input', async () => {
@@ -165,6 +160,6 @@ describe('RouteOptions component', () => {
 
 		await screen.getByRole('spinbutton', { name: 'How far?' }).fill('6');
 
-		expect(get(distanceTarget)).toBe(6);
+		expect(get(preferences).distance).toBe(6);
 	});
 });

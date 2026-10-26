@@ -1,4 +1,4 @@
-import { writable, derived, get } from 'svelte/store';
+import { writable, derived } from 'svelte/store';
 import { browser } from '$app/env';
 import type { Mode, Pace, Algorithm, SearchAlgorithm } from '#lib/types.js';
 
@@ -18,16 +18,7 @@ const ROUTE_ALGORITHMS: string[] = ['organic', 'tangent', 'orbit-same', 'orbit-n
 const ALLOWED_PACES = [4, 5, 6];
 
 function storedPreferences(): Preferences {
-	if (!browser) {
-		return {
-			mode: 'distance',
-			distance: 4,
-			time: 45,
-			pace: 5,
-			algorithm: 'organic',
-			search: 'astar',
-		};
-	}
+	if (!browser) return defaultPrefs();
 	try {
 		const raw = JSON.parse(localStorage.getItem(PREFERENCES_KEY) || '{}');
 		if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return defaultPrefs();
@@ -72,37 +63,10 @@ function save(prefs: Preferences) {
 	if (browser) localStorage.setItem(PREFERENCES_KEY, JSON.stringify(prefs));
 }
 
-const initial = storedPreferences();
+export const preferences = writable<Preferences>(storedPreferences());
 
-export const mode = writable<Mode>(initial.mode);
-export const distanceTarget = writable<number>(initial.distance);
-export const timeTarget = writable<number>(initial.time);
-export const pace = writable<Pace>(initial.pace);
-export const algorithm = writable<Algorithm>(initial.algorithm);
-export const searchAlgorithm = writable<SearchAlgorithm>(initial.search);
-
-export const targetKm = derived(
-	[mode, distanceTarget, timeTarget, pace],
-	([$mode, $distance, $time, $pace]) => {
-		return $mode === 'time' ? ($time * $pace) / 60 : $distance;
-	},
+export const targetKm = derived(preferences, ({ mode, distance, time, pace }) =>
+	mode === 'time' ? (time * pace) / 60 : distance,
 );
 
-function currentPrefs(): Preferences {
-	return {
-		mode: get(mode),
-		distance: get(distanceTarget),
-		time: get(timeTarget),
-		pace: get(pace),
-		algorithm: get(algorithm),
-		search: get(searchAlgorithm),
-	};
-}
-
-mode.subscribe(() => save(currentPrefs()));
-distanceTarget.subscribe(() => save(currentPrefs()));
-timeTarget.subscribe(() => save(currentPrefs()));
-pace.subscribe(() => save(currentPrefs()));
-algorithm.subscribe(() => save(currentPrefs()));
-
-searchAlgorithm.subscribe(() => save(currentPrefs()));
+preferences.subscribe(save);

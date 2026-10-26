@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { currentRoute, routeDebug, showToast } from '#lib/stores/route.js';
-	import { pace } from '#lib/stores/preferences.js';
+	import { preferences } from '#lib/stores/preferences.js';
 	import { starts, selectedStartId, favorites } from '#lib/stores/points.js';
 
 	function formatDistance(meters: number): string {
@@ -8,7 +8,7 @@
 	}
 
 	function formatTime(distanceKm: number): string {
-		return Math.round((distanceKm / $pace) * 60).toString();
+		return Math.round((distanceKm / $preferences.pace) * 60).toString();
 	}
 
 	function routeNote(): string {

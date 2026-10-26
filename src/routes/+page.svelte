@@ -6,15 +6,7 @@
 	import Dialog from '#lib/components/Dialog.svelte';
 	import Toast from '#lib/components/Toast.svelte';
 	import { starts, selectedStartId, favorites } from '#lib/stores/points.js';
-	import {
-		mode,
-		distanceTarget,
-		timeTarget,
-		pace,
-		algorithm,
-		searchAlgorithm,
-		targetKm,
-	} from '#lib/stores/preferences.js';
+	import { preferences, targetKm } from '#lib/stores/preferences.js';
 	import { currentRoute, routeDebug, isLoading, showToast } from '#lib/stores/route.js';
 	import { walkingLoop } from '#lib/route/api.js';
 	import { loopPoints } from '#lib/route/shapes.js';
@@ -36,7 +28,7 @@
 	const previewPoints = $derived.by((): LatLng[] => {
 		if ($currentRoute || !Number.isFinite($targetKm) || $targetKm < 0.5) return [];
 		try {
-			return loopPoints(mapStart, $targetKm, bearing, selectedSpots, 1, $algorithm);
+			return loopPoints(mapStart, $targetKm, bearing, selectedSpots, 1, $preferences.algorithm);
 		} catch {
 			return [];
 		}
@@ -76,10 +68,13 @@
 		currentRoute.set(null);
 		const request = {
 			start: mapStart,
-			target: { mode: $mode, value: $mode === 'time' ? $timeTarget : $distanceTarget },
-			pace: $pace,
-			shape: $algorithm,
-			search: $searchAlgorithm,
+			target: {
+				mode: $preferences.mode,
+				value: $preferences.mode === 'time' ? $preferences.time : $preferences.distance,
+			},
+			pace: $preferences.pace,
+			shape: $preferences.algorithm,
+			search: $preferences.search,
 			spots: $favorites.filter((f) => f.selected).map((f) => [f.lat, f.lng] as LatLng),
 			bearing,
 		};

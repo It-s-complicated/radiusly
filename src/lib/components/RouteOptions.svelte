@@ -1,14 +1,7 @@
 <script lang="ts">
 	import type { SavedPoint, Algorithm } from '#lib/types.js';
 	import { starts, selectedStartId, favorites } from '#lib/stores/points.js';
-	import {
-		mode,
-		distanceTarget,
-		timeTarget,
-		pace,
-		algorithm,
-		searchAlgorithm,
-	} from '#lib/stores/preferences.js';
+	import { preferences } from '#lib/stores/preferences.js';
 	import { currentRoute, isLoading, showToast } from '#lib/stores/route.js';
 	import RouteSummary from './RouteSummary.svelte';
 	import Dialog from './Dialog.svelte';
@@ -75,11 +68,13 @@
 		favorites.update((f) => f.map((x) => (x.id === fav.id ? { ...x, selected: !x.selected } : x)));
 	}
 
-	let targetValue = $derived($mode === 'time' ? $timeTarget : $distanceTarget);
+	let targetValue = $derived(
+		$preferences.mode === 'time' ? $preferences.time : $preferences.distance,
+	);
 
 	function setTarget(v: number) {
-		if ($mode === 'time') timeTarget.set(v);
-		else distanceTarget.set(v);
+		if ($preferences.mode === 'time') $preferences.time = v;
+		else $preferences.distance = v;
 	}
 
 	const ROUTE_ALGORITHMS: { value: Algorithm; label: string; desc: string }[] = [
@@ -168,10 +163,10 @@
 								type="radio"
 								name="route-algorithm"
 								value={algo.value}
-								checked={$algorithm === algo.value}
+								checked={$preferences.algorithm === algo.value}
 								disabled={$isLoading}
 								onchange={() => {
-									algorithm.set(algo.value);
+									$preferences.algorithm = algo.value;
 									currentRoute.set(null);
 								}}
 							/>
@@ -221,10 +216,10 @@
 						type="radio"
 						name="path-search"
 						value="astar"
-						checked={$searchAlgorithm === 'astar'}
+						checked={$preferences.search === 'astar'}
 						disabled={$isLoading}
 						onchange={() => {
-							searchAlgorithm.set('astar');
+							$preferences.search = 'astar';
 							currentRoute.set(null);
 						}}
 					/>
@@ -235,10 +230,10 @@
 						type="radio"
 						name="path-search"
 						value="dijkstra"
-						checked={$searchAlgorithm === 'dijkstra'}
+						checked={$preferences.search === 'dijkstra'}
 						disabled={$isLoading}
 						onchange={() => {
-							searchAlgorithm.set('dijkstra');
+							$preferences.search = 'dijkstra';
 							currentRoute.set(null);
 						}}
 					/>
@@ -250,43 +245,47 @@
 			<div class="mode-switch" role="group" aria-label="Plan by">
 				<button
 					type="button"
-					class:active={$mode === 'distance'}
-					onclick={() => mode.set('distance')}>Distance</button
+					class:active={$preferences.mode === 'distance'}
+					onclick={() => ($preferences.mode = 'distance')}>Distance</button
 				>
-				<button type="button" class:active={$mode === 'time'} onclick={() => mode.set('time')}
-					>Time</button
+				<button
+					type="button"
+					class:active={$preferences.mode === 'time'}
+					onclick={() => ($preferences.mode = 'time')}>Time</button
 				>
 			</div>
 
 			<!-- Target control -->
 			<div class="target-control">
-				<label for="target" id="target-label">{$mode === 'time' ? 'How long?' : 'How far?'}</label>
+				<label for="target" id="target-label"
+					>{$preferences.mode === 'time' ? 'How long?' : 'How far?'}</label
+				>
 				<div class="target-value">
 					<input
 						id="target"
 						type="number"
-						min={$mode === 'time' ? 10 : 1}
-						max={$mode === 'time' ? 180 : 20}
-						step={$mode === 'time' ? 5 : 0.5}
+						min={$preferences.mode === 'time' ? 10 : 1}
+						max={$preferences.mode === 'time' ? 180 : 20}
+						step={$preferences.mode === 'time' ? 5 : 0.5}
 						value={targetValue}
 						oninput={(e) => setTarget(Number((e.target as HTMLInputElement).value))}
 					/>
-					<span id="target-unit">{$mode === 'time' ? 'min' : 'km'}</span>
+					<span id="target-unit">{$preferences.mode === 'time' ? 'min' : 'km'}</span>
 				</div>
 				<input
 					id="target-range"
 					class="range"
 					type="range"
-					min={$mode === 'time' ? 10 : 1}
-					max={$mode === 'time' ? 180 : 20}
-					step={$mode === 'time' ? 5 : 0.5}
+					min={$preferences.mode === 'time' ? 10 : 1}
+					max={$preferences.mode === 'time' ? 180 : 20}
+					step={$preferences.mode === 'time' ? 5 : 0.5}
 					value={targetValue}
 					oninput={(e) => setTarget(Number((e.target as HTMLInputElement).value))}
-					aria-label={$mode === 'time' ? 'Walking time' : 'Walking distance'}
+					aria-label={$preferences.mode === 'time' ? 'Walking time' : 'Walking distance'}
 				/>
 				<div class="range-labels" aria-hidden="true">
-					<span>{$mode === 'time' ? '10 min' : '1 km'}</span>
-					<span>{$mode === 'time' ? '180 min' : '20 km'}</span>
+					<span>{$preferences.mode === 'time' ? '10 min' : '1 km'}</span>
+					<span>{$preferences.mode === 'time' ? '180 min' : '20 km'}</span>
 				</div>
 			</div>
 
@@ -298,8 +297,8 @@
 						type="radio"
 						name="pace"
 						value="4"
-						checked={$pace === 4}
-						onchange={() => pace.set(4)}
+						checked={$preferences.pace === 4}
+						onchange={() => ($preferences.pace = 4)}
 					/>
 					<span><b>Easy</b><small>4 km/h</small></span>
 				</label>
@@ -308,8 +307,8 @@
 						type="radio"
 						name="pace"
 						value="5"
-						checked={$pace === 5}
-						onchange={() => pace.set(5)}
+						checked={$preferences.pace === 5}
+						onchange={() => ($preferences.pace = 5)}
 					/>
 					<span><b>Steady</b><small>5 km/h</small></span>
 				</label>
@@ -318,8 +317,8 @@
 						type="radio"
 						name="pace"
 						value="6"
-						checked={$pace === 6}
-						onchange={() => pace.set(6)}
+						checked={$preferences.pace === 6}
+						onchange={() => ($preferences.pace = 6)}
 					/>
 					<span><b>Brisk</b><small>6 km/h</small></span>
 				</label>
