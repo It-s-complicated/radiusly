@@ -72,7 +72,7 @@ Routing runs in a worker thread inside the SvelteKit Node server using a local w
 ## Stack
 
 - **SvelteKit 3** with strict TypeScript and the Node adapter
-- Custom TypeScript routing in a server worker; server proxies for place search and optional map-data queries
+- Custom TypeScript routing in a server worker; server proxy for place search
 - **Leaflet** for maps (client-side)
 - **Vitest** with Playwright-backed browser mode for component tests
 - **Playwright** for critical browser flows

@@ -64,14 +64,6 @@ describe('loopPoints', () => {
 		expect(lengths).toEqual([6, 6, 6]);
 	});
 
-	it('spaghetti-cross generates 5 points', () => {
-		expect(loopPoints(start, 4, 25, [], 1, 'spaghetti-cross').length).toBe(5);
-	});
-
-	it('spaghetti-safe generates 5 points', () => {
-		expect(loopPoints(start, 4, 25, [], 1, 'spaghetti-safe').length).toBe(5);
-	});
-
 	it('spaghetti creates different signatures for different bearings', () => {
 		const signatures = [25, 92, 159, 226].map((bearing) => {
 			const points = loopPoints(start, 4, bearing, [], 1, 'spaghetti');

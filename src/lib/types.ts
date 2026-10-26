@@ -3,8 +3,6 @@ export type LngLat = [number, number]; // [lng, lat] — OSRM/GeoJSON
 
 export type Algorithm = 'organic' | 'tangent' | 'orbit-same' | 'orbit-near' | 'spaghetti';
 
-export type InternalAlgorithm = Algorithm | 'spaghetti-cross' | 'spaghetti-safe';
-
 export type Mode = 'distance' | 'time';
 export type Pace = 4 | 5 | 6;
 export type SearchAlgorithm = 'astar' | 'dijkstra';
@@ -28,7 +26,7 @@ export interface SavedPoint {
 }
 
 export interface RouteCandidate {
-	algorithm: InternalAlgorithm;
+	algorithm: Algorithm;
 	bearing: number;
 	scale: number;
 	points: LatLng[];

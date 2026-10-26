@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { WalkingGraph, type GraphData, type SearchBudget } from './graph';
+import { RoutingError, WalkingGraph, type GraphData, type SearchBudget } from './graph';
 import { generateLoop, repetition } from './generate';
 import { parseWalkingRequest } from './request';
 import type { WalkingRequest } from '#lib/types.js';
@@ -86,7 +86,30 @@ describe('local walking router', () => {
 			);
 		}
 	});
-	it('counts only overlapping fractions and exempts only the deliberate return', () => {
+	it('measures out-and-back repetition and exempts only the deliberate return', () => {
+		const graph = grid();
+		graph.data.stations.push(graph.data.nodes[0]!);
+		const path = [
+			{ edge: 0, from: 0, to: 1 },
+			{ edge: 1, from: 0, to: 1 },
+			{ edge: 1, from: 1, to: 0 },
+			{ edge: 0, from: 1, to: 0 },
+		];
+		const outbound = graph.lengths[0]! + graph.lengths[1]!;
+		const repeat = repetition(graph, path);
+		expect(repeat.repeated).toBeCloseTo(outbound);
+		expect(repeat.longest).toBeCloseTo(outbound);
+		expect(repeat.accidental).toBeCloseTo(outbound);
+		expect(repeat.longestAccidental).toBeCloseTo(outbound);
+		expect(repeat.stationRepeat).toBeCloseTo(outbound);
+		const deliberate = repetition(graph, path, 2);
+		expect(deliberate.repeated).toBeCloseTo(outbound);
+		expect(deliberate.longest).toBeCloseTo(outbound);
+		expect(deliberate.accidental).toBe(0);
+		expect(deliberate.longestAccidental).toBe(0);
+		expect(deliberate.stationRepeat).toBe(0);
+	});
+	it('counts only overlapping fractions', () => {
 		const graph = grid();
 		const path = [
 			{ edge: 0, from: 0.2, to: 0.8 },
@@ -94,7 +117,6 @@ describe('local walking router', () => {
 		];
 		expect(repetition(graph, path).repeated).toBeCloseTo(graph.lengths[0]! * 0.3);
 		expect(repetition(graph, path).accidental).toBeGreaterThan(0);
-		expect(repetition(graph, path, 1).accidental).toBe(0);
 	});
 	it('clips station repetition to the part of an edge inside the station radius', () => {
 		const graph = new WalkingGraph({
@@ -114,6 +136,105 @@ describe('local walking router', () => {
 		]);
 		expect(repeat.stationRepeat).toBeCloseTo(500, 0);
 		expect(repeat.stationRepeat).toBeLessThan(graph.lengths[0]!);
+		expect(repetition(graph, [{ edge: 0, from: 0, to: 1 }]).stationRepeat).toBe(0);
+	});
+	it('rejects excessive backtracking even when a candidate is closer to the target', () => {
+		const { route, debug } = generateLoop(grid(), request, budget());
+		const candidates = debug.candidates as {
+			distance: number;
+			accidental: number;
+			accepted: boolean;
+		}[];
+		const closer = candidates.find(
+			(candidate) =>
+				Math.abs(candidate.distance - 2000) < route.distanceErrorDistance &&
+				candidate.accidental / candidate.distance > 0.05,
+		);
+		expect(closer).toMatchObject({ accepted: false });
+		expect(route.distanceError).toBeLessThanOrEqual(0.25);
+		expect(route.repeatRatio).toBeLessThanOrEqual(0.05);
+		expect(route.longestRepeatDistance).toBeLessThanOrEqual(210);
+	});
+	it('prefers less station backtracking over a closer distance match', () => {
+		const graph = grid();
+		const input: WalkingRequest = {
+			...request,
+			target: { mode: 'distance', value: 1.5 },
+			bearing: 240,
+		};
+		const { route: withoutStation } = generateLoop(graph, input, budget());
+		graph.data.stations.push(input.start);
+		const { route: withStation } = generateLoop(graph, input, budget());
+		expect(withStation.distanceError).toBeGreaterThan(withoutStation.distanceError);
+		expect(withStation.repeatedDistance).toBeLessThan(withoutStation.repeatedDistance);
+		expect(withStation.stationRepeatDistance).toBeGreaterThan(0);
+		expect(withStation.stationRepeatDistance).toBeLessThan(withoutStation.repeatedDistance);
+		expect(withStation.score).toBeLessThan(
+			withoutStation.score + withoutStation.repeatedDistance * 4,
+		);
+	});
+	it('rejects an orbit with an excessive deliberate stem despite otherwise acceptable quality', () => {
+		// A winding access path reaches a ring around the start, making the shared stem too long.
+		const graph = new WalkingGraph({
+			version: 1,
+			region: 'long orbit stem',
+			dataVersion: 'fixture',
+			nodes: [
+				[0, 0],
+				[0.0006, 0],
+				[0.0006, 0.0018],
+				[0, 0.0018],
+				[0, 0.0009],
+				[0.00135, 0.0009],
+				[0.00135, 0],
+				[0.0021, 0],
+				[0, 0.0021],
+				[-0.0021, 0],
+				[0, -0.0021],
+			],
+			edges: [
+				[0, 1, 'stem', 3],
+				[1, 2, 'stem', 3],
+				[2, 3, 'stem', 3],
+				[3, 4, 'stem', 3],
+				[4, 5, 'stem', 3],
+				[5, 6, 'stem', 3],
+				[6, 7, 'stem', 3],
+				[7, 8, 'ring', 3],
+				[8, 9, 'ring', 3],
+				[9, 10, 'ring', 3],
+				[10, 7, 'ring', 3],
+			],
+			stations: [],
+		});
+		try {
+			generateLoop(
+				graph,
+				{
+					...request,
+					start: [0, 0],
+					shape: 'orbit-same',
+					bearing: 0,
+					target: { mode: 'distance', value: 2.4 },
+				},
+				budget(),
+			);
+		} catch (error) {
+			if (!(error instanceof RoutingError)) throw error;
+			expect(error.code).toBe('ROUTE_QUALITY');
+			const [first] = error.details as { distance: number; stemLength: number }[];
+			expect(first).toMatchObject({
+				accepted: false,
+				accidental: 0,
+				longestAccidental: 0,
+				stationRepeat: 0,
+			});
+			expect(Math.abs(first!.distance - 2400) / 2400).toBeLessThanOrEqual(0.25);
+			expect(first!.stemLength).toBeGreaterThan(500);
+			expect(first!.stemLength / first!.distance).toBeGreaterThan(0.2);
+			return;
+		}
+		expect.fail('Expected the router to reject the excessive orbit stem');
 	});
 	it('generates closed loops with both algorithms and visits a required segment midpoint', () => {
 		const graph = grid();
@@ -130,7 +251,7 @@ describe('local walking router', () => {
 			expect(debug.input).toEqual(input);
 		}
 	});
-	it('keeps every shape available and shortens the intentional stem beside a station', () => {
+	it('keeps every shape available beside a station, including the deliberate orbit return', () => {
 		const graph = grid();
 		graph.data.stations.push(request.start);
 		for (const shape of ['organic', 'tangent', 'orbit-same', 'orbit-near', 'spaghetti'] as const) {
@@ -138,6 +259,10 @@ describe('local walking router', () => {
 			expect(route.candidate?.algorithm).toBe(shape);
 			expect(route.geometry.coordinates[0]).toEqual(route.geometry.coordinates.at(-1));
 			expect(route.stationRepeatDistance).toBeLessThanOrEqual(100);
+			if (shape === 'orbit-same') {
+				expect(route.repeatRatio).toBeGreaterThan(0.05);
+				expect(route.longestRepeatDistance).toBeGreaterThan(210);
+			}
 		}
 	});
 

@@ -1,4 +1,4 @@
-import type { InternalAlgorithm, LatLng } from '../types.js';
+import type { Algorithm, LatLng } from '../types.js';
 
 /**
  * Convert a mode + value into target kilometers.
@@ -70,7 +70,7 @@ export function loopPoints(
 	bearing = 25,
 	favorites: LatLng[] = [],
 	scale = 1,
-	algorithm: InternalAlgorithm = 'organic',
+	algorithm: Algorithm = 'organic',
 ): LatLng[] {
 	if (algorithm === 'tangent') {
 		const radius = Math.max(0.18, (targetKm / (2 * Math.PI)) * 0.9 * scale);
@@ -118,26 +118,6 @@ export function loopPoints(
 		const detours = pattern.map((offset, index) =>
 			irregularPoint(center, radius, startBearing + offset, bearing + index * 31),
 		);
-		return [start, detours[0]!, ...favorites, ...detours.slice(1), start];
-	}
-
-	if (algorithm === 'spaghetti-cross') {
-		const radius = Math.max(0.18, (targetKm / 8) * 0.9 * scale);
-		const centerBearing = bearing + (seededUnit(bearing + 23) - 0.5) * 24;
-		const centerDistance = radius * (0.82 + seededUnit(bearing + 29) * 0.3);
-		const center = pointAt(start, centerDistance, centerBearing);
-		const startBearing = centerBearing + 180;
-		const detours = [180, 90, 270].map((offset, index) =>
-			irregularPoint(center, radius, startBearing + offset, bearing + index * 43),
-		);
-		return [start, detours[0]!, ...favorites, ...detours.slice(1), start];
-	}
-
-	if (algorithm === 'spaghetti-safe') {
-		const radius = Math.max(0.18, (targetKm / 8) * 0.9 * scale);
-		const center = pointAt(start, radius, bearing);
-		const startBearing = bearing + 180;
-		const detours = [180, 90, 270].map((offset) => pointAt(center, radius, startBearing + offset));
 		return [start, detours[0]!, ...favorites, ...detours.slice(1), start];
 	}
 
