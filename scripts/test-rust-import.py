@@ -106,6 +106,17 @@ def mixed_pbf():
     ]
     # Non-sorted way IDs across >8 blobs catch reordering and batch-boundary bugs.
     groups.extend([[way(ref, [6, 7])] for ref in [44, 21, 43, 20, 42, 19, 41, 18, 40, 17]])
+    # More than a batch of node blocks, with non-sorted IDs and alternating
+    # regular/dense nodes, exercise worker-side parsing and ordered merging.
+    # Each node is both a station and a way dependency. Also retain a standalone
+    # station in the same block, which must survive without a dependency lookup.
+    for index, ref in enumerate([101, 112, 102, 111, 103, 110, 104, 109, 105, 108, 106, 107]):
+        lat = 525040000 + index * 10000
+        groups.append([
+            node(ref, lat, 134000000, ((3, 4),), dense=index % 2 == 0),
+            node(ref + 100, lat, 134010000, ((3, 4),), dense=index % 2 != 0),
+            way(ref + 1000, [1, ref]),
+        ])
     header = field(4, b'OsmSchema-V0.6') + field(4, b'DenseNodes')
     blobs = [pbf_blob('OSMHeader', header)]
     blobs.extend(pbf_blob('OSMData', field(1, stringtable) + b''.join(field(2, group) for group in block))
