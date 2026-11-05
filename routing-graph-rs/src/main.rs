@@ -281,24 +281,34 @@ impl Graph<'_> {
     }
 }
 
-// ponytail: eight blobs per batch bound memory; use a byte budget if large blobs cause pressure.
-// Indexed parallel collection and serial visits preserve PBF order and routing tie-breaks.
 fn read_blocks(
+    blobs: impl Iterator<Item = osmpbf::Result<Blob>>,
+    pool: &rayon::ThreadPool,
+    visit: impl FnMut(ByteOffset, PrimitiveBlock) -> Result<(), Box<dyn Error>>,
+) -> Result<(), Box<dyn Error>> {
+    map_blocks(blobs, pool, |block| block, visit)
+}
+
+// Eight blobs bound work in flight, not bytes; use a byte budget if large blobs
+// cause pressure. Mapping runs on workers; indexed collection and serial visits
+// preserve PBF order and routing tie-breaks without locking the importer state.
+fn map_blocks<T: Send>(
     mut blobs: impl Iterator<Item = osmpbf::Result<Blob>>,
     pool: &rayon::ThreadPool,
-    mut visit: impl FnMut(ByteOffset, PrimitiveBlock) -> Result<(), Box<dyn Error>>,
+    map: impl Fn(PrimitiveBlock) -> T + Sync,
+    mut visit: impl FnMut(ByteOffset, T) -> Result<(), Box<dyn Error>>,
 ) -> Result<(), Box<dyn Error>> {
     loop {
         let batch = blobs.by_ref().take(8).collect::<osmpbf::Result<Vec<_>>>()?;
         if batch.is_empty() {
             return Ok(());
         }
-        let decoded: Vec<osmpbf::Result<Option<PrimitiveBlock>>> = pool.install(|| {
+        let decoded: Vec<osmpbf::Result<Option<T>>> = pool.install(|| {
             batch
                 .par_iter()
                 .map(|blob| {
                     Ok(match blob.decode()? {
-                        BlobDecode::OsmData(block) => Some(block),
+                        BlobDecode::OsmData(block) => Some(map(block)),
                         _ => None,
                     })
                 })
@@ -433,13 +443,17 @@ impl Import {
         )?;
 
         // Scan every node block, not just way dependencies: standalone stations
-        // also contribute to scoring. Preserve regular-then-dense order per group.
-        read_blocks(
+        // also contribute to scoring. Parse each block on a decoding worker,
+        // sharing only the immutable dependency set. Merge owned results serially
+        // in PBF order, including regular-then-dense order within each group.
+        map_blocks(
             node_offsets
                 .into_iter()
                 .map(|offset| reader.blob_from_offset(offset)),
             &pool,
-            |_, block| {
+            |block| {
+                let mut nodes = Vec::new();
+                let mut stations = Vec::new();
                 for group in block.groups() {
                     for element in group
                         .nodes()
@@ -465,19 +479,26 @@ impl Import {
                             ),
                             _ => unreachable!(),
                         };
-                        if blocked(&tags) && needed.contains(&id) {
-                            result.blocked.insert(id);
+                        if needed.contains(&id) {
+                            nodes.push((id, point, blocked(&tags)));
                         }
-                        if valid(point) {
-                            if needed.contains(&id) {
-                                result.graph_nodes.insert(id, point);
-                            }
-                            if station(&tags) && bounds.contains(point) {
-                                result.station_nodes.push(point);
-                            }
+                        if valid(point) && station(&tags) && bounds.contains(point) {
+                            stations.push(point);
                         }
                     }
                 }
+                (nodes, stations)
+            },
+            |_, (nodes, stations)| {
+                for (id, point, is_blocked) in nodes {
+                    if is_blocked {
+                        result.blocked.insert(id);
+                    }
+                    if valid(point) {
+                        result.graph_nodes.insert(id, point);
+                    }
+                }
+                result.station_nodes.extend(stations);
                 Ok(())
             },
         )?;

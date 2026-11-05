@@ -19,7 +19,7 @@ The Geofabrik Brandenburg extract includes Berlin. Bounds are **west, south, eas
 
 The graph contains coordinates, physical OSM segments, allowed directions, stations and source/policy hashes. The builder rejects input/output aliases and empty region names. Before publication it checks the router's coordinate and segment limits (latitude within ±85°, segments at most 20 km); invalid data fails the build without replacing the prior graph. Each build uses an exclusively created sibling temporary file, so concurrent builds safely publish complete files; the last rename wins. Failed writes or renames clean up their temporary file. The build replaces the output atomically. Restart the server after replacing a graph. Keep the prior file for rollback. PBF and compiled graph files are ignored by git. Source data: © OpenStreetMap contributors, [ODbL](https://www.openstreetmap.org/copyright); [Geofabrik source](https://download.geofabrik.de/europe/germany/brandenburg.html).
 
-Building the graph is a one-time job, not part of `pnpm build` or route requests. The production graph container uses the Rust PBF importer. One full scan collects relations and indexes way/node block offsets; subsequent scans seek only to the relevant blocks and iterate only the required element types. Blocks are decoded in parallel batches of at most eight and consumed in file order, preserving graph ordering and routing tie-breaks. Mixed-type blocks remain supported, and every node block is scanned so standalone stations are retained. Coordinates are stored only for referenced nodes, plus station positions. Decoding defaults to the available CPU count capped at eight; set `RAYON_NUM_THREADS` to a positive count to override it. More than eight threads cannot increase a batch's concurrency. The Python PBF/XML importer remains available for comparison or XML fixtures:
+Building the graph is a one-time job, not part of `pnpm build` or route requests. The production graph container uses the Rust PBF importer. One full scan collects relations and indexes way/node block offsets; subsequent scans seek only to the relevant blocks and iterate only the required element types. Blocks are decoded in parallel batches of at most eight and consumed in file order, preserving graph ordering and routing tie-breaks. During the node pass, workers also parse/filter nodes against the shared immutable dependency set; only retained node records and station positions are merged serially. Mixed-type blocks remain supported, and every node block is scanned so standalone stations are retained. Coordinates are stored only for referenced nodes, plus station positions. Decoding defaults to the available CPU count capped at eight; set `RAYON_NUM_THREADS` to a positive count to override it. More than eight threads cannot increase a batch's concurrency. The Python PBF/XML importer remains available for comparison or XML fixtures:
 
 ```bash
 python -m venv .venv-routing
@@ -65,6 +65,46 @@ Wall-time runs were **14.540, 14.711, 14.790, 14.407, 14.491 s** before and **5.
 With `RAYON_NUM_THREADS=1`, the indexed importer took **11.443 s median over three runs**, showing that typed iteration and block filtering also help without multicore decoding. A prior three-run typed-iteration-only prototype measured **13.708 s**, versus **14.489 s** for its instrumented sequential reference; these exploratory measurements were separate from the paired comparison above.
 
 The full Brandenburg artifacts matched byte-for-byte after normalizing `dataVersion`, including runs with 1, 4, 8 and 16 decoding threads: 2,008,219 nodes, 2,205,005 segments, 525 stations, no incomplete ways and 115,982,337 bytes. The generated graph was also accepted by the TypeScript loader. No deployed graph was replaced.
+
+### Worker-side node parsing performance (2026-11-02)
+
+The next bottleneck was serial node traversal after parallel decompression. The node pass now performs tag parsing, dependency checks and station filtering on decoding workers, then merges owned results in file order. It uses one dependency lookup per node and retains the existing eight-blob limit. Graph construction, access policy, atomic publication and dependencies are unchanged.
+
+This comparison uses a **different machine and pinned extract from the historical measurements above**: Ryzen 5 PRO 5650G (6 cores / 12 threads), Linux, Rust **1.98.0**, default Cargo release profile, Geofabrik `brandenburg-260901.osm.pbf` (299,318,510 bytes; SHA-256 `ae872babbc2097f57177da854a1189f7ee37725b90da00e3cea2e2457612ceaf`). The baseline is the unmodified indexed-parallel builder at `2bb5eae`, not the old sequential importer.
+
+Both binaries received one warm-up, then **five measured runs each in alternating order**, with the default eight decoding workers. Measurements cover the complete CLI: hashing, import, graph construction/validation and JSON publication. Downloads and compilation are excluded; input was warm-cache and output was on `/tmp` tmpfs. No deployed graph was replaced.
+
+| Metric (median of 5 runs) | Current baseline | Worker-side node parsing | Change                      |
+| ------------------------- | ---------------- | ------------------------ | --------------------------- |
+| Wall time                 | 9.610 s          | 6.840 s                  | **−28.83% (1.41× speedup)** |
+| CPU time                  | 19.381 s         | 19.106 s                 | −1.42%                      |
+| Peak RSS                  | 574.559 MiB      | 575.617 MiB              | +1.059 MiB (+0.18%)         |
+
+Baseline wall times: **9.610, 9.627, 9.537, 9.612, 9.588 s**. Updated wall times: **6.834, 6.831, 6.840, 6.867, 6.863 s**. Peak RSS is effectively unchanged in this sample, not guaranteed lower: allocator/scheduling variation is larger than the median difference, and eight blobs still do not impose a byte budget.
+
+With `RAYON_NUM_THREADS=1`, a separate warm-up and three paired measured runs gave **15.695 s → 14.978 s median (−4.56%)**, with essentially unchanged RSS (591.879 → 592.207 MiB). Thus the change also avoids a measured single-thread regression; most of the default-thread gain is parallelism, not reduced total CPU work. These results do not establish performance on the production J4105 or a cold physical disk.
+
+Additional **three-run exploratory comparisons**, each against an unchanged baseline in the same session:
+
+| Prototype                     | Baseline median | Prototype median | Decision                                                                               |
+| ----------------------------- | --------------- | ---------------- | -------------------------------------------------------------------------------------- |
+| `zlib-rs` decompressor        | 9.553 s         | 9.490 s          | Not kept: <1% wall-time gain, higher median RSS                                        |
+| Keyed `ahash` maps/sets       | 9.553 s         | 8.845 s          | Not kept: promising −7.42%, but adds a dependency                                      |
+| `ahash` + `zlib-rs`           | 9.553 s         | 8.753 s          | Not kept: little additional benefit from the decompressor                              |
+| Worker-side parsing + `ahash` | 9.596 s         | 6.303 s          | Further option: −34.32% vs baseline, ~9% beyond worker-side parsing in that comparison |
+
+Every measured and warm-up output matched **byte-for-byte after normalizing only `dataVersion`'s policy-hash suffix**: 2,007,154 nodes, 2,203,849 segments, 524 stations, zero incomplete ways, 115,919,024 bytes. Regression checks additionally cover more than eight mixed regular/dense node blocks, station order and dependencies with non-sorted IDs at 1, 2, 8 and 16 threads, plus the existing access, missing-reference, invalid-input and concurrent-publication cases.
+
+Raw samples, binary hashes and variant descriptions: [`benchmarks/rust-import-2026-11-02.json`](benchmarks/rust-import-2026-11-02.json). To reproduce a comparison, **save the unchanged release binary before editing**, then build the candidate and run:
+
+```bash
+python3 scripts/benchmark-rust-import.py data/routing/brandenburg.osm.pbf \
+  --binary baseline=/tmp/routing-graph-before \
+  --binary candidate=routing-graph-rs/target/release/routing-graph \
+  --runs 5 --report /tmp/rust-import-comparison.json
+```
+
+The benchmark refuses an existing report path, writes only temporary graph artifacts, records per-process CPU/RSS using Linux `wait4`, and fails on graph or CLI-summary differences (other than the policy version). `RAYON_NUM_THREADS` controls both variants. The raw report keeps warm-ups separate from measured samples.
 
 ## Run and deploy
 
@@ -113,9 +153,10 @@ pnpm test:e2e
 cargo test --locked --release --manifest-path routing-graph-rs/Cargo.toml
 cargo build --locked --release --manifest-path routing-graph-rs/Cargo.toml
 .venv-routing/bin/python scripts/test-rust-import.py
+python3 scripts/test-benchmark-rust-import.py
 pnpm routing:benchmark
 ```
 
-`test-rust-import.py` reuses the Python fixture through PBF ingestion and checks graph parity, same-file/symlink/hard-link rejection, empty regions, coordinate and segment limits, preservation of the prior graph on failure, temporary-file cleanup and concurrent CLI publication. A controlled multi-blob PBF additionally checks mixed-type blocks, regular and dense nodes, standalone stations, missing references, unknown blob types, corrupt input and identical output with 1, 2, 8 and 16 decoding threads, including non-sorted way IDs across batch boundaries.
+`test-rust-import.py` reuses the Python fixture through PBF ingestion and checks graph parity, same-file/symlink/hard-link rejection, empty regions, coordinate and segment limits, preservation of the prior graph on failure, temporary-file cleanup and concurrent CLI publication. A controlled multi-blob PBF additionally checks mixed-type blocks, regular and dense nodes, standalone stations, missing references, unknown blob types, corrupt input and identical output with 1, 2, 8 and 16 decoding threads, including non-sorted node/way IDs and station ordering across batch boundaries. `test-benchmark-rust-import.py` checks policy-only hash normalization, rejection of differing CLI summaries and preservation of existing reports.
 
 The benchmark loads the real graph once and exercises all five shapes with both searches. It records successful routes and expected quality failures rather than treating every requested loop as guaranteed. `routing.test.ts` checks equal path costs, directionality, disconnected components, partial-edge overlap, required spots and search cancellation. Browser tests check that selecting Dijkstra survives reload and reaches the POST endpoint.

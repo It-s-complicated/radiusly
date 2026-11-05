@@ -1,0 +1,970 @@
+{
+	"date": "2026-11-02",
+	"baselineCommit": "2bb5eae",
+	"toolchain": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+	"build": "cargo build --locked --release; default Cargo release profile, no target-cpu or RUSTFLAGS override",
+	"sourceUrl": "https://download.geofabrik.de/europe/germany/brandenburg-260901.osm.pbf",
+	"inputSha256": "ae872babbc2097f57177da854a1189f7ee37725b90da00e3cea2e2457612ceaf",
+	"finalMainRsSha256": "23ef06775bbbc6462452d332ee7815baa7175819e2d475b77bc034f2d242c134",
+	"methodology": "One warm-up per variant, then sequential measured processes in rotating/reversed order. Warm filesystem cache. All JSON outputs on /tmp tmpfs. Complete CLI wall/CPU/RSS, excluding compilation, download, and streaming correctness comparison. No deployed graph replaced.",
+	"correctness": "Every warm-up and sample has identical graph bytes after replacing only the 12-hex-digit policy suffix in dataVersion; input hash remains intact. Counts: 2,007,154 nodes, 2,203,849 segments, 524 stations; 115,919,024 bytes; zero incomplete ways.",
+	"variantNotes": {
+		"baseline": "Unmodified Rust builder at baselineCommit.",
+		"candidate": "Final dependency-free worker-side node parsing with ordered serial merge, plus one needed-set lookup per node; existing eight-blob batch limit and standard HashMap/HashSet retained.",
+		"parallel-nodes": "Early equivalent node-parsing prototype, before wrapper/comment cleanup; no added dependencies.",
+		"ahash": "ahash 0.8.12; replace std HashMap/HashSet imports with ahash::{AHashMap as HashMap, AHashSet as HashSet}; retain std hash_map::Entry. All other baseline code unchanged.",
+		"zlib-rs": "osmpbf 0.3.8 with default-features=false; add flate2 1.1.10 with default-features=false and features=[zlib-rs,runtime_detection], selecting zlib-rs 0.6.8. Baseline main.rs unchanged.",
+		"combined": "Combine ahash and zlib-rs variants.",
+		"parallel-ahash": "Combine parallel-nodes and ahash."
+	},
+	"decisions": {
+		"kept": "Dependency-free worker-side node parsing. Final five-run paired comparison and three-run single-thread comparison are authoritative.",
+		"notKept": "ahash is promising but adds a dependency; zlib-rs produced less than 1% wall-time improvement and higher median RSS. Dependency variants remain experiments, not production changes.",
+		"limitations": "One host and one regional extract. RSS varies with allocator and worker scheduling. Eight blobs is not a byte budget. Measurements are not production disk/download timings or J4105 measurements."
+	},
+	"reports": {
+		"defaultEightThreads": {
+			"platform": "Linux-7.0.14-26-pve-x86_64-with-glibc2.41",
+			"cpuCount": 12,
+			"cpuModel": "AMD Ryzen 5 PRO 5650G with Radeon Graphics",
+			"rayonNumThreads": "default",
+			"input": "/tmp/radiusly-graph-bench/brandenburg-260901.osm.pbf",
+			"inputBytes": 299318510,
+			"inputSha256": "ae872babbc2097f57177da854a1189f7ee37725b90da00e3cea2e2457612ceaf",
+			"bounds": [13.08, 52.33, 13.77, 52.68],
+			"region": "berlin",
+			"binaries": {
+				"baseline": {
+					"path": "/tmp/radiusly-graph-bench/baseline",
+					"sha256": "556e4409247e69034d0bd140e36eae9d4bb37948b003884fbe8d3e18a1fc16be"
+				},
+				"candidate": {
+					"path": "/tmp/radiusly-graph-bench/candidate",
+					"sha256": "86b39651ea040778738068984bbff74b752c120a82bf85393af2f50900675ff5"
+				}
+			},
+			"warmups": [
+				{
+					"wallSeconds": 9.55259912298061,
+					"cpuSeconds": 19.317029,
+					"peakRssKiB": 624604,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-2d1eadb00231",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "baseline",
+					"round": 1
+				},
+				{
+					"wallSeconds": 6.832667907001451,
+					"cpuSeconds": 19.010137,
+					"peakRssKiB": 575956,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-23ef06775bbb",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "candidate",
+					"round": 1
+				}
+			],
+			"samples": [
+				{
+					"wallSeconds": 9.609976014005952,
+					"cpuSeconds": 19.35822,
+					"peakRssKiB": 583836,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-2d1eadb00231",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "baseline",
+					"round": 1
+				},
+				{
+					"wallSeconds": 6.833847596019041,
+					"cpuSeconds": 19.073773,
+					"peakRssKiB": 579800,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-23ef06775bbb",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "candidate",
+					"round": 1
+				},
+				{
+					"wallSeconds": 6.831385473022237,
+					"cpuSeconds": 19.076560999999998,
+					"peakRssKiB": 594584,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-23ef06775bbb",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "candidate",
+					"round": 2
+				},
+				{
+					"wallSeconds": 9.627130515000317,
+					"cpuSeconds": 19.456296,
+					"peakRssKiB": 619124,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-2d1eadb00231",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "baseline",
+					"round": 2
+				},
+				{
+					"wallSeconds": 9.537395198014565,
+					"cpuSeconds": 19.361891,
+					"peakRssKiB": 586692,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-2d1eadb00231",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "baseline",
+					"round": 3
+				},
+				{
+					"wallSeconds": 6.839633410971146,
+					"cpuSeconds": 19.106145,
+					"peakRssKiB": 589432,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-23ef06775bbb",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "candidate",
+					"round": 3
+				},
+				{
+					"wallSeconds": 6.867401511990465,
+					"cpuSeconds": 19.133675,
+					"peakRssKiB": 609112,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-23ef06775bbb",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "candidate",
+					"round": 4
+				},
+				{
+					"wallSeconds": 9.612428538966924,
+					"cpuSeconds": 19.401522,
+					"peakRssKiB": 621600,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-2d1eadb00231",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "baseline",
+					"round": 4
+				},
+				{
+					"wallSeconds": 9.587852790951729,
+					"cpuSeconds": 19.380831999999998,
+					"peakRssKiB": 588348,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-2d1eadb00231",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "baseline",
+					"round": 5
+				},
+				{
+					"wallSeconds": 6.863200471969321,
+					"cpuSeconds": 19.122802,
+					"peakRssKiB": 580284,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-23ef06775bbb",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "candidate",
+					"round": 5
+				}
+			],
+			"medians": {
+				"baseline": {
+					"wallSeconds": 9.609976014005952,
+					"cpuSeconds": 19.380831999999998,
+					"peakRssKiB": 588348
+				},
+				"candidate": {
+					"wallSeconds": 6.839633410971146,
+					"cpuSeconds": 19.106145,
+					"peakRssKiB": 589432
+				}
+			},
+			"outputDirectory": "/tmp/radiusly-graph-bench/rust-import-bench-jfidf4i0"
+		},
+		"singleThread": {
+			"platform": "Linux-7.0.14-26-pve-x86_64-with-glibc2.41",
+			"cpuCount": 12,
+			"cpuModel": "AMD Ryzen 5 PRO 5650G with Radeon Graphics",
+			"rayonNumThreads": "1",
+			"input": "/tmp/radiusly-graph-bench/brandenburg-260901.osm.pbf",
+			"inputBytes": 299318510,
+			"inputSha256": "ae872babbc2097f57177da854a1189f7ee37725b90da00e3cea2e2457612ceaf",
+			"bounds": [13.08, 52.33, 13.77, 52.68],
+			"region": "berlin",
+			"binaries": {
+				"baseline": {
+					"path": "/tmp/radiusly-graph-bench/baseline",
+					"sha256": "556e4409247e69034d0bd140e36eae9d4bb37948b003884fbe8d3e18a1fc16be"
+				},
+				"candidate": {
+					"path": "/tmp/radiusly-graph-bench/candidate",
+					"sha256": "86b39651ea040778738068984bbff74b752c120a82bf85393af2f50900675ff5"
+				}
+			},
+			"warmups": [
+				{
+					"wallSeconds": 15.706085414043628,
+					"cpuSeconds": 15.696601999999999,
+					"peakRssKiB": 581296,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-2d1eadb00231",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "baseline",
+					"round": 1
+				},
+				{
+					"wallSeconds": 15.002989278000314,
+					"cpuSeconds": 14.989799,
+					"peakRssKiB": 606328,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-23ef06775bbb",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "candidate",
+					"round": 1
+				}
+			],
+			"samples": [
+				{
+					"wallSeconds": 15.694551860971842,
+					"cpuSeconds": 15.693444999999999,
+					"peakRssKiB": 606660,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-2d1eadb00231",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "baseline",
+					"round": 1
+				},
+				{
+					"wallSeconds": 14.956548612040933,
+					"cpuSeconds": 14.962264,
+					"peakRssKiB": 606304,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-23ef06775bbb",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "candidate",
+					"round": 1
+				},
+				{
+					"wallSeconds": 14.997943260998,
+					"cpuSeconds": 14.998973,
+					"peakRssKiB": 606420,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-23ef06775bbb",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "candidate",
+					"round": 2
+				},
+				{
+					"wallSeconds": 15.711915766994935,
+					"cpuSeconds": 15.710992,
+					"peakRssKiB": 605876,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-2d1eadb00231",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "baseline",
+					"round": 2
+				},
+				{
+					"wallSeconds": 15.608170391002204,
+					"cpuSeconds": 15.596611000000001,
+					"peakRssKiB": 606084,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-2d1eadb00231",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "baseline",
+					"round": 3
+				},
+				{
+					"wallSeconds": 14.97809942800086,
+					"cpuSeconds": 14.980763,
+					"peakRssKiB": 606472,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-23ef06775bbb",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "candidate",
+					"round": 3
+				}
+			],
+			"medians": {
+				"baseline": {
+					"wallSeconds": 15.694551860971842,
+					"cpuSeconds": 15.693444999999999,
+					"peakRssKiB": 606084
+				},
+				"candidate": {
+					"wallSeconds": 14.97809942800086,
+					"cpuSeconds": 14.980763,
+					"peakRssKiB": 606420
+				}
+			},
+			"outputDirectory": "/tmp/radiusly-graph-bench/rust-import-bench-6b3ucuwz"
+		},
+		"dependencyExploration": {
+			"platform": "Linux-7.0.14-26-pve-x86_64-with-glibc2.41",
+			"cpuCount": 12,
+			"rayonNumThreads": "default",
+			"input": "/tmp/radiusly-graph-bench/brandenburg-260901.osm.pbf",
+			"inputBytes": 299318510,
+			"bounds": [13.08, 52.33, 13.77, 52.68],
+			"region": "berlin",
+			"binaries": {
+				"baseline": {
+					"path": "/tmp/radiusly-graph-bench/baseline",
+					"sha256": "556e4409247e69034d0bd140e36eae9d4bb37948b003884fbe8d3e18a1fc16be"
+				},
+				"zlib-rs": {
+					"path": "/tmp/radiusly-graph-bench/zlib-rs-binary",
+					"sha256": "1863cbf189186c955bba3de74e453bb02c3784e8fdf766fd52e0a81ddc4e0da9"
+				},
+				"ahash": {
+					"path": "/tmp/radiusly-graph-bench/ahash-binary",
+					"sha256": "ddd8f237d1b42609f429b18f8ebd17a6275d6f904f982b25f75a55502b039d65"
+				},
+				"combined": {
+					"path": "/tmp/radiusly-graph-bench/combined-binary",
+					"sha256": "dcea9099665f8c02188ddf734d1ec57e4e9766c4ffc5d7dc2ac74c3971736f7b"
+				}
+			},
+			"warmups": [
+				{
+					"wallSeconds": 9.50886773201637,
+					"cpuSeconds": 19.172151999999997,
+					"peakRssKiB": 618744,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-2d1eadb00231",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "baseline",
+					"round": 1
+				},
+				{
+					"wallSeconds": 9.447766010009218,
+					"cpuSeconds": 18.716165999999998,
+					"peakRssKiB": 611764,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-2d1eadb00231",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "zlib-rs",
+					"round": 1
+				},
+				{
+					"wallSeconds": 8.821580006973818,
+					"cpuSeconds": 18.513972000000003,
+					"peakRssKiB": 593136,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-704849b5b563",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "ahash",
+					"round": 1
+				},
+				{
+					"wallSeconds": 8.716629784030374,
+					"cpuSeconds": 17.98122,
+					"peakRssKiB": 612408,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-704849b5b563",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "combined",
+					"round": 1
+				}
+			],
+			"samples": [
+				{
+					"wallSeconds": 9.547514272970147,
+					"cpuSeconds": 19.314504,
+					"peakRssKiB": 593704,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-2d1eadb00231",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "baseline",
+					"round": 1
+				},
+				{
+					"wallSeconds": 9.433318255003542,
+					"cpuSeconds": 18.792897999999997,
+					"peakRssKiB": 627920,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-2d1eadb00231",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "zlib-rs",
+					"round": 1
+				},
+				{
+					"wallSeconds": 8.789539970981423,
+					"cpuSeconds": 18.534488000000003,
+					"peakRssKiB": 585572,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-704849b5b563",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "ahash",
+					"round": 1
+				},
+				{
+					"wallSeconds": 8.752961368998513,
+					"cpuSeconds": 18.083254,
+					"peakRssKiB": 626012,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-704849b5b563",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "combined",
+					"round": 1
+				},
+				{
+					"wallSeconds": 9.600878950033803,
+					"cpuSeconds": 19.44764,
+					"peakRssKiB": 593444,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-2d1eadb00231",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "baseline",
+					"round": 2
+				},
+				{
+					"wallSeconds": 8.733704824990127,
+					"cpuSeconds": 18.054717,
+					"peakRssKiB": 621592,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-704849b5b563",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "combined",
+					"round": 2
+				},
+				{
+					"wallSeconds": 8.844764314009808,
+					"cpuSeconds": 18.562025,
+					"peakRssKiB": 592864,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-704849b5b563",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "ahash",
+					"round": 2
+				},
+				{
+					"wallSeconds": 9.489775997994002,
+					"cpuSeconds": 18.801247,
+					"peakRssKiB": 614488,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-2d1eadb00231",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "zlib-rs",
+					"round": 2
+				},
+				{
+					"wallSeconds": 8.854817424027715,
+					"cpuSeconds": 18.602018,
+					"peakRssKiB": 580856,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-704849b5b563",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "ahash",
+					"round": 3
+				},
+				{
+					"wallSeconds": 8.815710622991901,
+					"cpuSeconds": 18.13188,
+					"peakRssKiB": 620188,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-704849b5b563",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "combined",
+					"round": 3
+				},
+				{
+					"wallSeconds": 9.553442166012246,
+					"cpuSeconds": 19.272465999999998,
+					"peakRssKiB": 580568,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-2d1eadb00231",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "baseline",
+					"round": 3
+				},
+				{
+					"wallSeconds": 9.500524722971022,
+					"cpuSeconds": 18.838355,
+					"peakRssKiB": 614088,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-2d1eadb00231",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "zlib-rs",
+					"round": 3
+				}
+			],
+			"medians": {
+				"baseline": {
+					"wallSeconds": 9.553442166012246,
+					"cpuSeconds": 19.314504,
+					"peakRssKiB": 593444
+				},
+				"zlib-rs": {
+					"wallSeconds": 9.489775997994002,
+					"cpuSeconds": 18.801247,
+					"peakRssKiB": 614488
+				},
+				"ahash": {
+					"wallSeconds": 8.844764314009808,
+					"cpuSeconds": 18.562025,
+					"peakRssKiB": 585572
+				},
+				"combined": {
+					"wallSeconds": 8.752961368998513,
+					"cpuSeconds": 18.083254,
+					"peakRssKiB": 621592
+				}
+			},
+			"outputDirectory": "/tmp/radiusly-graph-bench/rust-import-bench-yoe0hyx8"
+		},
+		"parallelExploration": {
+			"platform": "Linux-7.0.14-26-pve-x86_64-with-glibc2.41",
+			"cpuCount": 12,
+			"rayonNumThreads": "default",
+			"input": "/tmp/radiusly-graph-bench/brandenburg-260901.osm.pbf",
+			"inputBytes": 299318510,
+			"bounds": [13.08, 52.33, 13.77, 52.68],
+			"region": "berlin",
+			"binaries": {
+				"baseline": {
+					"path": "/tmp/radiusly-graph-bench/baseline",
+					"sha256": "556e4409247e69034d0bd140e36eae9d4bb37948b003884fbe8d3e18a1fc16be"
+				},
+				"parallel-nodes": {
+					"path": "/tmp/radiusly-graph-bench/parallel-nodes-binary",
+					"sha256": "aa2ef126818e5cabc35a295c708366929a8154d332761c44f4b6e83fd258face"
+				},
+				"parallel-ahash": {
+					"path": "/tmp/radiusly-graph-bench/parallel-ahash-binary",
+					"sha256": "ebb368f002c69fcb7bd20804c18a9877fb3f90b618cc2077b324eacc918d2ca6"
+				}
+			},
+			"warmups": [
+				{
+					"wallSeconds": 9.51513687998522,
+					"cpuSeconds": 19.262362,
+					"peakRssKiB": 625068,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-2d1eadb00231",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "baseline",
+					"round": 1
+				},
+				{
+					"wallSeconds": 6.819207567023113,
+					"cpuSeconds": 18.990016999999998,
+					"peakRssKiB": 590604,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-3beb9db289e2",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "parallel-nodes",
+					"round": 1
+				},
+				{
+					"wallSeconds": 6.254737534036394,
+					"cpuSeconds": 18.122237000000002,
+					"peakRssKiB": 580972,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-59f2a12c0725",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "parallel-ahash",
+					"round": 1
+				}
+			],
+			"samples": [
+				{
+					"wallSeconds": 9.576175391033757,
+					"cpuSeconds": 19.366161,
+					"peakRssKiB": 613348,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-2d1eadb00231",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "baseline",
+					"round": 1
+				},
+				{
+					"wallSeconds": 6.852102257020306,
+					"cpuSeconds": 19.087051,
+					"peakRssKiB": 593120,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-3beb9db289e2",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "parallel-nodes",
+					"round": 1
+				},
+				{
+					"wallSeconds": 6.3025628220057115,
+					"cpuSeconds": 18.256421,
+					"peakRssKiB": 580528,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-59f2a12c0725",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "parallel-ahash",
+					"round": 1
+				},
+				{
+					"wallSeconds": 9.596328640007414,
+					"cpuSeconds": 19.34526,
+					"peakRssKiB": 580316,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-2d1eadb00231",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "baseline",
+					"round": 2
+				},
+				{
+					"wallSeconds": 6.287503541039769,
+					"cpuSeconds": 18.236258,
+					"peakRssKiB": 581360,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-59f2a12c0725",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "parallel-ahash",
+					"round": 2
+				},
+				{
+					"wallSeconds": 6.922894822026137,
+					"cpuSeconds": 19.286153,
+					"peakRssKiB": 610308,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-3beb9db289e2",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "parallel-nodes",
+					"round": 2
+				},
+				{
+					"wallSeconds": 6.322536181018222,
+					"cpuSeconds": 18.319853,
+					"peakRssKiB": 622676,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-59f2a12c0725",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "parallel-ahash",
+					"round": 3
+				},
+				{
+					"wallSeconds": 9.598287462024018,
+					"cpuSeconds": 19.380844,
+					"peakRssKiB": 591872,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-2d1eadb00231",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "baseline",
+					"round": 3
+				},
+				{
+					"wallSeconds": 6.948447956994642,
+					"cpuSeconds": 19.164156000000002,
+					"peakRssKiB": 587328,
+					"summary": {
+						"bytes": 115919024,
+						"dataVersion": "ae872babbc2097f5-3beb9db289e2",
+						"incompleteWaysSkipped": 0,
+						"nodes": 2007154,
+						"segments": 2203849,
+						"stations": 524
+					},
+					"normalizedSha256": "53fe9af8abded09bf20935fa06ad278d939bf9557de31b30ad0ddc36e60537d6",
+					"binary": "parallel-nodes",
+					"round": 3
+				}
+			],
+			"medians": {
+				"baseline": {
+					"wallSeconds": 9.596328640007414,
+					"cpuSeconds": 19.366161,
+					"peakRssKiB": 591872
+				},
+				"parallel-nodes": {
+					"wallSeconds": 6.922894822026137,
+					"cpuSeconds": 19.164156000000002,
+					"peakRssKiB": 593120
+				},
+				"parallel-ahash": {
+					"wallSeconds": 6.3025628220057115,
+					"cpuSeconds": 18.256421,
+					"peakRssKiB": 581360
+				}
+			},
+			"outputDirectory": "/tmp/radiusly-graph-bench/rust-import-bench-v5k3fdbe"
+		}
+	}
+}
